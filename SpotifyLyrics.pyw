@@ -38,24 +38,20 @@ class Ui_Form(object):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def resource_path(self, relative_path):
-        """ Get absolute path to resource, works for dev and for PyInstaller """
         try:
-            # PyInstaller creates a temp folder and stores path in _MEIPASS
             base_path = sys._MEIPASS
         except Exception:
             base_path = os.path.abspath(".")
-
         return os.path.join(base_path, relative_path)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Spotify Lyrics"))
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
-        self.label_songname.setText(_translate("Form", "Loading..."))
+        self.label_songname.setText(_translate("Form", "Spotify"))
         self.textBrowser.setText(_translate("Form", "Loading..."))
 
     def lyrics_thread(self, comm):
-        comm.signal.emit("Loading...", "Loading...")
         oldsongname = ""
         while True:
             songname = backend.getwindowtitle()
@@ -76,7 +72,6 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         self.label_songname.setText(_translate("Form", songname))
         self.textBrowser.setText(_translate("Form", lyrics))
-
 
 if __name__ == "__main__":
     import sys

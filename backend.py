@@ -7,17 +7,37 @@ import time
 import os
 
 def getlyrics(songname):
+    error = "Error: Could not find lyrics."
+    artist = ""
+    song = ""
     if songname.count(" - ") == 1:
         artist, song = songname.rsplit(" - ", 1)
     if songname.count(" - ") == 2:
         artist, song, garbage = songname.rsplit(" - ", 2)
-    try:
-        lyrics = PyLyrics.getLyrics(artist, song)
-    except Exception:
-        lyrics = "Error: Could not find lyrics."
-    if lyrics == "Error: Could not find lyrics.":
-        searchurl = "http://songmeanings.com/m/query/?q=%s %s" % (artist, song)
+
+    def lyrics_wikia(artist, song):
         try:
+            lyrics = PyLyrics.getLyrics(artist, song)
+        except Exception:
+            lyrics = error
+        return(lyrics)
+
+    def lyrics_musixmatch(artist, song):
+        try:
+            artistm = artist.replace(" ", "-")
+            songm = song.replace(" ", "-")
+            url = "https://www.musixmatch.com/lyrics/%s/%s" % (artistm, songm)
+            lyricspage = requests.get(url)
+            soup = BeautifulSoup(lyricspage.text, 'html.parser')
+            lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
+            lyrics = lyrics.replace("\\n", "\n")
+        except Exception:
+            lyrics = error
+        return(lyrics)
+
+    def lyrics_songmeanings(artist, song):
+        try:
+            searchurl = "http://songmeanings.com/m/query/?q=%s %s" % (artist, song)
             searchresults = requests.get(searchurl)
             soup = BeautifulSoup(searchresults.text, 'html.parser')
             for link in soup.find_all('a', href=True):
@@ -33,7 +53,15 @@ def getlyrics(songname):
             templyrics = soup.find_all("li")[4]
             lyrics = templyrics.getText()
         except Exception:
-            pass
+            lyrics = error
+        return(lyrics)
+
+    lyrics = lyrics_wikia(artist, song)
+    if lyrics == error:
+        lyrics = lyrics_musixmatch(artist, song)
+    if lyrics == error:
+        lyrics = lyrics_songmeanings(artist, song)
+
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
     return(lyrics)
@@ -52,6 +80,7 @@ def main():
         if oldsongname != songname:
             oldsongname = songname
             if songname != "Spotify":
+                os.system("cls")
                 print(songname+"\n")
                 lyrics = getlyrics(songname)
                 print(lyrics+"\n")
