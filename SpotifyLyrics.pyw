@@ -48,16 +48,16 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Spotify Lyrics"))
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
-        self.label_songname.setText(_translate("Form", "Spotify"))
-        self.textBrowser.setText(_translate("Form", "Loading..."))
+        self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
+        self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
         while True:
             songname = backend.getwindowtitle()
             if oldsongname != songname:
-                oldsongname = songname
-                if songname != "Spotify":
+                if songname != "Spotify" and songname != "":
+                    oldsongname = songname
                     comm.signal.emit(songname, "Loading...")
                     lyrics = backend.getlyrics(songname)
                     comm.signal.emit(songname, lyrics)

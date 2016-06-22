@@ -20,6 +20,8 @@ def getlyrics(songname):
             lyrics = PyLyrics.getLyrics(artist, song)
         except Exception:
             lyrics = error
+        if "TrebleClef.png" in lyrics and "Instrumental" in lyrics:
+            lyrics = "(Instrumental)"
         return(lyrics)
 
     def lyrics_musixmatch(artist, song):
@@ -54,6 +56,35 @@ def getlyrics(songname):
             lyrics = templyrics.getText()
         except Exception:
             lyrics = error
+        if lyrics == "We are currently missing these lyrics.":
+            lyrics = error
+        return(lyrics)
+
+    def lyrics_songlyrics(artist, song):
+        try:
+            artistm = artist.replace(" ", "-")
+            songm = song.replace(" ", "-")
+            url = "http://www.songlyrics.com/%s/%s-lyrics" % (artistm, songm)
+            lyricspage = requests.get(url)
+            soup = BeautifulSoup(lyricspage.text, 'html.parser')
+            lyrics = soup.find(id="songLyricsDiv").get_text()
+        except Exception:
+            lyrics = error
+        if "Sorry, we have no" in lyrics:
+            lyrics = error
+        return(lyrics)
+
+    def lyrics_genius(artist, song):
+        try:
+            searchurl = "http://genius.com/search?q=%s %s" % (artist, song)
+            searchresults = requests.get(searchurl)
+            soup = BeautifulSoup(searchresults.text, 'html.parser')
+            result = str(soup).split('song_link" href="')[1].split('" title=')[0]
+            lyricspage = requests.get(result)
+            soup = BeautifulSoup(lyricspage.text, 'html.parser')
+            lyrics = soup.text.split('Lyrics\n\n\n')[1].split('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n              About')[0]
+        except Exception:
+            lyrics = error
         return(lyrics)
 
     lyrics = lyrics_wikia(artist, song)
@@ -61,6 +92,10 @@ def getlyrics(songname):
         lyrics = lyrics_musixmatch(artist, song)
     if lyrics == error:
         lyrics = lyrics_songmeanings(artist, song)
+    if lyrics == error:
+        lyrics = lyrics_songlyrics(artist, song)
+    if lyrics == error:
+        lyrics = lyrics_genius(artist, song)
 
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
