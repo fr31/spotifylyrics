@@ -1,7 +1,5 @@
 from PyLyrics import *
 from bs4 import BeautifulSoup
-import pywintypes
-import win32gui
 import requests
 import time
 import os
@@ -102,20 +100,44 @@ def getlyrics(songname):
     return(lyrics)
 
 def getwindowtitle():
-    spotify = win32gui.FindWindow('SpotifyMainWindow', None)
-    windowname = win32gui.GetWindowText(spotify)
+    if os.name == "nt":
+        import pywintypes
+        import win32gui
+        spotify = win32gui.FindWindow('SpotifyMainWindow', None)
+        windowname = win32gui.GetWindowText(spotify)
+    else:
+        import subprocess
+        import re
+        command = "xwininfo -tree -root"
+        windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
+        spotify = ''
+        for line in windows.splitlines():
+            if '("spotify" "Spotify")' in line:
+                if " - " in line:
+                    spotify = line
+                    break
+        if spotify != '':
+            windowname = re.findall(r'"(.*?)"', spotify)[0]
+        else:
+            windowname = ''
     return(windowname)
 
 def main():
-    os.system("chcp 65001")
-    os.system("cls")
+    if os.name == "nt":
+        os.system("chcp 65001")
+    def clear():
+        if os.name == "nt":
+            os.system("cls")
+        else:
+            os.system("clear")
+    clear()
     oldsongname = ""
     while True:
         songname = getwindowtitle()
         if oldsongname != songname:
-            oldsongname = songname
             if songname != "Spotify":
-                os.system("cls")
+                oldsongname = songname
+                clear()
                 print(songname+"\n")
                 lyrics = getlyrics(songname)
                 print(lyrics+"\n")

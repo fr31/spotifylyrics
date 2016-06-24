@@ -2,10 +2,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import backend
 import time
 import threading
-import ctypes
 import os
 
-ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("spotifylyrics.version01")
+if os.name == "nt":
+    import ctypes
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("spotifylyrics.version01")
 
 class Communicate(QtCore.QObject):
     signal = QtCore.pyqtSignal(str, str)
