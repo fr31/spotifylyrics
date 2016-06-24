@@ -3,6 +3,12 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import os
+if os.name == "nt":
+    import pywintypes
+    import win32gui
+else:
+    import subprocess
+    import re
 
 def getlyrics(songname):
     error = "Error: Could not find lyrics."
@@ -101,13 +107,9 @@ def getlyrics(songname):
 
 def getwindowtitle():
     if os.name == "nt":
-        import pywintypes
-        import win32gui
         spotify = win32gui.FindWindow('SpotifyMainWindow', None)
         windowname = win32gui.GetWindowText(spotify)
     else:
-        import subprocess
-        import re
         command = "xwininfo -tree -root"
         windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
         spotify = ''
