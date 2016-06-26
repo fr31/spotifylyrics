@@ -14,6 +14,8 @@ def getlyrics(songname):
     error = "Error: Could not find lyrics."
     artist = ""
     song = ""
+    if "Spotify - " in songname:
+        songname = songname.strip("Spotify - ")
     if songname.count(" - ") == 1:
         artist, song = songname.rsplit(" - ", 1)
     if songname.count(" - ") == 2:
