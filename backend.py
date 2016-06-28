@@ -14,8 +14,6 @@ def getlyrics(songname):
     error = "Error: Could not find lyrics."
     artist = ""
     song = ""
-    if "Spotify - " in songname:
-        songname = songname.strip("Spotify - ")
     if songname.count(" - ") == 1:
         artist, song = songname.rsplit(" - ", 1)
     if songname.count(" - ") == 2:
@@ -124,6 +122,10 @@ def getwindowtitle():
             windowname = re.findall(r'"(.*?)"', spotify)[0]
         else:
             windowname = ''
+    if "—" in windowname:
+        windowname = windowname.replace("—", "-")
+    if "Spotify - " in windowname:
+        windowname = windowname.strip("Spotify - ")
     return(windowname)
 
 def main():
