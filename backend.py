@@ -18,6 +18,7 @@ def getlyrics(songname):
         artist, song = songname.rsplit(" - ", 1)
     if songname.count(" - ") == 2:
         artist, song, garbage = songname.rsplit(" - ", 2)
+    song = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
 
     def lyrics_wikia(artist, song):
         try:
