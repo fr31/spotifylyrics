@@ -3,12 +3,12 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import os
+import re
 if os.name == "nt":
     import pywintypes
     import win32gui
 else:
     import subprocess
-    import re
 
 def getlyrics(songname):
     error = "Error: Could not find lyrics."
@@ -87,6 +87,7 @@ def getlyrics(songname):
             lyricspage = requests.get(result)
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('Lyrics\n\n\n')[1].split('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n              About')[0]
+            lyrics = re.sub('googletag.*?}\);', '', lyrics, flags=re.DOTALL)
         except Exception:
             lyrics = error
         return(lyrics)
