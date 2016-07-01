@@ -35,7 +35,7 @@ def getlyrics(songname):
             searchresults = requests.get(searchurl)
             soup = BeautifulSoup(searchresults.text, 'html.parser')
             page = re.findall('"track_share_url":"(http[s?]://www\.musixmatch\.com/lyrics/.+?)","', soup.text)
-            lyricspage = requests.get(page[0])
+            lyricspage = requests.get(page[0].decode('utf-8'))
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
             lyrics = lyrics.replace("\\n", "\n")
