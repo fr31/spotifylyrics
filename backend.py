@@ -31,10 +31,11 @@ def getlyrics(songname):
 
     def lyrics_musixmatch(artist, song):
         try:
-            artistm = artist.replace(" ", "-")
-            songm = song.replace(" ", "-")
-            url = "https://www.musixmatch.com/lyrics/%s/%s" % (artistm, songm)
-            lyricspage = requests.get(url)
+            searchurl = "https://www.musixmatch.com/search/%s %s" % (artist, song)
+            searchresults = requests.get(searchurl)
+            soup = BeautifulSoup(searchresults.text, 'html.parser')
+            page = re.findall('"track_share_url":"(http[s?]://www\.musixmatch\.com/lyrics/.+?)","', soup.text)
+            lyricspage = requests.get(page[0])
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
             lyrics = lyrics.replace("\\n", "\n")
@@ -146,9 +147,9 @@ def main():
             if songname != "Spotify":
                 oldsongname = songname
                 clear()
-                print(songname+"\n")
+                # print(songname+"\n")
                 lyrics = getlyrics(songname)
-                print(lyrics+"\n")
+                # print(lyrics+"\n")
         time.sleep(1)
 
 if __name__ == '__main__':
