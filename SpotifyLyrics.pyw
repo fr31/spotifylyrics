@@ -27,15 +27,30 @@ class Ui_Form(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label_songname = QtWidgets.QLabel(Form)
         self.label_songname.setObjectName("label_songname")
-        self.verticalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.horizontalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
+        self.fontlabel = QtWidgets.QLabel(Form)
+        self.fontlabel.setObjectName("fontlabel")
+        self.horizontalLayout_2.addWidget(self.fontlabel, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.fontBox = QtWidgets.QSpinBox(Form)
+        self.fontBox.setMinimum(1)
+        self.fontBox.setProperty("value", 8)
+        self.fontBox.setObjectName("fontBox")
+        self.horizontalLayout_2.addWidget(self.fontBox, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         self.textBrowser = QtWidgets.QTextBrowser(Form)
         self.textBrowser.setObjectName("textBrowser")
+        self.textBrowser.setFontPointSize(self.fontBox.value())
         self.verticalLayout_2.addWidget(self.textBrowser)
         self.gridLayout_2.addLayout(self.verticalLayout_2, 2, 0, 1, 1)
 
         self.retranslateUi(Form)
+        self.fontBox.valueChanged.connect(self.update_fontsize)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def resource_path(self, relative_path):
@@ -45,12 +60,18 @@ class Ui_Form(object):
             base_path = os.path.abspath(".")
         return os.path.join(base_path, relative_path)
 
+    def update_fontsize(self):
+        self.textBrowser.setFontPointSize(self.fontBox.value())
+        lyrics = self.textBrowser.toPlainText()
+        self.textBrowser.setText(lyrics)
+
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Spotify Lyrics"))
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
         self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
+        self.fontlabel.setText(_translate("Form", "   Font Size:"))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
