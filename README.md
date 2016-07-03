@@ -4,10 +4,13 @@ Fetches and displays lyrics to currently playing song in the Spotify desktop cli
 # how to
 You can grab the latest release exe in the [release section](https://github.com/fr31/spotifylyrics/releases).
 
-Just double click and start playing songs in spotify.
+Just double click and start playing songs in spotify. 
+
+If you get an error about api-ms-win-crt-runtime-l1-1-0.dll missing, you need this:
+
+https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 # running from source
-
 If you want to run from source you need:
 
 * Python 3.5.1 (probably any version of Python 3)
@@ -16,5 +19,4 @@ If you want to run from source you need:
 * xwininfo (if running on linux (this comes with ubuntu))
 
 # screenshot
-
 ![example-img](http://i.imgur.com/p8Oy4J4.png)
