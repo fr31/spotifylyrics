@@ -34,14 +34,15 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-        self.fontlabel = QtWidgets.QLabel(Form)
-        self.fontlabel.setObjectName("fontlabel")
-        self.horizontalLayout_2.addWidget(self.fontlabel, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         self.fontBox = QtWidgets.QSpinBox(Form)
         self.fontBox.setMinimum(1)
-        self.fontBox.setProperty("value", 8)
+        self.fontBox.setProperty("value", 10)
         self.fontBox.setObjectName("fontBox")
         self.horizontalLayout_2.addWidget(self.fontBox, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
+        self.checkBox = QtWidgets.QCheckBox(Form)
+        self.checkBox.setText("")
+        self.checkBox.setObjectName("checkBox")
+        self.horizontalLayout_2.addWidget(self.checkBox, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         self.textBrowser = QtWidgets.QTextBrowser(Form)
         self.textBrowser.setObjectName("textBrowser")
@@ -51,6 +52,7 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         self.fontBox.valueChanged.connect(self.update_fontsize)
+        self.checkBox.toggled.connect(self.alwaysontop)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def resource_path(self, relative_path):
@@ -59,6 +61,14 @@ class Ui_Form(object):
         except Exception:
             base_path = os.path.abspath(".")
         return os.path.join(base_path, relative_path)
+
+    def alwaysontop(self):
+        if self.checkBox.isChecked():
+            Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+            Form.show()
+        else:
+            Form.setWindowFlags(Form.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
+            Form.show()
 
     def update_fontsize(self):
         self.textBrowser.setFontPointSize(self.fontBox.value())
@@ -71,7 +81,8 @@ class Ui_Form(object):
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
         self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
-        self.fontlabel.setText(_translate("Form", "   Font Size:"))
+        self.fontBox.setToolTip(_translate("Form", "Font Size"))
+        self.checkBox.setToolTip(_translate("Form", "Always on Top"))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
