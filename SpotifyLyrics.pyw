@@ -55,6 +55,44 @@ class Ui_Form(object):
         self.checkBox.toggled.connect(self.alwaysontop)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
+    def set_style(self):
+        if os.path.exists("theme.ini"):
+            self.textBrowser.setStyleSheet("")
+            self.fontBox.setStyleSheet("")
+            with open('theme.ini', 'r') as theme:
+                try:
+                    for setting in theme.readlines():
+                        try:
+                            set = setting.split("=",1)[1].strip()
+                        except IndexError:
+                            set = ""
+                        if "WindowOpacity" in setting:
+                            Form.setWindowOpacity(float(set))
+                        if "BackgroundColor" in setting:
+                            Form.setStyleSheet("background-color: %s" % set)
+                        if "LyricsBackgroundColor" in setting:
+                            style = self.textBrowser.styleSheet()
+                            style = style + "background-color: %s;" % set
+                            self.textBrowser.setStyleSheet(style)
+                        if "LyricsTextColor" in setting:
+                            style = self.textBrowser.styleSheet()
+                            style = style + "color: %s;" % set
+                            self.textBrowser.setStyleSheet(style)
+                        if "SongNameColor" in setting:
+                            self.label_songname.setStyleSheet("color: %s" % set)
+                        if "FontBoxBackgroundColor" in setting:
+                            style = self.fontBox.styleSheet()
+                            style = style + "background-color: %s;" % set
+                            self.fontBox.setStyleSheet(style)
+                        if "FontBoxTextColor" in setting:
+                            style = self.fontBox.styleSheet()
+                            style = style + "color: %s;" % set
+                            self.fontBox.setStyleSheet(style)
+                except Exception:
+                    pass
+        else:
+            pass
+
     def resource_path(self, relative_path):
         try:
             base_path = sys._MEIPASS
@@ -112,5 +150,6 @@ if __name__ == "__main__":
     Form = QtWidgets.QWidget()
     ui = Ui_Form()
     ui.setupUi(Form)
+    ui.set_style()
     Form.show()
     sys.exit(app.exec_())
