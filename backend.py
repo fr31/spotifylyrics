@@ -14,6 +14,7 @@ def getlyrics(songname):
     error = "Error: Could not find lyrics."
     artist = ""
     song = ""
+    url = ""
     if songname.count(" - ") == 1:
         artist, song = songname.rsplit(" - ", 1)
     if songname.count(" - ") == 2:
@@ -21,40 +22,48 @@ def getlyrics(songname):
     song = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
 
     def lyrics_wikia(artist, song):
+        url = ""
         try:
             lyrics = PyLyrics.getLyrics(artist, song)
+            url = "http://lyrics.wikia.com/%s:%s" % (artist.replace(' ', '_'), song.replace(' ', '_'))
         except Exception:
             lyrics = error
         if "TrebleClef.png" in lyrics and "Instrumental" in lyrics:
             lyrics = "(Instrumental)"
-        return(lyrics)
+        return(lyrics, url)
 
     def lyrics_musixmatch(artist, song):
+        url = ""
         try:
             searchurl = "https://www.musixmatch.com/search/%s %s" % (artist, song)
             searchresults = requests.get(searchurl)
             soup = BeautifulSoup(searchresults.text, 'html.parser')
             page = re.findall('"track_share_url":"(http[s?]://www\.musixmatch\.com/lyrics/.+?)","', soup.text)
-            lyricspage = requests.get(page[0])
+            url = page[0]
+            lyricspage = requests.get(url)
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
             lyrics = lyrics.replace("\\n", "\n")
         except Exception:
             lyrics = error
-        return(lyrics)
+        return(lyrics, url)
 
     def lyrics_songmeanings(artist, song):
+        url = ""
         try:
             searchurl = "http://songmeanings.com/m/query/?q=%s %s" % (artist, song)
             searchresults = requests.get(searchurl)
             soup = BeautifulSoup(searchresults.text, 'html.parser')
+            url = ""
             for link in soup.find_all('a', href=True):
                 if "songmeanings.com/m/songs/view/" in link['href']:
+                    url = link['href']
                     break
                 elif "/m/songs/view/" in link['href']:
                     result = "http://songmeanings.com" + link['href']
                     lyricspage = requests.get(result)
                     soup = BeautifulSoup(lyricspage.text, 'html.parser')
+                    url = link['href']
                     break
                 else:
                     pass
@@ -64,9 +73,10 @@ def getlyrics(songname):
             lyrics = error
         if lyrics == "We are currently missing these lyrics.":
             lyrics = error
-        return(lyrics)
+        return(lyrics, url)
 
     def lyrics_songlyrics(artist, song):
+        url = ""
         try:
             artistm = artist.replace(" ", "-")
             songm = song.replace(" ", "-")
@@ -78,35 +88,36 @@ def getlyrics(songname):
             lyrics = error
         if "Sorry, we have no" in lyrics:
             lyrics = error
-        return(lyrics)
+        return(lyrics, url)
 
     def lyrics_genius(artist, song):
+        url = ""
         try:
             searchurl = "http://genius.com/search?q=%s %s" % (artist, song)
             searchresults = requests.get(searchurl)
             soup = BeautifulSoup(searchresults.text, 'html.parser')
-            result = str(soup).split('song_link" href="')[1].split('" title=')[0]
-            lyricspage = requests.get(result)
+            url = str(soup).split('song_link" href="')[1].split('" title=')[0]
+            lyricspage = requests.get(url)
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('Lyrics\n\n\n')[1].split('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n              About')[0]
             lyrics = re.sub('googletag.*?}\);', '', lyrics, flags=re.DOTALL)
         except Exception:
             lyrics = error
-        return(lyrics)
+        return(lyrics, url)
 
-    lyrics = lyrics_wikia(artist, song)
+    lyrics, url = lyrics_wikia(artist, song)
     if lyrics == error:
-        lyrics = lyrics_musixmatch(artist, song)
+        lyrics, url = lyrics_musixmatch(artist, song)
     if lyrics == error:
-        lyrics = lyrics_songmeanings(artist, song)
+        lyrics, url = lyrics_songmeanings(artist, song)
     if lyrics == error:
-        lyrics = lyrics_songlyrics(artist, song)
+        lyrics, url = lyrics_songlyrics(artist, song)
     if lyrics == error:
-        lyrics = lyrics_genius(artist, song)
+        lyrics, url = lyrics_genius(artist, song)
 
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
-    return(lyrics)
+    return(lyrics, url)
 
 def getwindowtitle():
     if os.name == "nt":
@@ -148,7 +159,7 @@ def main():
                 oldsongname = songname
                 clear()
                 # print(songname+"\n")
-                lyrics = getlyrics(songname)
+                lyrics, url = getlyrics(songname)
                 # print(lyrics+"\n")
         time.sleep(1)
 

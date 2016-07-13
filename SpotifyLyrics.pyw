@@ -17,6 +17,8 @@ class Ui_Form(object):
 
         self.comm = Communicate()
         self.comm.signal.connect(self.change_lyrics)
+        self.setupUi(Form)
+        self.set_style()
         self.start_thread()
 
     def setupUi(self, Form):
@@ -31,6 +33,7 @@ class Ui_Form(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label_songname = QtWidgets.QLabel(Form)
         self.label_songname.setObjectName("label_songname")
+        self.label_songname.setOpenExternalLinks(True)
         self.horizontalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
@@ -124,14 +127,23 @@ class Ui_Form(object):
 
     def lyrics_thread(self, comm):
         oldsongname = ""
+        style = self.label_songname.styleSheet()
+        if style == "":
+            color = "color: black"
+        else:
+            color = style
         while True:
             songname = backend.getwindowtitle()
             if oldsongname != songname:
                 if songname != "Spotify" and songname != "":
                     oldsongname = songname
                     comm.signal.emit(songname, "Loading...")
-                    lyrics = backend.getlyrics(songname)
-                    comm.signal.emit(songname, lyrics)
+                    lyrics, url = backend.getlyrics(songname)
+                    if url == "":
+                        header = songname
+                    else:
+                        header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (color, url, songname)
+                    comm.signal.emit(header, lyrics)
             time.sleep(1)
 
     def start_thread(self):
@@ -149,7 +161,5 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     Form = QtWidgets.QWidget()
     ui = Ui_Form()
-    ui.setupUi(Form)
-    ui.set_style()
     Form.show()
     sys.exit(app.exec_())
