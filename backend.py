@@ -4,13 +4,15 @@ import requests
 import time
 import os
 import re
+import lyrics as minilyrics
+
 if os.name == "nt":
     import pywintypes
     import win32gui
 else:
     import subprocess
 
-def getlyrics(songname):
+def getlyrics(songname, sync=False):
     error = "Error: Could not find lyrics."
     artist = ""
     song = ""
@@ -20,6 +22,23 @@ def getlyrics(songname):
     if songname.count(" - ") == 2:
         artist, song, garbage = songname.rsplit(" - ", 2)
     song = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
+
+    def lyrics_minilyrics(artist, song):
+        url = ""
+        timed = False
+        try:
+            data = minilyrics.MiniLyrics(artist, song)
+            for item in data:
+                if item['url'].endswith(".lrc"):
+                    url = item['url']
+                    break
+            lyrics = requests.get(url).text
+            timed = True
+        except Exception:
+            lyrics = error
+        if url == "":
+            lyrics = error
+        return(lyrics, url, timed)
 
     def lyrics_wikia(artist, song):
         url = ""
@@ -105,7 +124,14 @@ def getlyrics(songname):
             lyrics = error
         return(lyrics, url)
 
-    lyrics, url = lyrics_wikia(artist, song)
+    if sync == True:
+        lyrics, url, timed = lyrics_minilyrics(artist, song)
+    else:
+        lyrics = error
+        timed = False
+
+    if lyrics == error:
+        lyrics, url = lyrics_wikia(artist, song)
     if lyrics == error:
         lyrics, url = lyrics_musixmatch(artist, song)
     if lyrics == error:
@@ -117,7 +143,7 @@ def getlyrics(songname):
 
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
-    return(lyrics, url)
+    return(lyrics, url, timed)
 
 def getwindowtitle():
     if os.name == "nt":
@@ -135,7 +161,7 @@ def getwindowtitle():
         if spotify != '':
             windowname = re.findall(r'"(.*?)"', spotify)[0]
         else:
-            windowname = ''
+            windowname = 'Spotify'
     if "—" in windowname:
         windowname = windowname.replace("—", "-")
     if "Spotify - " in windowname:
@@ -159,7 +185,7 @@ def main():
                 oldsongname = songname
                 clear()
                 # print(songname+"\n")
-                lyrics, url = getlyrics(songname)
+                lyrics, url, timed = getlyrics(songname)
                 # print(lyrics+"\n")
         time.sleep(1)
 
