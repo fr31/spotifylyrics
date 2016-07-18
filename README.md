@@ -14,7 +14,7 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 If you want to run from source you need:
 
 * Python 3.5.1 (probably any version of Python 3)
-* pip install pylyrics bs4 requests pyqt5
+* pip install pylyrics bs4 requests xmltodict pyqt5
 * [pywin32](https://sourceforge.net/projects/pywin32/) (if running on windows (included in anaconda 4 [*](https://github.com/fr31/spotifylyrics/issues/5)))
 * xwininfo (if running on linux (this comes with ubuntu))
 
