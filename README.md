@@ -19,4 +19,4 @@ If you want to run from source you need:
 * xwininfo (if running on linux (this comes with ubuntu))
 
 # screenshot
-![example-img](http://i.imgur.com/yp0x7s5.png)
+![example-img](https://i.imgur.com/51umyjo.png)
