@@ -63,6 +63,7 @@ def getlyrics(songname, sync=False):
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
             lyrics = lyrics.replace("\\n", "\n")
+            lyrics = lyrics.replace("\\", "")
         except Exception:
             lyrics = error
         return(lyrics, url)

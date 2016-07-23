@@ -7,13 +7,14 @@ import re
 
 if os.name == "nt":
     import ctypes
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("spotifylyrics.version01")
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("spotifylyrics.version1")
 
 class Communicate(QtCore.QObject):
     signal = QtCore.pyqtSignal(str, str)
 
 class Ui_Form(object):
     sync = False
+    ontop = False
     def __init__(self):
         super().__init__()
 
@@ -39,19 +40,18 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
+        self.comboBox = QtWidgets.QComboBox(Form)
+        self.comboBox.setGeometry(QtCore.QRect(160, 120, 69, 22))
+        self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.horizontalLayout_2.addWidget(self.comboBox, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.fontBox = QtWidgets.QSpinBox(Form)
         self.fontBox.setMinimum(1)
         self.fontBox.setProperty("value", 10)
         self.fontBox.setObjectName("fontBox")
         self.horizontalLayout_2.addWidget(self.fontBox, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        self.checkBox2 = QtWidgets.QCheckBox(Form)
-        self.checkBox2.setText("")
-        self.checkBox2.setObjectName("checkBox2")
-        self.horizontalLayout_2.addWidget(self.checkBox2, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
-        self.checkBox = QtWidgets.QCheckBox(Form)
-        self.checkBox.setText("")
-        self.checkBox.setObjectName("checkBox")
-        self.horizontalLayout_2.addWidget(self.checkBox, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
         self.textBrowser = QtWidgets.QTextBrowser(Form)
         self.textBrowser.setObjectName("textBrowser")
@@ -63,9 +63,33 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         self.fontBox.valueChanged.connect(self.update_fontsize)
-        self.checkBox.toggled.connect(self.alwaysontop)
-        self.checkBox2.toggled.connect(self.synced)
+        self.comboBox.currentIndexChanged.connect(self.optionschanged)
         QtCore.QMetaObject.connectSlotsByName(Form)
+        Form.setTabOrder(self.textBrowser, self.comboBox)
+        Form.setTabOrder(self.comboBox, self.fontBox)
+
+    def optionschanged(self):
+        if self.comboBox.currentIndex() == 1:
+            if self.sync == True:
+                self.sync = False
+                self.comboBox.setItemText(1, ("Synced Lyrics"))
+            else:
+                self.sync = True
+                self.comboBox.setItemText(1, ("Synced Lyrics (on)"))
+        elif self.comboBox.currentIndex() == 2:
+            if self.ontop == False:
+                self.ontop = True
+                Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+                self.comboBox.setItemText(2, ("Always on Top (on)"))
+                Form.show()
+            else:
+                self.ontop = False
+                Form.setWindowFlags(Form.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
+                self.comboBox.setItemText(2, ("Always on Top"))
+                Form.show()
+        else:
+            pass
+        self.comboBox.setCurrentIndex(0)
 
     def set_style(self):
         if os.path.exists("theme.ini"):
@@ -93,10 +117,12 @@ class Ui_Form(object):
                         if "FontBoxBackgroundColor" in setting:
                             style = self.fontBox.styleSheet()
                             style = style + "background-color: %s;" % set
+                            self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                         if "FontBoxTextColor" in setting:
                             style = self.fontBox.styleSheet()
                             style = style + "color: %s;" % set
+                            self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                 except Exception:
                     pass
@@ -109,20 +135,6 @@ class Ui_Form(object):
         except Exception:
             base_path = os.path.abspath(".")
         return os.path.join(base_path, relative_path)
-
-    def alwaysontop(self):
-        if self.checkBox.isChecked():
-            Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-            Form.show()
-        else:
-            Form.setWindowFlags(Form.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
-            Form.show()
-
-    def synced(self):
-        if self.checkBox2.isChecked():
-            self.sync = True
-        else:
-            self.sync = False
 
     def update_fontsize(self):
         self.textBrowser.setFontPointSize(self.fontBox.value())
@@ -140,8 +152,9 @@ class Ui_Form(object):
         self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.fontBox.setToolTip(_translate("Form", "Font Size"))
-        self.checkBox.setToolTip(_translate("Form", "Always on Top"))
-        self.checkBox2.setToolTip(_translate("Form", "Synced Lyrics"))
+        self.comboBox.setItemText(0, _translate("Form", "Options"))
+        self.comboBox.setItemText(1, _translate("Form", "Synced Lyrics"))
+        self.comboBox.setItemText(2, _translate("Form", "Always on Top"))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
@@ -189,21 +202,23 @@ class Ui_Form(object):
                                 count += 1
                                 ltime = line[line.find("[") + 1:line.find("]")]
                                 add = float(ltime[0:2]) * 60
-                                ltime = float(ltime[3:])
+                                try:
+                                    ltime = float(ltime[3:])
+                                except ValueError:
+                                    ltime = 0.0
                                 rtime = add + ltime - 0.5
                                 lyrics1 = lyricsclean.splitlines()
                                 regex = re.compile('\[.+?\]')
                                 line = regex.sub('', line)
-                                lyrics1[count] = "<b>%s</b>" % line.strip()
+                                regex = re.compile('\<.+?\>')
+                                line = regex.sub('', line)
+                                lyrics1[count] = "<b><a name=\"#scrollHere\">%s</a></b>" % line.strip()
                                 boldlyrics = '<br>'.join(lyrics1)
                                 while True:
                                     if rtime <= time.time() - start and backend.getwindowtitle() != "Spotify":
                                         boldlyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % self.fontBox.value() * 2 + boldlyrics + '</p>'
                                         comm.signal.emit(header, boldlyrics)
-                                        for i in range(count):
-                                            self.textBrowser.moveCursor(QtGui.QTextCursor.Down)
-                                        self.textBrowser.ensureCursorVisible()
-                                        time.sleep(1)
+                                        time.sleep(0.5)
                                         break
                                     elif backend.getwindowtitle() == "Spotify":
                                         time.sleep(0.2)
@@ -228,6 +243,7 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         self.label_songname.setText(_translate("Form", songname))
         self.textBrowser.setText(_translate("Form", lyrics))
+        self.textBrowser.scrollToAnchor("#scrollHere")
 
 if __name__ == "__main__":
     import sys
