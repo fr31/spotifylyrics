@@ -15,6 +15,10 @@ class Communicate(QtCore.QObject):
 class Ui_Form(object):
     sync = False
     ontop = False
+    if os.name == "nt":
+        settingsdir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
+    else:
+        settingsdir = os.path.expanduser("~") + "/.SpotifyLyrics/"
     def __init__(self):
         super().__init__()
 
@@ -22,6 +26,7 @@ class Ui_Form(object):
         self.comm.signal.connect(self.change_lyrics)
         self.setupUi(Form)
         self.set_style()
+        self.load_save_settings()
         self.start_thread()
 
     def setupUi(self, Form):
@@ -43,6 +48,7 @@ class Ui_Form(object):
         self.comboBox = QtWidgets.QComboBox(Form)
         self.comboBox.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
@@ -68,6 +74,53 @@ class Ui_Form(object):
         Form.setTabOrder(self.textBrowser, self.comboBox)
         Form.setTabOrder(self.comboBox, self.fontBox)
 
+    def load_save_settings(self, save=False):
+        settingsfile = self.settingsdir + "settings.ini"
+        if save == False:
+            if os.path.exists(settingsfile):
+                with open(settingsfile, 'r') as settings:
+                    for line in settings.readlines():
+                        if "SyncedLyrics" in line:
+                            if "True" in line:
+                                self.sync = True
+                            else:
+                                self.sync = False
+                        if "AlwaysOnTop" in line:
+                            if "True" in line:
+                                self.ontop = True
+                            else:
+                                self.ontop = False
+                        if "FontSize" in line:
+                            set = line.split("=",1)[1].strip()
+                            try:
+                                self.fontBox.setValue(int(set))
+                            except ValueError:
+                                pass
+            else:
+                directory = os.path.dirname(settingsfile)
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                with open(settingsfile, 'w+') as settings:
+                    settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10")
+            if self.sync == True:
+                self.comboBox.setItemText(1, ("Synced Lyrics (on)"))
+            if self.ontop == True:
+                Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+                self.comboBox.setItemText(2, ("Always on Top (on)"))
+                Form.show()
+        else:
+            with open(settingsfile, 'w+') as settings:
+                settings.write("[settings]\n")
+                if self.sync == True:
+                    settings.write("SyncedLyrics=True\n")
+                else:
+                    settings.write("SyncedLyrics=False\n")
+                if self.ontop == True:
+                    settings.write("AlwaysOnTop=True\n")
+                else:
+                    settings.write("AlwaysOnTop=False\n")
+                settings.write("FontSize=%s" % str(self.fontBox.value()))
+
     def optionschanged(self):
         if self.comboBox.currentIndex() == 1:
             if self.sync == True:
@@ -87,13 +140,19 @@ class Ui_Form(object):
                 Form.setWindowFlags(Form.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
                 self.comboBox.setItemText(2, ("Always on Top"))
                 Form.show()
+        elif self.comboBox.currentIndex() == 3:
+            self.load_save_settings(save=True)
         else:
             pass
         self.comboBox.setCurrentIndex(0)
 
     def set_style(self):
-        if os.path.exists("theme.ini"):
-            with open('theme.ini', 'r') as theme:
+        if os.path.exists(self.settingsdir + "theme.ini"):
+            themefile = self.settingsdir + "theme.ini"
+        else:
+            themefile = "theme.ini"
+        if os.path.exists(themefile):
+            with open(themefile, 'r') as theme:
                 try:
                     for setting in theme.readlines():
                         try:
@@ -155,6 +214,7 @@ class Ui_Form(object):
         self.comboBox.setItemText(0, _translate("Form", "Options"))
         self.comboBox.setItemText(1, _translate("Form", "Synced Lyrics"))
         self.comboBox.setItemText(2, _translate("Form", "Always on Top"))
+        self.comboBox.setItemText(3, _translate("Form", "Save Settings"))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
