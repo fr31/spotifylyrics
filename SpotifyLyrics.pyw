@@ -80,17 +80,18 @@ class Ui_Form(object):
             if os.path.exists(settingsfile):
                 with open(settingsfile, 'r') as settings:
                     for line in settings.readlines():
-                        if "SyncedLyrics" in line:
-                            if "True" in line:
+                        lcline = line.lower()
+                        if "syncedlyrics" in lcline:
+                            if "true" in lcline:
                                 self.sync = True
                             else:
                                 self.sync = False
-                        if "AlwaysOnTop" in line:
-                            if "True" in line:
+                        if "alwaysontop" in lcline:
+                            if "true" in lcline:
                                 self.ontop = True
                             else:
                                 self.ontop = False
-                        if "FontSize" in line:
+                        if "fontsize" in lcline:
                             set = line.split("=",1)[1].strip()
                             try:
                                 self.fontBox.setValue(int(set))
@@ -155,30 +156,31 @@ class Ui_Form(object):
             with open(themefile, 'r') as theme:
                 try:
                     for setting in theme.readlines():
+                        lcsetting = setting.lower()
                         try:
                             set = setting.split("=",1)[1].strip()
                         except IndexError:
                             set = ""
-                        if "WindowOpacity" in setting:
+                        if "windowopacity" in lcsetting:
                             Form.setWindowOpacity(float(set))
-                        if "BackgroundColor" in setting:
+                        if "backgroundcolor" in lcsetting:
                             Form.setStyleSheet("background-color: %s" % set)
-                        if "LyricsBackgroundColor" in setting:
+                        if "lyricsbackgroundcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
                             style = style + "background-color: %s;" % set
                             self.textBrowser.setStyleSheet(style)
-                        if "LyricsTextColor" in setting:
+                        if "lyricstextcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
                             style = style + "color: %s;" % set
                             self.textBrowser.setStyleSheet(style)
-                        if "SongNameColor" in setting:
+                        if "songnamecolor" in lcsetting:
                             self.label_songname.setStyleSheet("color: %s" % set)
-                        if "FontBoxBackgroundColor" in setting:
+                        if "fontboxbackgroundcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
                             style = style + "background-color: %s;" % set
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
-                        if "FontBoxTextColor" in setting:
+                        if "fontboxtextcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
                             style = style + "color: %s;" % set
                             self.comboBox.setStyleSheet(style)
@@ -206,9 +208,12 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Spotify Lyrics"))
+        Form.setWindowTitle(_translate("Form", "Spotify Lyrics - 1.07"))
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
-        self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
+        if backend.versioncheck() == True:
+            self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
+        else:
+            self.label_songname.setText(_translate("Form", "Spotify Lyrics <style type=\"text/css\">a {text-decoration: none}</style><a href=\"https://github.com/fr31/spotifylyrics/releases\"><sup>(update)</sup></a>"))
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.fontBox.setToolTip(_translate("Form", "Font Size"))
         self.comboBox.setItemText(0, _translate("Form", "Options"))
@@ -295,9 +300,9 @@ class Ui_Form(object):
             time.sleep(1)
 
     def start_thread(self):
-        my_Thread = threading.Thread(target=self.lyrics_thread, args=(self.comm,))
-        my_Thread.daemon = True
-        my_Thread.start()
+        lyricsthread = threading.Thread(target=self.lyrics_thread, args=(self.comm,))
+        lyricsthread.daemon = True
+        lyricsthread.start()
 
     def change_lyrics(self, songname, lyrics):
         _translate = QtCore.QCoreApplication.translate

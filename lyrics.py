@@ -34,6 +34,7 @@ except:
         SystemExit("can\'t find BeautifulSoup, please install it via \"pip install BeautifulSoup\"")
 
 import re
+import urllib
 
 # function to return python workable results from Minilyrics
 def MiniLyrics(artist, title):
@@ -41,6 +42,7 @@ def MiniLyrics(artist, title):
     search_query_base = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?><searchV1 client=\"ViewLyricsOpenSearcher\" artist=\"{artist}\" title=\"{title}\" OnlyMatched=\"1\" />"
     search_useragent = "MiniLyrics"
     search_md5watermark = b"Mlv1clt4.0"
+    proxy = urllib.request.getproxies()
 
     # hex is a registered value in python, so i used hexx as an alternative
     def hexToStr(hexx):
@@ -94,7 +96,7 @@ def MiniLyrics(artist, title):
                    }
         # trying to keep the script as sturdy as possible
         try:
-            r = requests.post(url, data=data, headers=headers)
+            r = requests.post(url, data=data, headers=headers, proxies=proxy)
             return (r.text)
         except Exception as exceptio:
             print(exceoptio)
@@ -105,7 +107,7 @@ def MiniLyrics(artist, title):
             fail_count += 1
             print(("buffer was empty, retry time: {fails}".format(fails=fail_count)))
             try:
-                r = requests.post(url, data=data, headers=headers)
+                r = requests.post(url, data=data, headers=headers, proxies=proxy)
             except:
                 pass
             if fail_count >= 5:
@@ -186,9 +188,10 @@ def MiniLyrics(artist, title):
 
 # function to return lyrics grabbed from lyricwikia
 def LyricWikia(artist, title):
+    proxy = urllib.request.getproxies()
     url = 'http://lyrics.wikia.com/api.php?action=lyrics&artist={artist}&song={title}&fmt=json&func=getSong'.format(artist=artist,
                                                                                                                     title=title).replace(" ","%20")
-    r = requests.get(url, timeout=15)
+    r = requests.get(url, timeout=15, proxies=proxy)
     # We got some bad formatted JSON data... So we need to fix stuff :/
     returned = r.text
     returned = returned.replace("\'", "\"")
@@ -196,7 +199,7 @@ def LyricWikia(artist, title):
     returned = json.loads(returned)
     if returned["lyrics"] != "Not found":
         # set the url to the url we just recieved, and retrieving it
-        r = requests.get(returned["url"], timeout=15)
+        r = requests.get(returned["url"], timeout=15, proxies=proxy)
         soup = BeautifulSoup(r.text)
         soup = soup.find("div", {"class": "lyricbox"})
         [elem.extract() for elem in soup.findAll('div')]
@@ -210,4 +213,4 @@ def LyricWikia(artist, title):
         [elem.extract() for elem in soup.findAll('script')]
         return(soup.getText())
     else:
-        return()
+        return("error")
