@@ -32,7 +32,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(550, 610)
-        Form.setMinimumSize(QtCore.QSize(550, 610))
+        Form.setMinimumSize(QtCore.QSize(350, 310))
         self.gridLayout_2 = QtWidgets.QGridLayout(Form)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
@@ -208,7 +208,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Spotify Lyrics - 1.07"))
+        Form.setWindowTitle(_translate("Form", "Spotify Lyrics - {}".format(backend.version())))
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
         if backend.versioncheck() == True:
             self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
@@ -277,7 +277,9 @@ class Ui_Form(object):
                                 line = regex.sub('', line)
                                 regex = re.compile('\<.+?\>')
                                 line = regex.sub('', line)
-                                lyrics1[count] = "<b><a name=\"#scrollHere\">%s</a></b>" % line.strip()
+                                lyrics1[count] = "<b>%s</b>" % line.strip()
+                                if count-2 > 0:
+                                    lyrics1[count-2] = "<a name=\"#scrollHere\">%s</a>" % lyrics1[count-2].strip()
                                 boldlyrics = '<br>'.join(lyrics1)
                                 while True:
                                     if rtime <= time.time() - start and backend.getwindowtitle() != "Spotify":

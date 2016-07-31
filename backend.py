@@ -172,18 +172,21 @@ def getwindowtitle():
 
 def versioncheck():
     proxy = urllib.request.getproxies()
-    version = 1.07
     try:
         currentversion = requests.get("https://raw.githubusercontent.com/fr31/spotifylyrics/master/currentversion", timeout=5, proxies=proxy).text
     except Exception:
         return(True)
     try:
-        if version >= float(currentversion):
+        if version() >= float(currentversion):
             return(True)
         else:
             return(False)
     except Exception:
         return(True)
+
+def version():
+    version = 1.08
+    return(version)
 
 def main():
     if os.name == "nt":
