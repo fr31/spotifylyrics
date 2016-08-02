@@ -39,6 +39,9 @@ def getlyrics(songname, sync=False):
             lyrics = error
         if url == "":
             lyrics = error
+        if artist.lower().replace(" ", "") not in lyrics.lower().replace(" ", ""):
+            lyrics = error
+            timed = False
         return(lyrics, url, timed)
 
     def lyrics_wikia(artist, song):
@@ -185,7 +188,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.08
+    version = 1.09
     return(version)
 
 def main():
