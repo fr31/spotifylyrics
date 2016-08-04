@@ -11,7 +11,7 @@ if os.name == "nt":
     import pywintypes
     import win32gui
 else:
-    import subprocess
+    import dbus
 
 def getlyrics(songname, sync=False):
     error = "Error: Could not find lyrics."
@@ -117,6 +117,27 @@ def getlyrics(songname, sync=False):
             lyrics = error
         return(lyrics, url)
 
+    def lyrics_versuri(artist, song):
+        url = ""
+        try:
+            try:
+                searchurl = "https://searx.me/?q=site:versuri.ro/versuri/ %s %s&format=json" % (artist, song)
+                searchresults = requests.get(searchurl, proxies=proxy).json()
+                url = searchresults['results'][0]['url']
+            except Exception:
+                searchurl = "https://searx.space/?q=site:versuri.ro/versuri/ %s %s&format=json" % (artist, song)
+                searchresults = requests.get(searchurl, proxies=proxy).json()
+                url = searchresults['results'][0]['url']
+            lyricspage = requests.get(url, proxies=proxy)
+            soup = BeautifulSoup(lyricspage.text, 'html.parser')
+            content = soup.find_all('div',{'id':'pagecontent'})[0]
+            lyrics = str(content)[str(content).find("</script><br/>") + 14:str(content).find("<br/><br/><center>")]
+            lyrics = lyrics.replace("<br/>", "")
+        except Exception:
+            lyrics = error
+        return(lyrics, url)
+
+
     def lyrics_genius(artist, song):
         url = ""
         try:
@@ -128,6 +149,8 @@ def getlyrics(songname, sync=False):
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
             lyrics = soup.text.split('Lyrics\n\n\n')[1].split('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n              About')[0]
             lyrics = re.sub('googletag.*?}\);', '', lyrics, flags=re.DOTALL)
+            if artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
+                lyrics = error
         except Exception:
             lyrics = error
         return(lyrics, url)
@@ -147,6 +170,8 @@ def getlyrics(songname, sync=False):
         lyrics, url = lyrics_songlyrics(artist, song)
     if lyrics == error:
         lyrics, url = lyrics_genius(artist, song)
+    if lyrics == error:
+        lyrics, url = lyrics_versuri(artist, song)
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
     return(lyrics, url, timed)
@@ -156,18 +181,11 @@ def getwindowtitle():
         spotify = win32gui.FindWindow('SpotifyMainWindow', None)
         windowname = win32gui.GetWindowText(spotify)
     else:
-        command = "xwininfo -tree -root"
-        windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
-        spotify = ''
-        for line in windows.splitlines():
-            if '("spotify" "Spotify")' in line:
-                if " - " in line:
-                    spotify = line
-                    break
-        if spotify != '':
-            windowname = re.findall(r'"(.*?)"', spotify)[0]
-        else:
-            windowname = 'Spotify'
+        session = dbus.SessionBus()
+        spotifydbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
+        spotifydata = dbus.Interface(spotifydbus, "org.freedesktop.DBus.Properties")
+        metadata = spotifydata.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+        windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
     if "—" in windowname:
         windowname = windowname.replace("—", "-")
     if "Spotify - " in windowname:
@@ -189,7 +207,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.09
+    version = 1.10
     return(version)
 
 def main():
