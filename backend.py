@@ -11,6 +11,7 @@ if os.name == "nt":
     import pywintypes
     import win32gui
 else:
+    import subprocess
     import dbus
 
 def getlyrics(songname, sync=False):
@@ -137,7 +138,6 @@ def getlyrics(songname, sync=False):
             lyrics = error
         return(lyrics, url)
 
-
     def lyrics_genius(artist, song):
         url = ""
         try:
@@ -181,11 +181,26 @@ def getwindowtitle():
         spotify = win32gui.FindWindow('SpotifyMainWindow', None)
         windowname = win32gui.GetWindowText(spotify)
     else:
+        windowname = ''
         session = dbus.SessionBus()
         spotifydbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
-        spotifydata = dbus.Interface(spotifydbus, "org.freedesktop.DBus.Properties")
-        metadata = spotifydata.Get("org.mpris.MediaPlayer2.Player", "Metadata")
-        windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
+        spotifyinterface = dbus.Interface(spotifydbus, "org.freedesktop.DBus.Properties")
+        metadata = spotifyinterface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+        try:
+            command = "xwininfo -tree -root"
+            windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
+            spotify = ''
+            for line in windows.splitlines():
+                if '("spotify" "Spotify")' in line:
+                    if " - " in line:
+                        spotify = line
+                        break
+            if spotify == '':
+                windowname = 'Spotify'
+        except Exception:
+            pass
+        if windowname != 'Spotify':
+            windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
     if "—" in windowname:
         windowname = windowname.replace("—", "-")
     if "Spotify - " in windowname:
