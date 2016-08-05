@@ -174,8 +174,9 @@ class Ui_Form(object):
                             style = style + "color: %s;" % set
                             self.textBrowser.setStyleSheet(style)
                         if "songnamecolor" in lcsetting:
-                            self.label_songname.setStyleSheet("color: %s" % set)
-                            color = set #get the color for future references.
+                            style = self.label_songname.styleSheet()
+                            style = style + "color: %s;" % set
+                            self.label_songname.setStyleSheet(style)
                         if "fontboxbackgroundcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
                             style = style + "background-color: %s;" % set
@@ -187,12 +188,14 @@ class Ui_Form(object):
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                         if "songnameunderline" in lcsetting:
-                            if set.lower() == "true":
-                                self.label_songname.setStyleSheet("color: %s; text-decoration: underline;" % color) 
+                            if "true" in set.lower():
+                                style = self.label_songname.styleSheet()
+                                style = style + "text-decoration: underline;"
+                                self.label_songname.setStyleSheet(style)
                 except Exception:
                     pass
         else:
-            self.label_songname.setStyleSheet("color: #0000EE; text-decoration: underline;")
+            self.label_songname.setStyleSheet("color: black; text-decoration: underline;")
             pass
 
     def resource_path(self, relative_path):
