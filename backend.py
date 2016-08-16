@@ -24,6 +24,8 @@ def getlyrics(songname, sync=False):
         artist, song = songname.rsplit(" - ", 1)
     if songname.count(" - ") == 2:
         artist, song, garbage = songname.rsplit(" - ", 2)
+    if " / " in song:
+        song, garbage = song.rsplit(" / ", 1)
     song = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
 
     def lyrics_minilyrics(artist, song):
@@ -53,7 +55,9 @@ def getlyrics(songname, sync=False):
             url = "http://lyrics.wikia.com/%s:%s" % (artist.replace(' ', '_'), song.replace(' ', '_'))
         except Exception:
             lyrics = error
-        if "TrebleClef.png" in lyrics and "Instrumental" in lyrics:
+        if "TrebleClef.png" in lyrics:
+            lyrics = "(Instrumental)"
+        if "Instrumental" in lyrics:
             lyrics = "(Instrumental)"
         if lyrics == "error":
             lyrics = error
@@ -174,6 +178,7 @@ def getlyrics(songname, sync=False):
         lyrics, url = lyrics_versuri(artist, song)
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
+    lyrics = lyrics.strip()
     return(lyrics, url, timed)
 
 def getwindowtitle():
@@ -222,7 +227,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.10
+    version = 1.11
     return(version)
 
 def main():
