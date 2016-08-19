@@ -23,7 +23,7 @@ except:
 try:
     import requests
 except:
-    SystemExit("can\'t find reuqests, please install it via \"pip install requests\"")
+    SystemExit("can\'t find requests, please install it via \"pip install requests\"")
 
 try:
     from BeautifulSoup import BeautifulSoup
