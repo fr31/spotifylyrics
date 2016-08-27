@@ -4,12 +4,15 @@ import requests
 import urllib
 import time
 import os
+import sys
 import re
 import lyrics as minilyrics
 
-if os.name == "nt":
+if sys.platform == "win32":
     import pywintypes
     import win32gui
+elif sys.platform == "darwin":
+    import subprocess
 else:
     import subprocess
     import dbus
@@ -182,9 +185,16 @@ def getlyrics(songname, sync=False):
     return(lyrics, url, timed)
 
 def getwindowtitle():
-    if os.name == "nt":
+    if sys.platform== "win32":
         spotify = win32gui.FindWindow('SpotifyMainWindow', None)
         windowname = win32gui.GetWindowText(spotify)
+    elif sys.platform == "darwin":
+        windowname = ''
+        try:
+            command = "osascript getCurrentSong.AppleScript"
+            windowname = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
+        except Exception:
+            pass
     else:
         windowname = ''
         session = dbus.SessionBus()
