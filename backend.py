@@ -185,7 +185,7 @@ def getlyrics(songname, sync=False):
     return(lyrics, url, timed)
 
 def getwindowtitle():
-    if sys.platform== "win32":
+    if sys.platform == "win32":
         spotify = win32gui.FindWindow('SpotifyMainWindow', None)
         windowname = win32gui.GetWindowText(spotify)
     elif sys.platform == "darwin":
