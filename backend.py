@@ -170,11 +170,11 @@ def getlyrics(songname, sync=False):
     if lyrics == error:
         lyrics, url = lyrics_wikia(artist, song)
     if lyrics == error:
-        lyrics, url = lyrics_musixmatch(artist, song)
-    if lyrics == error:
         lyrics, url = lyrics_songmeanings(artist, song)
     if lyrics == error:
         lyrics, url = lyrics_songlyrics(artist, song)
+    if lyrics == error:
+        lyrics, url = lyrics_musixmatch(artist, song)
     if lyrics == error:
         lyrics, url = lyrics_genius(artist, song)
     if lyrics == error:
