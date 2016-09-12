@@ -4,6 +4,7 @@ import time
 import threading
 import os
 import re
+import subprocess
 
 if os.name == "nt":
     import ctypes
@@ -15,6 +16,7 @@ class Communicate(QtCore.QObject):
 class Ui_Form(object):
     sync = False
     ontop = False
+    open_spotify = False
     if os.name == "nt":
         settingsdir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
     else:
@@ -27,6 +29,8 @@ class Ui_Form(object):
         self.setupUi(Form)
         self.set_style()
         self.load_save_settings()
+        if self.open_spotify:
+            self.spotify()
         self.start_thread()
 
     def setupUi(self, Form):
@@ -48,6 +52,7 @@ class Ui_Form(object):
         self.comboBox = QtWidgets.QComboBox(Form)
         self.comboBox.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
@@ -76,7 +81,7 @@ class Ui_Form(object):
 
     def load_save_settings(self, save=False):
         settingsfile = self.settingsdir + "settings.ini"
-        if save == False:
+        if save is False:
             if os.path.exists(settingsfile):
                 with open(settingsfile, 'r') as settings:
                     for line in settings.readlines():
@@ -97,41 +102,54 @@ class Ui_Form(object):
                                 self.fontBox.setValue(int(set))
                             except ValueError:
                                 pass
+                        if "openspotify" in lcline:
+                            if "true" in lcline:
+                                self.open_spotify = True
+                            else:
+                                self.open_spotify = False
+
             else:
                 directory = os.path.dirname(settingsfile)
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 with open(settingsfile, 'w+') as settings:
-                    settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10")
-            if self.sync == True:
+                    settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False")
+            if self.sync is True:
                 self.comboBox.setItemText(1, ("Synced Lyrics (on)"))
-            if self.ontop == True:
+            if self.ontop is True:
                 Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
                 self.comboBox.setItemText(2, ("Always on Top (on)"))
                 Form.show()
+            if self.open_spotify is True:
+                self.comboBox.setItemText(4, ("Start spotify (on)"))
         else:
             with open(settingsfile, 'w+') as settings:
                 settings.write("[settings]\n")
-                if self.sync == True:
+                if self.sync is True:
                     settings.write("SyncedLyrics=True\n")
                 else:
                     settings.write("SyncedLyrics=False\n")
-                if self.ontop == True:
+                if self.ontop is True:
                     settings.write("AlwaysOnTop=True\n")
+                else:
+                    settings.write("AlwaysOnTop=False\n")
+                if self.open_spotify is True:
+                    settings.write("OpenSpotify=True\n")
                 else:
                     settings.write("AlwaysOnTop=False\n")
                 settings.write("FontSize=%s" % str(self.fontBox.value()))
 
     def optionschanged(self):
-        if self.comboBox.currentIndex() == 1:
-            if self.sync == True:
+        current_index = self.comboBox.currentIndex()
+        if current_index == 1:
+            if self.sync is True:
                 self.sync = False
                 self.comboBox.setItemText(1, ("Synced Lyrics"))
             else:
                 self.sync = True
                 self.comboBox.setItemText(1, ("Synced Lyrics (on)"))
-        elif self.comboBox.currentIndex() == 2:
-            if self.ontop == False:
+        elif current_index == 2:
+            if self.ontop is False:
                 self.ontop = True
                 Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
                 self.comboBox.setItemText(2, ("Always on Top (on)"))
@@ -141,8 +159,15 @@ class Ui_Form(object):
                 Form.setWindowFlags(Form.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
                 self.comboBox.setItemText(2, ("Always on Top"))
                 Form.show()
-        elif self.comboBox.currentIndex() == 3:
+        elif current_index == 3:
             self.load_save_settings(save=True)
+        elif current_index == 4:
+            if self.open_spotify is True:
+                self.open_spotify = False
+                self.comboBox.setItemText(4, ("Open Spotify"))
+            else:
+                self.open_spotify = True
+                self.comboBox.setItemText(4, ("Open Spotify (on)"))
         else:
             pass
         self.comboBox.setCurrentIndex(0)
@@ -228,6 +253,7 @@ class Ui_Form(object):
         self.comboBox.setItemText(1, _translate("Form", "Synced Lyrics"))
         self.comboBox.setItemText(2, _translate("Form", "Always on Top"))
         self.comboBox.setItemText(3, _translate("Form", "Save Settings"))
+        self.comboBox.setItemText(4, _translate("Form", "Open Spotify"))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
@@ -319,6 +345,12 @@ class Ui_Form(object):
         self.label_songname.setText(_translate("Form", songname))
         self.textBrowser.setText(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
+
+    def spotify(self):
+        if os.name == "nt":
+            path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
+            subprocess.Popen(path)
+
 
 if __name__ == "__main__":
     import sys
