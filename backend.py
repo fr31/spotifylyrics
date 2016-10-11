@@ -9,7 +9,6 @@ import re
 import lyrics as minilyrics
 
 if sys.platform == "win32":
-    import pywintypes
     import win32gui
 elif sys.platform == "darwin":
     import subprocess
@@ -123,24 +122,30 @@ def getlyrics(songname, sync=False):
             lyrics = error
         if "Sorry, we have no" in lyrics:
             lyrics = error
+        if "We do not have" in lyrics:
+            lyrics = error
         return(lyrics, url)
 
     def lyrics_versuri(artist, song):
         url = ""
         try:
-            try:
-                searchurl = "https://searx.me/?q=site:versuri.ro/versuri/ %s %s&format=json" % (artist, song)
-                searchresults = requests.get(searchurl, proxies=proxy).json()
-                url = searchresults['results'][0]['url']
-            except Exception:
-                searchurl = "https://searx.space/?q=site:versuri.ro/versuri/ %s %s&format=json" % (artist, song)
-                searchresults = requests.get(searchurl, proxies=proxy).json()
-                url = searchresults['results'][0]['url']
-            lyricspage = requests.get(url, proxies=proxy)
-            soup = BeautifulSoup(lyricspage.text, 'html.parser')
-            content = soup.find_all('div',{'id':'pagecontent'})[0]
-            lyrics = str(content)[str(content).find("</script><br/>") + 14:str(content).find("<br/><br/><center>")]
-            lyrics = lyrics.replace("<br/>", "")
+            searchurl = "http://www.versuri.ro/q/%s+%s/" % (artist.replace(" ", "+"), song.replace(" ", "+"))
+            searchresults = requests.get(searchurl, proxies=proxy)
+            soup = BeautifulSoup(searchresults.text, 'html.parser')
+            for x in soup.findAll('a'):
+                if "/versuri/" in x['href']:
+                    url = "http://www.versuri.ro" + x['href']
+                    break
+                else:
+                    pass
+            if url is "":
+                lyrics = error
+            else:
+                lyricspage = requests.get(url, proxies=proxy)
+                soup = BeautifulSoup(lyricspage.text, 'html.parser')
+                content = soup.find_all('div',{'id':'pagecontent'})[0]
+                lyrics = str(content)[str(content).find("</script><br/>") + 14:str(content).find("<br/><br/><center>")]
+                lyrics = lyrics.replace("<br/>", "")
         except Exception:
             lyrics = error
         return(lyrics, url)
@@ -176,9 +181,9 @@ def getlyrics(songname, sync=False):
     if lyrics == error:
         lyrics, url = lyrics_musixmatch(artist, song)
     if lyrics == error:
-        lyrics, url = lyrics_genius(artist, song)
-    if lyrics == error:
         lyrics, url = lyrics_versuri(artist, song)
+    if lyrics == error:
+        lyrics, url = lyrics_genius(artist, song)
     lyrics = lyrics.replace("&amp;", "&")
     lyrics = lyrics.replace("`", "'")
     lyrics = lyrics.strip()
@@ -237,7 +242,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.12
+    version = 1.13
     return(version)
 
 def main():

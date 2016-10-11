@@ -121,7 +121,7 @@ class Ui_Form(object):
                 self.comboBox.setItemText(2, ("Always on Top (on)"))
                 Form.show()
             if self.open_spotify is True:
-                self.comboBox.setItemText(4, ("Start spotify (on)"))
+                self.comboBox.setItemText(3, ("Open Spotify (on)"))
         else:
             with open(settingsfile, 'w+') as settings:
                 settings.write("[settings]\n")
@@ -160,14 +160,14 @@ class Ui_Form(object):
                 self.comboBox.setItemText(2, ("Always on Top"))
                 Form.show()
         elif current_index == 3:
-            self.load_save_settings(save=True)
-        elif current_index == 4:
             if self.open_spotify is True:
                 self.open_spotify = False
-                self.comboBox.setItemText(4, ("Open Spotify"))
+                self.comboBox.setItemText(3, ("Open Spotify"))
             else:
                 self.open_spotify = True
-                self.comboBox.setItemText(4, ("Open Spotify (on)"))
+                self.comboBox.setItemText(3, ("Open Spotify (on)"))
+        elif current_index == 4:
+            self.load_save_settings(save=True)
         else:
             pass
         self.comboBox.setCurrentIndex(0)
@@ -252,8 +252,8 @@ class Ui_Form(object):
         self.comboBox.setItemText(0, _translate("Form", "Options"))
         self.comboBox.setItemText(1, _translate("Form", "Synced Lyrics"))
         self.comboBox.setItemText(2, _translate("Form", "Always on Top"))
-        self.comboBox.setItemText(3, _translate("Form", "Save Settings"))
-        self.comboBox.setItemText(4, _translate("Form", "Open Spotify"))
+        self.comboBox.setItemText(3, _translate("Form", "Open Spotify"))
+        self.comboBox.setItemText(4, _translate("Form", "Save Settings"))
 
     def lyrics_thread(self, comm):
         oldsongname = ""
@@ -348,8 +348,11 @@ class Ui_Form(object):
 
     def spotify(self):
         if os.name == "nt":
-            path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
-            subprocess.Popen(path)
+            if backend.getwindowtitle() == "":
+                path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
+                subprocess.Popen(path)
+            else:
+                pass
 
 
 if __name__ == "__main__":
