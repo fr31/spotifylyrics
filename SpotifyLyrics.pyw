@@ -198,6 +198,10 @@ class Ui_Form(object):
                             style = self.textBrowser.styleSheet()
                             style = style + "color: %s;" % set
                             self.textBrowser.setStyleSheet(style)
+                        if "lyricsfont" in lcsetting:
+                            style = self.textBrowser.styleSheet()
+                            style = style + "font-family: %s;" % set
+                            self.textBrowser.setStyleSheet(style)
                         if "songnamecolor" in lcsetting:
                             style = self.label_songname.styleSheet()
                             style = style + "color: %s;" % set
