@@ -158,9 +158,8 @@ def getlyrics(songname, sync=False):
             soup = BeautifulSoup(searchresults.text, 'html.parser')
             url = str(soup).split('song_link" href="')[1].split('" title=')[0]
             lyricspage = requests.get(url, proxies=proxy)
-            soup = BeautifulSoup(lyricspage.text, 'html.parser')
-            lyrics = soup.text.split('Lyrics\n\n\n')[1].split('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n              About')[0]
-            lyrics = re.sub('googletag.*?}\);', '', lyrics, flags=re.DOTALL)
+            soup = BeautifulSoup(lyricspage.content, 'html.parser')
+            lyrics = soup.text.split('Lyrics')[3].split('More on Genius')[0]
             if artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
                 lyrics = error
         except Exception:
