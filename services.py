@@ -7,7 +7,6 @@ import sys
 import re
 import lyrics as minilyrics
 
-
 error = "Error: Could not find lyrics."
 proxy = urllib.request.getproxies()
 
@@ -50,12 +49,13 @@ def _wikia(artist, song):
 def _musixmatch(artist, song):
     url = ""
     try:
-        searchurl = "https://www.musixmatch.com/search/%s %s" % (artist, song)
-        searchresults = requests.get(searchurl, proxies=proxy)
+        searchurl = "https://www.musixmatch.com/search/%s-%s/tracks" % (artist.replace(' ', '-'), song.replace(' ', '-'))
+        header = {"User-Agent":"curl/7.9.8 (i686-pc-linux-gnu) libcurl 7.9.8 (OpenSSL 0.9.6b) (ipv6 enabled)"}
+        searchresults = requests.get(searchurl, headers=header, proxies=proxy)
         soup = BeautifulSoup(searchresults.text, 'html.parser')
         page = re.findall('"track_share_url":"(http[s?]://www\.musixmatch\.com/lyrics/.+?)","', soup.text)
         url = page[0]
-        lyricspage = requests.get(url, proxies=proxy)
+        lyricspage = requests.get(url, headers=header, proxies=proxy)
         soup = BeautifulSoup(lyricspage.text, 'html.parser')
         lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
         lyrics = lyrics.replace("\\n", "\n")
