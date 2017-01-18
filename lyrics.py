@@ -200,16 +200,17 @@ def LyricWikia(artist, title):
     if returned["lyrics"] != "Not found":
         # set the url to the url we just recieved, and retrieving it
         r = requests.get(returned["url"], timeout=15, proxies=proxy)
-        soup = BeautifulSoup(r.text)
+        soup = BeautifulSoup(r.text, 'html.parser')
         soup = soup.find("div", {"class": "lyricbox"})
         [elem.extract() for elem in soup.findAll('div')]
         [elem.replaceWith('\n') for elem in soup.findAll('br')]
         #with old BeautifulSoup the following is needed..? For recent versions, this isn't needed/doesn't work
         try:
-            soup = BeautifulSoup(str(soup), convertEntities=BeautifulSoup.HTML_ENTITIES)
+            #soup = BeautifulSoup(str(soup), convertEntities=BeautifulSoup.HTML_ENTITIES)
+            soup = BeautifulSoup(str(soup), 'html.parser')
         except:
             pass
-        soup = BeautifulSoup(re.sub(r'(<!--[.\s\S]*-->)', '', str(soup)))
+        soup = BeautifulSoup(re.sub(r'(<!--[.\s\S]*-->)', '', str(soup)), 'html.parser')
         [elem.extract() for elem in soup.findAll('script')]
         return(soup.getText())
     else:

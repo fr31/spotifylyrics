@@ -25,7 +25,7 @@ class Ui_Form(object):
         super().__init__()
 
         self.comm = Communicate()
-        self.comm.signal.connect(self.change_lyrics)
+        self.comm.signal.connect(self.refresh_lyrics)
         self.setupUi(Form)
         self.set_style()
         self.load_save_settings()
@@ -49,6 +49,14 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
+
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton.setText("Change Lyrics")
+        self.pushButton.clicked.connect(self.change_lyrics)
+        self.horizontalLayout_2.addWidget(self.pushButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
+
         self.comboBox = QtWidgets.QComboBox(Form)
         self.comboBox.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.comboBox.setObjectName("comboBox")
@@ -58,6 +66,7 @@ class Ui_Form(object):
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.horizontalLayout_2.addWidget(self.comboBox, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
         self.fontBox = QtWidgets.QSpinBox(Form)
         self.fontBox.setMinimum(1)
         self.fontBox.setProperty("value", 10)
@@ -197,6 +206,10 @@ class Ui_Form(object):
                         if "lyricstextcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
                             style = style + "color: %s;" % set
+                            self.textBrowser.setStyleSheet(style)
+                        if "lyricsfont" in lcsetting:
+                            style = self.textBrowser.styleSheet()
+                            style = style + "font-family: %s;" % set
                             self.textBrowser.setStyleSheet(style)
                         if "songnamecolor" in lcsetting:
                             style = self.label_songname.styleSheet()
@@ -340,11 +353,35 @@ class Ui_Form(object):
         lyricsthread.daemon = True
         lyricsthread.start()
 
-    def change_lyrics(self, songname, lyrics):
+    def refresh_lyrics(self, songname, lyrics):
         _translate = QtCore.QCoreApplication.translate
         self.label_songname.setText(_translate("Form", songname))
         self.textBrowser.setText(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
+
+    def change_lyrics(self):
+        changethread = threading.Thread(target=self.change_lyrics_thread)
+        changethread.start()
+
+    def change_lyrics_thread(self):
+        songname = backend.getwindowtitle()
+        self.comm.signal.emit(songname, "Loading...")
+        oldsongname = ""
+        style = self.label_songname.styleSheet()
+
+        if style == "":
+            color = "color: black"
+        else:
+            color = style
+
+        lyrics, url, timed = backend.next_lyrics()
+        if url == "":
+            header = songname
+        else:
+            header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (color, url, songname)
+
+        self.comm.signal.emit(header, lyrics)
+
 
     def spotify(self):
         if os.name == "nt":
