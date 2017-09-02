@@ -256,7 +256,10 @@ class Ui_Form(object):
         self.textBrowser.clear()
         for line in lyrics.splitlines():
             self.textBrowser.append(line)
-            self.textBrowser.setAlignment(self.lyricsTextAlign)
+            try:
+                self.textBrowser.setAlignment(self.lyricsTextAlign)
+            except AttributeError:
+                pass
 		
     def update_fontsize(self):
         self.textBrowser.setFontPointSize(self.fontBox.value())
