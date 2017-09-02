@@ -74,7 +74,7 @@ def _songmeanings(artist, song):
         url = ""
         for link in soup.find_all('a', href=True):
             if "songmeanings.com/m/songs/view/" in link['href']:
-                url = link['href']
+                url = "https:" + link['href']
                 break
             elif "/m/songs/view/" in link['href']:
                 result = "http://songmeanings.com" + link['href']
