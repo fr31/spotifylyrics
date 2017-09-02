@@ -5,6 +5,7 @@ import time
 import os
 import sys
 import re
+import codecs
 import lyrics as minilyrics
 
 error = "Error: Could not find lyrics."
@@ -53,8 +54,8 @@ def _musixmatch(artist, song):
         header = {"User-Agent":"curl/7.9.8 (i686-pc-linux-gnu) libcurl 7.9.8 (OpenSSL 0.9.6b) (ipv6 enabled)"}
         searchresults = requests.get(searchurl, headers=header, proxies=proxy)
         soup = BeautifulSoup(searchresults.text, 'html.parser')
-        page = re.findall('"track_share_url":"(http[s?]://www\.musixmatch\.com/lyrics/.+?)","', soup.text)
-        url = page[0]
+        page = re.findall('"track_share_url":"([^"]*)', soup.text)
+        url = codecs.decode(page[0], 'unicode-escape')
         lyricspage = requests.get(url, headers=header, proxies=proxy)
         soup = BeautifulSoup(lyricspage.text, 'html.parser')
         lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
