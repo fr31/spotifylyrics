@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 import backend
 import time
@@ -195,6 +197,13 @@ class Ui_Form(object):
                             set = setting.split("=",1)[1].strip()
                         except IndexError:
                             set = ""
+                        if "lyricstextalign" in lcsetting:
+                            if set == "center":
+                                self.lyricsTextAlign = QtCore.Qt.AlignCenter
+                            elif set == "right":
+                                self.lyricsTextAlign = QtCore.Qt.AlignRight
+                            else:
+                                self.lyricsTextAlign = QtCore.Qt.AlignLeft
                         if "windowopacity" in lcsetting:
                             Form.setWindowOpacity(float(set))
                         if "backgroundcolor" in lcsetting:
@@ -243,6 +252,12 @@ class Ui_Form(object):
             base_path = os.path.abspath(".")
         return os.path.join(base_path, relative_path)
 
+    def set_lyrics_with_alignment(self, lyrics):
+        self.textBrowser.clear()
+        for line in lyrics.splitlines():
+            self.textBrowser.append(line)
+            self.textBrowser.setAlignment(self.lyricsTextAlign)
+		
     def update_fontsize(self):
         self.textBrowser.setFontPointSize(self.fontBox.value())
         style = self.textBrowser.styleSheet()
@@ -250,7 +265,7 @@ class Ui_Form(object):
         style = style.replace('p ', '')
         self.textBrowser.setStyleSheet(style + "p font-size: %spt;" % self.fontBox.value() * 2)
         lyrics = self.textBrowser.toPlainText()
-        self.textBrowser.setText(lyrics)
+        self.set_lyrics_with_alignment(lyrics)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -356,7 +371,7 @@ class Ui_Form(object):
     def refresh_lyrics(self, songname, lyrics):
         _translate = QtCore.QCoreApplication.translate
         self.label_songname.setText(_translate("Form", songname))
-        self.textBrowser.setText(_translate("Form", lyrics))
+        self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
 
     def change_lyrics(self):
