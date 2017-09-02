@@ -5,6 +5,7 @@ import time
 import os
 import sys
 import re
+import codecs
 import lyrics as minilyrics
 
 error = "Error: Could not find lyrics."
@@ -53,8 +54,8 @@ def _musixmatch(artist, song):
         header = {"User-Agent":"curl/7.9.8 (i686-pc-linux-gnu) libcurl 7.9.8 (OpenSSL 0.9.6b) (ipv6 enabled)"}
         searchresults = requests.get(searchurl, headers=header, proxies=proxy)
         soup = BeautifulSoup(searchresults.text, 'html.parser')
-        page = re.findall('"track_share_url":"(http[s?]://www\.musixmatch\.com/lyrics/.+?)","', soup.text)
-        url = page[0]
+        page = re.findall('"track_share_url":"([^"]*)', soup.text)
+        url = codecs.decode(page[0], 'unicode-escape')
         lyricspage = requests.get(url, headers=header, proxies=proxy)
         soup = BeautifulSoup(lyricspage.text, 'html.parser')
         lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
@@ -73,7 +74,7 @@ def _songmeanings(artist, song):
         url = ""
         for link in soup.find_all('a', href=True):
             if "songmeanings.com/m/songs/view/" in link['href']:
-                url = link['href']
+                url = "https:" + link['href']
                 break
             elif "/m/songs/view/" in link['href']:
                 result = "http://songmeanings.com" + link['href']
@@ -114,11 +115,9 @@ def _songlyrics(artist, song):
 def _genius(artist, song):
     url = ""
     try:
-        searchurl = "http://genius.com/search?q=%s %s" % (artist, song)
-        searchresults = requests.get(searchurl, proxies=proxy)
-        soup = BeautifulSoup(searchresults.text, 'html.parser')
-        url = str(soup).split('song_link" href="')[1].split('" title=')[0]
+        url = "http://genius.com/%s-%s-lyrics" % (artist.replace(' ', '-'), song.replace(' ', '-'))
         lyricspage = requests.get(url, proxies=proxy)
+        print(url)
         soup = BeautifulSoup(lyricspage.text, 'html.parser')
         lyrics = soup.text.split('Lyrics')[3].split('More on Genius')[0]
         if artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
