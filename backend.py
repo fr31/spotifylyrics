@@ -138,7 +138,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.14
+    version = 1.15
     return(version)
 
 def main():
