@@ -285,6 +285,9 @@ class Ui_Form(object):
         self.comboBox.setItemText(3, _translate("Form", "Open Spotify"))
         self.comboBox.setItemText(4, _translate("Form", "Save Settings"))
 
+    def add_service_name_to_lyrics(self, lyrics, service_name):
+        return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % ((self.fontBox.value()-2) * 2, service_name, lyrics)
+
     def lyrics_thread(self, comm):
         oldsongname = ""
         style = self.label_songname.styleSheet()
@@ -301,9 +304,9 @@ class Ui_Form(object):
                     comm.signal.emit(songname, "Loading...")
                     start = time.time()
                     if self.sync == True:
-                        lyrics, url, timed = backend.getlyrics(songname, sync=True)
+                        lyrics, url, service_name, timed = backend.getlyrics(songname, sync=True)
                     else:
-                        lyrics, url, timed = backend.getlyrics(songname)
+                        lyrics, url, service_name, timed = backend.getlyrics(songname)
                     if url == "":
                         header = songname
                     else:
@@ -321,7 +324,10 @@ class Ui_Form(object):
                                 lyricsclean = lyricsclean + line.strip() + "\n"
                             elif line == "" and firstline == True:
                                 lyricsclean = lyricsclean + "\n"
-                        comm.signal.emit(header, lyricsclean)
+                        
+                        
+                        
+                        comm.signal.emit(header, self.add_service_name_to_lyrics(lyricsclean, service_name))
                         count = -1
                         firstline = False
                         for line in lrc:
@@ -357,7 +363,7 @@ class Ui_Form(object):
                                         if self.changed == True or self.sync == False:
                                             break
                                         boldlyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % self.fontBox.value() * 2 + boldlyrics + '</p>'
-                                        comm.signal.emit(header, boldlyrics)
+                                        comm.signal.emit(header, self.add_service_name_to_lyrics(boldlyrics, service_name))
                                         time.sleep(0.5)
                                         break
                                     elif backend.getwindowtitle() == "Spotify":
@@ -371,7 +377,7 @@ class Ui_Form(object):
                             if songname != backend.getwindowtitle() and backend.getwindowtitle() != "Spotify":
                                 break
                     if timed == False:
-                        comm.signal.emit(header, lyrics)
+                        comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
             time.sleep(1)
 
     def start_thread(self):
@@ -401,14 +407,13 @@ class Ui_Form(object):
         else:
             color = style
 
-        lyrics, url, timed = backend.next_lyrics()
+        lyrics, url, service_name, timed = backend.next_lyrics()
         if url == "":
             header = songname
         else:
             header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (color, url, songname)
 
-        self.comm.signal.emit(header, lyrics)
-
+        self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
     def spotify(self):
         if os.name == "nt":
