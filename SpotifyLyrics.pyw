@@ -16,6 +16,8 @@ class Communicate(QtCore.QObject):
     signal = QtCore.pyqtSignal(str, str)
    
 class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
+    wheelSignal = QtCore.pyqtSignal()
+    
     def wheelEvent(self, e):
         try:
             modifiers = e.modifiers()
@@ -29,9 +31,10 @@ class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
                 elif( not numDegrees.isNull()):
                     sign = 1 if numDegrees.y() > 0 else -1
                     ui.change_fontsize(sign * factor)
+            else:
+                super(QtWidgets.QTextBrowser, self).wheelEvent(e)
         except:
             pass
-
                     
 class Ui_Form(object):
                
