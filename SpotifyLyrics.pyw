@@ -54,11 +54,11 @@ class Ui_Form(object):
         self.horizontalLayout_2.addItem(spacerItem)
 
         # Open Tab Button
-        self.openTabButton = QtWidgets.QPushButton(Form)
-        self.openTabButton.setObjectName("getTabButton")
-        self.openTabButton.setText("Open Tab")
-        self.openTabButton.clicked.connect(self.open_tab)
-        self.horizontalLayout_2.addWidget(self.openTabButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.chordsButton = QtWidgets.QPushButton(Form)
+        self.chordsButton.setObjectName("chordsButton")
+        self.chordsButton.setText("Chords")
+        self.chordsButton.clicked.connect(self.get_chords)
+        self.horizontalLayout_2.addWidget(self.chordsButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setObjectName("pushButton")
@@ -392,9 +392,9 @@ class Ui_Form(object):
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
 
-    def open_tab(self):
+    def get_chords(self):
         songname = backend.getwindowtitle()
-        backend.load_tab()
+        backend.load_chords()
 
 
     def change_lyrics(self):

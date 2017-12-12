@@ -85,7 +85,7 @@ def next_lyrics():
     lyrics, url, timed = load_lyrics(artist, song)
     return (lyrics, url, timed)
 
-def load_tab():
+def load_chords():
     for i in range(len(services_list3)):
         urls = services_list3[i](artist, song)
         if len(urls) != 0: 
