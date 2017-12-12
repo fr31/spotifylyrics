@@ -6,6 +6,7 @@ import time
 import os
 import sys
 import re
+import webbrowser # to open link on browser
 import lyrics as minilyrics
 import services as s
 
@@ -23,6 +24,8 @@ services_list1 = [s._minilyrics]
 
 # Without Sync.
 services_list2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
+
+services_list3 = [s._ultimateguitar, s._cifraclub, s._songsterr]
 
 artist = ""
 song = ""
@@ -82,8 +85,12 @@ def next_lyrics():
     lyrics, url, timed = load_lyrics(artist, song)
     return (lyrics, url, timed)
 
-
-
+def load_tab():
+    for i in range(len(services_list3)):
+        urls = services_list3[i](artist, song)
+        if len(urls) != 0: 
+            webbrowser.open(urls[0])
+            break
 
 def getwindowtitle():
     if sys.platform == "win32":

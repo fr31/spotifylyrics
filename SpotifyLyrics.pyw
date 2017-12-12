@@ -53,6 +53,13 @@ class Ui_Form(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
 
+        # Open Tab Button
+        self.openTabButton = QtWidgets.QPushButton(Form)
+        self.openTabButton.setObjectName("getTabButton")
+        self.openTabButton.setText("Open Tab")
+        self.openTabButton.clicked.connect(self.open_tab)
+        self.horizontalLayout_2.addWidget(self.openTabButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setObjectName("pushButton")
         self.pushButton.setText("Change Lyrics")
@@ -384,6 +391,11 @@ class Ui_Form(object):
         self.label_songname.setText(_translate("Form", songname))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
+
+    def open_tab(self):
+        songname = backend.getwindowtitle()
+        backend.load_tab()
+
 
     def change_lyrics(self):
         self.changed = True
