@@ -160,7 +160,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.15
+    version = 1.16
     return(version)
 
 def main():
