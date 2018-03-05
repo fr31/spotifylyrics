@@ -276,7 +276,7 @@ class Ui_Form(object):
         if backend.versioncheck() == True:
             self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
         else:
-            self.label_songname.setText(_translate("Form", "Spotify Lyrics <style type=\"text/css\">a {text-decoration: none}</style><a href=\"https://github.com/fr31/spotifylyrics/releases\"><sup>(update)</sup></a>"))
+            self.label_songname.setText(_translate("Form", "Spotify Lyrics <style type=\"text/css\">a {text-decoration: none}</style><a href=\"https://github.com/arecsu/spotifylyrics/releases\"><sup>(update)</sup></a>"))
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.fontBox.setToolTip(_translate("Form", "Font Size"))
         self.comboBox.setItemText(0, _translate("Form", "Options"))

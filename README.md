@@ -2,7 +2,7 @@
 Fetches and displays lyrics to currently playing song in the Spotify desktop client.
 
 # how to
-You can grab the latest release exe in the [release section](https://github.com/fr31/spotifylyrics/releases).
+You can grab the latest release exe in the [release section](https://github.com/arecsu/spotifylyrics/releases).
 
 Just double click and start playing songs in spotify. 
 
@@ -18,4 +18,4 @@ If you want to run from source you need:
 * Linux: xwininfo
 
 # screenshot
-![example-img](https://i.imgur.com/51umyjo.png)
+![example-img](https://i.imgur.com/RJsXwvp.png)

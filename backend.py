@@ -10,6 +10,8 @@ import lyrics as minilyrics
 import services as s
 
 if sys.platform == "win32":
+    import win32process
+    import psutil
     import win32gui
 elif sys.platform == "darwin":
     import subprocess
@@ -87,8 +89,28 @@ def next_lyrics():
 
 def getwindowtitle():
     if sys.platform == "win32":
-        spotify = win32gui.FindWindow('SpotifyMainWindow', None)
-        windowname = win32gui.GetWindowText(spotify)
+        spotifypids = []
+        for proc in psutil.process_iter():
+            if proc.name() == 'Spotify.exe':
+                spotifypids.append(proc.pid)
+
+        def enum_window_callback(hwnd, pid):
+            tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
+            if pid == current_pid and win32gui.IsWindowVisible(hwnd):
+                windows.append(hwnd)
+
+        windows = []
+        windowname = ''        
+
+        try:
+            for pid in spotifypids:
+                win32gui.EnumWindows(enum_window_callback, pid)
+                for item in windows:
+                    if win32gui.GetWindowText(item) != '':
+                        windowname = win32gui.GetWindowText(item)
+                        raise StopIteration
+        except StopIteration: pass
+
     elif sys.platform == "darwin":
         windowname = ''
         try:
@@ -138,7 +160,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.15
+    version = 1.16
     return(version)
 
 def main():
