@@ -14,8 +14,30 @@ if os.name == "nt":
 
 class Communicate(QtCore.QObject):
     signal = QtCore.pyqtSignal(str, str)
-
+   
+class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
+    wheelSignal = QtCore.pyqtSignal()
+    
+    def wheelEvent(self, e):
+        try:
+            modifiers = e.modifiers()
+            if modifiers == QtCore.Qt.ControlModifier:
+                numPixels = e.pixelDelta()
+                numDegrees = e.angleDelta()
+                factor = 1
+                if( not numPixels.isNull()):
+                    sign = 1 if numPixels.y() > 0 else -1
+                    ui.change_fontsize(sign * factor)
+                elif( not numDegrees.isNull()):
+                    sign = 1 if numDegrees.y() > 0 else -1
+                    ui.change_fontsize(sign * factor)
+            else:
+                super(QtWidgets.QTextBrowser, self).wheelEvent(e)
+        except:
+            pass
+                    
 class Ui_Form(object):
+               
     sync = False
     ontop = False
     open_spotify = False
@@ -52,7 +74,8 @@ class Ui_Form(object):
         self.horizontalLayout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
-
+        
+        
         self.pushButton = QtWidgets.QPushButton(Form)
         self.pushButton.setObjectName("pushButton")
         self.pushButton.setText("Change Lyrics")
@@ -76,7 +99,7 @@ class Ui_Form(object):
         self.fontBox.setObjectName("fontBox")
         self.horizontalLayout_2.addWidget(self.fontBox, 0, QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
-        self.textBrowser = QtWidgets.QTextBrowser(Form)
+        self.textBrowser = LyricsTextBrowserWidget(Form)
         self.textBrowser.setObjectName("textBrowser")
         self.textBrowser.setAcceptRichText(True)
         self.textBrowser.setStyleSheet("font-size: %spt;" % self.fontBox.value() * 2)
@@ -259,7 +282,11 @@ class Ui_Form(object):
         for line in lyrics.splitlines():
             self.textBrowser.append(line)
             self.textBrowser.setAlignment(self.lyricsTextAlign)
-		
+        
+    def change_fontsize(self, offset):
+        self.fontBox.setValue( self.fontBox.value() + offset)
+        self.update_fontsize()
+        
     def update_fontsize(self):
         self.textBrowser.setFontPointSize(self.fontBox.value())
         style = self.textBrowser.styleSheet()
