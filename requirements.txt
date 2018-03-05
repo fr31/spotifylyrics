@@ -4,3 +4,4 @@ PyQt5==5.7
 requests==2.11.1
 sip==4.18.1
 xmltodict==0.10.2
+psutil==5.4.3
