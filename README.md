@@ -13,10 +13,9 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 # running from source
 If you want to run from source you need:
 
-* Python 3.5.1 (probably any version of Python 3)
+* Python 3.6.2 (probably any version of Python 3)
 * pip install -r requirements.txt
-* Windows: pip install pypiwin32 or [pywin32](https://sourceforge.net/projects/pywin32/) (included in anaconda 4 [*](https://github.com/fr31/spotifylyrics/issues/5))
-* Linux: xwininfo (comes with ubuntu)
+* Linux: xwininfo
 
 # screenshot
 ![example-img](https://i.imgur.com/RJsXwvp.png)

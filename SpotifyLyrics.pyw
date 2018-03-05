@@ -19,6 +19,7 @@ class Ui_Form(object):
     sync = False
     ontop = False
     open_spotify = False
+    changed = False
     if os.name == "nt":
         settingsdir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
     else:
@@ -184,6 +185,7 @@ class Ui_Form(object):
         self.comboBox.setCurrentIndex(0)
 
     def set_style(self):
+        self.lyricsTextAlign = QtCore.Qt.AlignLeft
         if os.path.exists(self.settingsdir + "theme.ini"):
             themefile = self.settingsdir + "theme.ini"
         else:
@@ -203,7 +205,7 @@ class Ui_Form(object):
                             elif set == "right":
                                 self.lyricsTextAlign = QtCore.Qt.AlignRight
                             else:
-                                self.lyricsTextAlign = QtCore.Qt.AlignLeft
+                                pass
                         if "windowopacity" in lcsetting:
                             Form.setWindowOpacity(float(set))
                         if "backgroundcolor" in lcsetting:
@@ -256,10 +258,7 @@ class Ui_Form(object):
         self.textBrowser.clear()
         for line in lyrics.splitlines():
             self.textBrowser.append(line)
-            try:
-                self.textBrowser.setAlignment(self.lyricsTextAlign)
-            except AttributeError:
-                pass
+            self.textBrowser.setAlignment(self.lyricsTextAlign)
 		
     def update_fontsize(self):
         self.textBrowser.setFontPointSize(self.fontBox.value())
@@ -295,6 +294,7 @@ class Ui_Form(object):
             color = style
         while True:
             songname = backend.getwindowtitle()
+            self.changed = False
             if oldsongname != songname:
                 if songname != "Spotify" and songname != "":
                     oldsongname = songname
@@ -325,6 +325,12 @@ class Ui_Form(object):
                         count = -1
                         firstline = False
                         for line in lrc:
+                            if self.sync == False:
+                                self.change_lyrics()
+                                break
+                            if self.changed == True:
+                                self.changed = False
+                                break
                             if line == "" and firstline == True:
                                 count += 1
                             if line.startswith(("[0", "[1", "[2")):
@@ -348,6 +354,8 @@ class Ui_Form(object):
                                 boldlyrics = '<br>'.join(lyrics1)
                                 while True:
                                     if rtime <= time.time() - start and backend.getwindowtitle() != "Spotify":
+                                        if self.changed == True or self.sync == False:
+                                            break
                                         boldlyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % self.fontBox.value() * 2 + boldlyrics + '</p>'
                                         comm.signal.emit(header, boldlyrics)
                                         time.sleep(0.5)
@@ -378,6 +386,7 @@ class Ui_Form(object):
         self.textBrowser.scrollToAnchor("#scrollHere")
 
     def change_lyrics(self):
+        self.changed = True
         changethread = threading.Thread(target=self.change_lyrics_thread)
         changethread.start()
 
