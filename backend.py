@@ -11,6 +11,8 @@ import lyrics as minilyrics
 import services as s
 
 if sys.platform == "win32":
+    import win32process
+    import psutil
     import win32gui
 elif sys.platform == "darwin":
     import subprocess
@@ -46,20 +48,20 @@ def load_lyrics(artist, song, sync=False):
     if current_service == len(services_list2)-1: current_service = -1
 
     if sync == True:
-        lyrics, url, timed = s._minilyrics(artist, song)
+        lyrics, url, service_name, timed = s._minilyrics(artist, song)
         current_service = -1
 
     if sync == True and lyrics == error or sync == False:
         timed = False
         for i in range (current_service+1, len(services_list2)):
-            lyrics, url = services_list2[i](artist, song)
+            lyrics, url, service_name = services_list2[i](artist, song)
             current_service = i
             if lyrics != error:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
 
     #return "Error: Could not find lyrics."  if the for loop doens't find any lyrics
-    return(lyrics, url, timed)
+    return(lyrics, url, service_name, timed)
 
 
 def getlyrics(songname, sync=False):
@@ -82,8 +84,8 @@ def getlyrics(songname, sync=False):
 
 def next_lyrics():
     global current_service
-    lyrics, url, timed = load_lyrics(artist, song)
-    return (lyrics, url, timed)
+    lyrics, url, service_name, timed = load_lyrics(artist, song)
+    return (lyrics, url, service_name, timed)
 
 def load_chords():
     for i in range(len(services_list3)):
@@ -94,8 +96,28 @@ def load_chords():
 
 def getwindowtitle():
     if sys.platform == "win32":
-        spotify = win32gui.FindWindow('SpotifyMainWindow', None)
-        windowname = win32gui.GetWindowText(spotify)
+        spotifypids = []
+        for proc in psutil.process_iter():
+            if proc.name() == 'Spotify.exe':
+                spotifypids.append(proc.pid)
+
+        def enum_window_callback(hwnd, pid):
+            tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
+            if pid == current_pid and win32gui.IsWindowVisible(hwnd):
+                windows.append(hwnd)
+
+        windows = []
+        windowname = ''        
+
+        try:
+            for pid in spotifypids:
+                win32gui.EnumWindows(enum_window_callback, pid)
+                for item in windows:
+                    if win32gui.GetWindowText(item) != '':
+                        windowname = win32gui.GetWindowText(item)
+                        raise StopIteration
+        except StopIteration: pass
+
     elif sys.platform == "darwin":
         windowname = ''
         try:
@@ -145,7 +167,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.15
+    version = 1.16
     return(version)
 
 def main():
@@ -165,7 +187,7 @@ def main():
                 oldsongname = songname
                 clear()
                 # print(songname+"\n")
-                lyrics, url, timed = getlyrics(songname)
+                lyrics, url, service_name, timed = getlyrics(songname)
                 # print(lyrics+"\n")
         time.sleep(1)
 

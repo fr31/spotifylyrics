@@ -18,4 +18,4 @@ If you want to run from source you need:
 * Linux: xwininfo
 
 # screenshot
-![example-img](https://i.imgur.com/51umyjo.png)
+![example-img](https://i.imgur.com/RJsXwvp.png)
