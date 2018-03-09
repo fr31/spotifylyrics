@@ -5,6 +5,7 @@ import time
 import os
 import sys
 import re
+import unidecode # to remove accents
 import codecs
 import lyrics as minilyrics
 
@@ -156,3 +157,40 @@ def _versuri(artist, song):
     except Exception:
         lyrics = error
     return(lyrics, url, service_name)
+
+# tab/chord services
+
+def _ultimateguitar(artist, song):
+    artist = unidecode.unidecode(artist)
+    song = unidecode.unidecode(song)
+    url_pt1 = 'https://www.ultimate-guitar.com/search.php?view_state=advanced&band_name='
+    url_pt2 = '&song_name='
+    url_pt3 = '&type%5B%5D=300&type%5B%5D=200&rating%5B%5D=5&version_la='
+    # song = song.replace('-', '+')
+    # artist = artist.replace('-', '+')
+    url = url_pt1+artist+url_pt2+song+url_pt3
+    page = requests.get(url)
+
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+    urls = []
+    for a in soup.find_all(class_='song result-link js-search-spelling-link', href=True):
+        urls.append(a['href'])
+
+    return urls
+
+
+def _cifraclub(artist, song):
+    artist = unidecode.unidecode(artist)
+    song = unidecode.unidecode(song)
+    url = 'https://www.cifraclub.com.br/{}/{}'.format(artist.replace(" ", "-").lower(), song.replace(" ", "-").lower())
+
+    return [url]
+
+# don't even get to this point, but it's an option for source
+# just got to change services_list3 list order
+def _songsterr(artist, song):
+    artist = unidecode.unidecode(artist)
+    song = unidecode.unidecode(song)
+    url = 'http://www.songsterr.com/a/wa/bestMatchForQueryString?s={}&a={}'.format(song, artist)
+    return [url]
