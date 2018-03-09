@@ -12,6 +12,7 @@ error = "Error: Could not find lyrics."
 proxy = urllib.request.getproxies()
 
 def _minilyrics(artist, song):
+    service_name = "Mini Lyrics"
     url = ""
     timed = False
     try:
@@ -30,9 +31,10 @@ def _minilyrics(artist, song):
         lyrics = error
         timed = False
 
-    return(lyrics, url, timed)
+    return(lyrics, url, service_name, timed)
 
 def _wikia(artist, song):
+    service_name = "Wikia"
     url = ""
     try:
         lyrics = minilyrics.LyricWikia(artist, song)
@@ -45,9 +47,10 @@ def _wikia(artist, song):
         lyrics = "(Instrumental)"
     if lyrics == "error":
         lyrics = error
-    return(lyrics, url)
+    return(lyrics, url, service_name)
 
 def _musixmatch(artist, song):
+    service_name = "Musixmatch"
     url = ""
     try:
         searchurl = "https://www.musixmatch.com/search/%s-%s/tracks" % (artist.replace(' ', '-'), song.replace(' ', '-'))
@@ -63,9 +66,10 @@ def _musixmatch(artist, song):
         lyrics = lyrics.replace("\\", "")
     except Exception:
         lyrics = error
-    return(lyrics, url)
+    return(lyrics, url, service_name)
 
 def _songmeanings(artist, song):
+    service_name = "Songmeanings"
     url = ""
     try:
         searchurl = "http://songmeanings.com/m/query/?q=%s %s" % (artist, song)
@@ -92,9 +96,10 @@ def _songmeanings(artist, song):
         lyrics = error
 
     #lyrics = lyrics.encode('cp437', errors='replace').decode('utf-8', errors='replace')
-    return(lyrics, url)
+    return(lyrics, url, service_name)
 
 def _songlyrics(artist, song):
+    service_name = "Songmeanings"
     url = ""
     try:
         artistm = artist.replace(" ", "-")
@@ -109,10 +114,11 @@ def _songlyrics(artist, song):
         lyrics = error
     if "We do not have" in lyrics:
         lyrics = error
-    return(lyrics, url)
+    return(lyrics, url, service_name)
 
 
 def _genius(artist, song):
+    service_name = "Genius"
     url = ""
     try:
         url = "http://genius.com/%s-%s-lyrics" % (artist.replace(' ', '-'), song.replace(' ', '-'))
@@ -124,9 +130,10 @@ def _genius(artist, song):
             lyrics = error
     except Exception:
         lyrics = error
-    return(lyrics, url)
+    return(lyrics, url, service_name)
 
 def _versuri(artist, song):
+    service_name = "Versuri"
     url = ""
     try:
         searchurl = "http://www.versuri.ro/q/%s+%s/" % (artist.replace(" ", "+"), song.replace(" ", "+"))
@@ -148,4 +155,4 @@ def _versuri(artist, song):
             lyrics = lyrics.replace("<br/>", "")
     except Exception:
         lyrics = error
-    return(lyrics, url)
+    return(lyrics, url, service_name)

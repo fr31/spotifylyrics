@@ -45,20 +45,20 @@ def load_lyrics(artist, song, sync=False):
     if current_service == len(services_list2)-1: current_service = -1
 
     if sync == True:
-        lyrics, url, timed = s._minilyrics(artist, song)
+        lyrics, url, service_name, timed = s._minilyrics(artist, song)
         current_service = -1
 
     if sync == True and lyrics == error or sync == False:
         timed = False
         for i in range (current_service+1, len(services_list2)):
-            lyrics, url = services_list2[i](artist, song)
+            lyrics, url, service_name = services_list2[i](artist, song)
             current_service = i
             if lyrics != error:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
 
     #return "Error: Could not find lyrics."  if the for loop doens't find any lyrics
-    return(lyrics, url, timed)
+    return(lyrics, url, service_name, timed)
 
 
 def getlyrics(songname, sync=False):
@@ -81,8 +81,8 @@ def getlyrics(songname, sync=False):
 
 def next_lyrics():
     global current_service
-    lyrics, url, timed = load_lyrics(artist, song)
-    return (lyrics, url, timed)
+    lyrics, url, service_name, timed = load_lyrics(artist, song)
+    return (lyrics, url, service_name, timed)
 
 
 
@@ -180,7 +180,7 @@ def main():
                 oldsongname = songname
                 clear()
                 # print(songname+"\n")
-                lyrics, url, timed = getlyrics(songname)
+                lyrics, url, service_name, timed = getlyrics(songname)
                 # print(lyrics+"\n")
         time.sleep(1)
 
