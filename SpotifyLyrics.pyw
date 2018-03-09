@@ -75,19 +75,18 @@ class Ui_Form(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
 
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton.setText("Change Lyrics")
+        self.pushButton.clicked.connect(self.change_lyrics)
+        self.horizontalLayout_2.addWidget(self.pushButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        
         # Open Tab Button
         self.chordsButton = QtWidgets.QPushButton(Form)
         self.chordsButton.setObjectName("chordsButton")
         self.chordsButton.setText("Chords")
         self.chordsButton.clicked.connect(self.get_chords)
         self.horizontalLayout_2.addWidget(self.chordsButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-
-        self.pushButton = QtWidgets.QPushButton(Form)
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton.setText("Change Lyrics")
-        self.pushButton.clicked.connect(self.change_lyrics)
-        self.horizontalLayout_2.addWidget(self.pushButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-
 
         self.comboBox = QtWidgets.QComboBox(Form)
         self.comboBox.setGeometry(QtCore.QRect(160, 120, 69, 22))
