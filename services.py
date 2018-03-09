@@ -99,7 +99,7 @@ def _songmeanings(artist, song):
     return(lyrics, url, service_name)
 
 def _songlyrics(artist, song):
-    service_name = "Songmeanings"
+    service_name = "Songlyrics"
     url = ""
     try:
         artistm = artist.replace(" ", "-")
