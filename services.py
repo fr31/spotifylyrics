@@ -124,9 +124,8 @@ def _genius(artist, song):
     try:
         url = "http://genius.com/%s-%s-lyrics" % (artist.replace(' ', '-'), song.replace(' ', '-'))
         lyricspage = requests.get(url, proxies=proxy)
-        print(url)
         soup = BeautifulSoup(lyricspage.text, 'html.parser')
-        lyrics = soup.text.split('Lyrics')[3].split('More on Genius')[0]
+        lyrics = soup.find("div", {"class": "lyrics"}).get_text()
         if artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
             lyrics = error
     except Exception:
