@@ -91,6 +91,7 @@ def _songmeanings(artist, song):
                 pass
         templyrics = soup.find_all("li")[4]
         lyrics = templyrics.getText()
+        lyrics = lyrics.split("(r,s)};})();")[1]
     except Exception:
         lyrics = error
     if lyrics == "We are currently missing these lyrics.":
