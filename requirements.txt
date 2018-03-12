@@ -1,8 +1,8 @@
 beautifulsoup4==4.6.0
 pypiwin32==220; sys.platform == 'win32'
-PyQt5==5.9
+PyQt5==5.10.1
 requests==2.18.4
-sip==4.19.3
+sip==4.19.8
 xmltodict==0.11.0
 psutil==5.4.3
 unidecode==1.0.22
