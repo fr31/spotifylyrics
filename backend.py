@@ -9,16 +9,16 @@ import re
 import webbrowser # to open link on browser
 import lyrics as minilyrics
 import services as s
+import subprocess
 
 if sys.platform == "win32":
     import win32process
     import psutil
     import win32gui
-elif sys.platform == "darwin":
-    import subprocess
-else:
-    import subprocess
+elif sys.platform == "linux":
     import dbus
+else:
+    pass
 
 # With Sync. Of course, there is one for now, but for the sake of
 # make the code a little bit more cleaner, is declared.
@@ -127,10 +127,13 @@ def getwindowtitle():
             pass
     else:
         windowname = ''
-        session = dbus.SessionBus()
-        spotifydbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
-        spotifyinterface = dbus.Interface(spotifydbus, "org.freedesktop.DBus.Properties")
-        metadata = spotifyinterface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+        try:
+            session = dbus.SessionBus()
+            spotifydbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
+            spotifyinterface = dbus.Interface(spotifydbus, "org.freedesktop.DBus.Properties")
+            metadata = spotifyinterface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+        except Exception:
+            pass
         try:
             command = "xwininfo -tree -root"
             windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
@@ -140,12 +143,16 @@ def getwindowtitle():
                     if " - " in line:
                         spotify = line
                         break
+                spotify = 'Spotify Lyrics'
             if spotify == '':
                 windowname = 'Spotify'
         except Exception:
             pass
-        if windowname != 'Spotify':
-            windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
+        if windowname != 'Spotify' and windowname != 'Spotify Lyrics':
+            try:
+                windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
+            except UnboundLocalError:
+                pass
     if "—" in windowname:
         windowname = windowname.replace("—", "-")
     if "Spotify - " in windowname:
@@ -169,6 +176,28 @@ def versioncheck():
 def version():
     version = 1.18
     return(version)
+
+def open_spotify():
+    if sys.platform == "win32":
+        if getwindowtitle() == "":
+            path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
+            subprocess.Popen(path)
+        else:
+            pass
+    elif sys.platform == "linux":
+        if getwindowtitle() == "":
+            subprocess.Popen("spotify")
+        else:
+            pass
+    elif sys.platform == "darwin":
+        # I don't have a mac so I don't know if this actually works
+        # If it does, please let me know, if it doesn't please fix it :)
+        if getwindowtitle() == "":
+            subprocess.Popen("open -a Spotify")
+        else:
+            pass
+    else:
+        pass
 
 def main():
     if os.name == "nt":
