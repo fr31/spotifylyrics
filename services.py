@@ -1,9 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 import urllib
-import time
-import os
-import sys
 import re
 import unidecode # to remove accents
 import codecs
