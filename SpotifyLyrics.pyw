@@ -422,19 +422,28 @@ class Ui_Form(object):
 
     def refresh_lyrics(self, songname, lyrics):
         _translate = QtCore.QCoreApplication.translate
-        self.label_songname.setText(_translate("Form", songname))
+        if backend.getwindowtitle() != "":
+            self.label_songname.setText(_translate("Form", songname))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
 
     def get_chords(self):
-        songname = backend.getwindowtitle()
-        backend.load_chords()
+        _translate = QtCore.QCoreApplication.translate
+        if self.label_songname.text() not in ("", "Spotify", "Spotify Lyrics"):
+            songname = backend.getwindowtitle()
+            backend.load_chords()
+        else:
+            self.textBrowser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
 
     def change_lyrics(self):
-        self.changed = True
-        changethread = threading.Thread(target=self.change_lyrics_thread)
-        changethread.start()
+        _translate = QtCore.QCoreApplication.translate
+        if self.label_songname.text() not in  ("", "Spotify", "Spotify Lyrics"):
+            self.changed = True
+            changethread = threading.Thread(target=self.change_lyrics_thread)
+            changethread.start()
+        else:
+            self.textBrowser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics_thread(self):
         songname = backend.getwindowtitle()
