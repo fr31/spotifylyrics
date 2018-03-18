@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from bs4 import BeautifulSoup
 import requests
 import urllib
 import time
@@ -7,7 +6,6 @@ import os
 import sys
 import re
 import webbrowser # to open link on browser
-import lyrics as minilyrics
 import services as s
 import subprocess
 
