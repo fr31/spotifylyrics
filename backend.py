@@ -149,7 +149,7 @@ def getwindowtitle():
         if windowname != 'Spotify' and windowname != 'Spotify Lyrics':
             try:
                 windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
-            except UnboundLocalError:
+            except Exception:
                 pass
     if "—" in windowname:
         windowname = windowname.replace("—", "-")
