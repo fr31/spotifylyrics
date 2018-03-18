@@ -6,7 +6,6 @@ import time
 import threading
 import os
 import re
-import subprocess
 
 if os.name == "nt":
     import ctypes
@@ -176,7 +175,7 @@ class Ui_Form(object):
                 if self.open_spotify is True:
                     settings.write("OpenSpotify=True\n")
                 else:
-                    settings.write("AlwaysOnTop=False\n")
+                    settings.write("OpenSpotify=False\n")
                 settings.write("FontSize=%s" % str(self.fontBox.value()))
 
     def optionschanged(self):
@@ -453,12 +452,7 @@ class Ui_Form(object):
         self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
     def spotify(self):
-        if os.name == "nt":
-            if backend.getwindowtitle() == "":
-                path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
-                subprocess.Popen(path)
-            else:
-                pass
+        backend.open_spotify()
 
 
 if __name__ == "__main__":
