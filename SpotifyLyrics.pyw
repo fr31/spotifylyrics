@@ -258,11 +258,15 @@ class Ui_Form(object):
                             style = style + "background-color: %s;" % set
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
+                            self.pushButton.setStyleSheet(style)
+                            self.chordsButton.setStyleSheet(style)
                         if "fontboxtextcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
                             style = style + "color: %s;" % set
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
+                            self.pushButton.setStyleSheet(style)
+                            self.chordsButton.setStyleSheet(style)
                         if "songnameunderline" in lcsetting:
                             if "true" in set.lower():
                                 style = self.label_songname.styleSheet()
