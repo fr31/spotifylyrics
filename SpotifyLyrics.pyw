@@ -41,6 +41,7 @@ class Ui_Form(object):
     ontop = False
     open_spotify = False
     changed = False
+    darktheme = False
     if os.name == "nt":
         settingsdir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
     else:
@@ -90,6 +91,7 @@ class Ui_Form(object):
         self.comboBox = QtWidgets.QComboBox(Form)
         self.comboBox.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
@@ -146,7 +148,11 @@ class Ui_Form(object):
                                 self.open_spotify = True
                             else:
                                 self.open_spotify = False
-
+                        if "darktheme" in lcline:
+                            if "true" in lcline:
+                                self.set_darktheme()
+                            else:
+                                pass
             else:
                 directory = os.path.dirname(settingsfile)
                 if not os.path.exists(directory):
@@ -154,13 +160,13 @@ class Ui_Form(object):
                 with open(settingsfile, 'w+') as settings:
                     settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False")
             if self.sync is True:
-                self.comboBox.setItemText(1, ("Synced Lyrics (on)"))
+                self.comboBox.setItemText(2, ("Synced Lyrics (on)"))
             if self.ontop is True:
                 Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-                self.comboBox.setItemText(2, ("Always on Top (on)"))
+                self.comboBox.setItemText(3, ("Always on Top (on)"))
                 Form.show()
             if self.open_spotify is True:
-                self.comboBox.setItemText(3, ("Open Spotify (on)"))
+                self.comboBox.setItemText(4, ("Open Spotify (on)"))
         else:
             with open(settingsfile, 'w+') as settings:
                 settings.write("[settings]\n")
@@ -176,36 +182,55 @@ class Ui_Form(object):
                     settings.write("OpenSpotify=True\n")
                 else:
                     settings.write("OpenSpotify=False\n")
+                if self.darktheme is True:
+                    settings.write("DarkTheme=True\n")
+                else:
+                    settings.write("DarkTheme=False\n")
                 settings.write("FontSize=%s" % str(self.fontBox.value()))
 
     def optionschanged(self):
         current_index = self.comboBox.currentIndex()
         if current_index == 1:
+            if self.darktheme is False:
+                self.set_darktheme()
+            else:
+                self.darktheme = False
+                Form.setWindowOpacity(1.0)
+                Form.setStyleSheet("")
+                self.textBrowser.setStyleSheet("")
+                self.label_songname.setStyleSheet("")
+                self.comboBox.setStyleSheet("")
+                self.fontBox.setStyleSheet("")
+                self.pushButton.setStyleSheet("")
+                self.chordsButton.setStyleSheet("")
+                self.comboBox.setItemText(1, ("Dark Theme"))
+                self.set_style()
+        elif current_index == 2:
             if self.sync is True:
                 self.sync = False
-                self.comboBox.setItemText(1, ("Synced Lyrics"))
+                self.comboBox.setItemText(2, ("Synced Lyrics"))
             else:
                 self.sync = True
-                self.comboBox.setItemText(1, ("Synced Lyrics (on)"))
-        elif current_index == 2:
+                self.comboBox.setItemText(2, ("Synced Lyrics (on)"))
+        elif current_index == 3:
             if self.ontop is False:
                 self.ontop = True
                 Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-                self.comboBox.setItemText(2, ("Always on Top (on)"))
+                self.comboBox.setItemText(3, ("Always on Top (on)"))
                 Form.show()
             else:
                 self.ontop = False
                 Form.setWindowFlags(Form.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
-                self.comboBox.setItemText(2, ("Always on Top"))
+                self.comboBox.setItemText(3, ("Always on Top"))
                 Form.show()
-        elif current_index == 3:
+        elif current_index == 4:
             if self.open_spotify is True:
                 self.open_spotify = False
-                self.comboBox.setItemText(3, ("Open Spotify"))
+                self.comboBox.setItemText(4, ("Open Spotify"))
             else:
                 self.open_spotify = True
-                self.comboBox.setItemText(3, ("Open Spotify (on)"))
-        elif current_index == 4:
+                self.comboBox.setItemText(4, ("Open Spotify (on)"))
+        elif current_index == 5:
             self.load_save_settings(save=True)
         else:
             pass
@@ -235,8 +260,8 @@ class Ui_Form(object):
                                 pass
                         if "windowopacity" in lcsetting:
                             Form.setWindowOpacity(float(set))
-                        if "backgroundcolor" in lcsetting:
-                            Form.setStyleSheet("background-color: %s" % set)
+                        if lcsetting.startswith("backgroundcolor"):
+                            Form.setStyleSheet("background-color: %s;" % set)
                         if "lyricsbackgroundcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
                             style = style + "background-color: %s;" % set
@@ -278,6 +303,18 @@ class Ui_Form(object):
             self.label_songname.setStyleSheet("color: black; text-decoration: underline;")
             pass
 
+    def set_darktheme(self):
+        self.darktheme = True
+        Form.setWindowOpacity(1.0)
+        Form.setStyleSheet("background-color: #282828;")
+        self.textBrowser.setStyleSheet("background-color: #181818; color: #ffffff;")
+        self.label_songname.setStyleSheet("color: #9c9c9c; text-decoration: underline;")
+        self.comboBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
+        self.fontBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
+        self.pushButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
+        self.chordsButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
+        self.comboBox.setItemText(1, ("Dark Theme (on)"))
+
     def resource_path(self, relative_path):
         try:
             base_path = sys._MEIPASS
@@ -315,10 +352,11 @@ class Ui_Form(object):
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.fontBox.setToolTip(_translate("Form", "Font Size"))
         self.comboBox.setItemText(0, _translate("Form", "Options"))
-        self.comboBox.setItemText(1, _translate("Form", "Synced Lyrics"))
-        self.comboBox.setItemText(2, _translate("Form", "Always on Top"))
-        self.comboBox.setItemText(3, _translate("Form", "Open Spotify"))
-        self.comboBox.setItemText(4, _translate("Form", "Save Settings"))
+        self.comboBox.setItemText(1, _translate("Form", "Dark Theme"))
+        self.comboBox.setItemText(2, _translate("Form", "Synced Lyrics"))
+        self.comboBox.setItemText(3, _translate("Form", "Always on Top"))
+        self.comboBox.setItemText(4, _translate("Form", "Open Spotify"))
+        self.comboBox.setItemText(5, _translate("Form", "Save Settings"))
 
     def add_service_name_to_lyrics(self, lyrics, service_name):
         return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % ((self.fontBox.value()-2) * 2, service_name, lyrics)
