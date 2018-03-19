@@ -204,6 +204,8 @@ class Ui_Form(object):
                 self.pushButton.setStyleSheet("")
                 self.chordsButton.setStyleSheet("")
                 self.comboBox.setItemText(1, ("Dark Theme"))
+                text = re.sub("color:.*?;", "color: black;", self.label_songname.text())
+                self.label_songname.setText(text)
                 self.set_style()
         elif current_index == 2:
             if self.sync is True:
@@ -278,6 +280,8 @@ class Ui_Form(object):
                             style = self.label_songname.styleSheet()
                             style = style + "color: %s;" % set
                             self.label_songname.setStyleSheet(style)
+                            text = re.sub("color:.*?;", "color: %s;" % set, self.label_songname.text())
+                            self.label_songname.setText(text)
                         if "fontboxbackgroundcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
                             style = style + "background-color: %s;" % set
@@ -309,6 +313,8 @@ class Ui_Form(object):
         Form.setStyleSheet("background-color: #282828;")
         self.textBrowser.setStyleSheet("background-color: #181818; color: #ffffff;")
         self.label_songname.setStyleSheet("color: #9c9c9c; text-decoration: underline;")
+        text = re.sub("color:.*?;", "color: #9c9c9c;", self.label_songname.text())
+        self.label_songname.setText(text)
         self.comboBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.fontBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.pushButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
@@ -363,11 +369,6 @@ class Ui_Form(object):
 
     def lyrics_thread(self, comm):
         oldsongname = ""
-        style = self.label_songname.styleSheet()
-        if style == "":
-            color = "color: black"
-        else:
-            color = style
         while True:
             songname = backend.getwindowtitle()
             self.changed = False
@@ -383,6 +384,11 @@ class Ui_Form(object):
                     if url == "":
                         header = songname
                     else:
+                        style = self.label_songname.styleSheet()
+                        if style == "":
+                            color = "color: black"
+                        else:
+                            color = style
                         header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (color, url, songname)
                     if timed == True:
                         lrc = []
