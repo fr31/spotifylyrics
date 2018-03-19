@@ -438,6 +438,12 @@ class Ui_Form(object):
                                     lyrics1[count-2] = "<a name=\"#scrollHere\">%s</a>" % lyrics1[count-2].strip()
                                 boldlyrics = '<br>'.join(lyrics1)
                                 while True:
+                                    style = self.label_songname.styleSheet()
+                                    if style == "":
+                                        color = "color: black"
+                                    else:
+                                        color = style
+                                    header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (color, url, songname)
                                     if rtime <= time.time() - start and backend.getwindowtitle() != "Spotify":
                                         if self.changed == True or self.sync == False:
                                             break
