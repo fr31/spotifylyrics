@@ -15,7 +15,16 @@ If you want to run from source you need:
 
 * Python 3.6.2 (probably any version of Python 3)
 * pip install -r requirements.txt
-* Linux: xwininfo
+
+Ubuntu/Debian Example:
+```
+sudo apt-get install python3-pip
+git clone https://github.com/fr31/spotifylyrics.git
+cd spotifylyrics/
+sudo pip3 install -r requirements.txt
+chmod +x SpotifyLyrics.pyw
+./SpotifyLyrics.pyw
+```
 
 # screenshot
 ![example-img](https://i.imgur.com/2dUN17q.png)
