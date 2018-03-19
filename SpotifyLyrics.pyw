@@ -158,7 +158,7 @@ class Ui_Form(object):
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 with open(settingsfile, 'w+') as settings:
-                    settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False")
+                    settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme=False")
             if self.sync is True:
                 self.comboBox.setItemText(2, ("Synced Lyrics (on)"))
             if self.ontop is True:
