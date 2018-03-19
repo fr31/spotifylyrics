@@ -164,7 +164,7 @@ def versioncheck():
     except Exception:
         return(True)
     try:
-        if version() >= float(currentversion):
+        if float(version()) >= float(currentversion):
             return(True)
         else:
             return(False)
@@ -172,7 +172,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = 1.20
+    version = "1.20"
     return(version)
 
 def open_spotify():
