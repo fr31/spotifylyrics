@@ -62,6 +62,8 @@ def _musixmatch(artist, song):
         lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
         lyrics = lyrics.replace("\\n", "\n")
         lyrics = lyrics.replace("\\", "")
+        if lyrics.strip() == "":
+            lyrics = error
     except Exception:
         lyrics = error
     return(lyrics, url, service_name)
