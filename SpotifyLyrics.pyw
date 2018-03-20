@@ -309,8 +309,6 @@ class Ui_Form(object):
 
     def set_darktheme(self):
         self.darktheme = True
-        Form.setWindowOpacity(1.0)
-        Form.setStyleSheet("background-color: #282828;")
         self.textBrowser.setStyleSheet("background-color: #181818; color: #ffffff;")
         self.label_songname.setStyleSheet("color: #9c9c9c; text-decoration: underline;")
         text = re.sub("color:.*?;", "color: #9c9c9c;", self.label_songname.text())
@@ -320,6 +318,8 @@ class Ui_Form(object):
         self.pushButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.chordsButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.comboBox.setItemText(1, ("Dark Theme (on)"))
+        Form.setWindowOpacity(1.0)
+        Form.setStyleSheet("background-color: #282828;")
 
     def resource_path(self, relative_path):
         try:
