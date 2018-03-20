@@ -172,7 +172,7 @@ def versioncheck():
         return(True)
 
 def version():
-    version = "1.20"
+    version = "1.21"
     return(version)
 
 def open_spotify():
