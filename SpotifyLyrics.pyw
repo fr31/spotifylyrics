@@ -261,9 +261,9 @@ class Ui_Form(object):
                             else:
                                 pass
                         if "windowopacity" in lcsetting:
-                            Form.setWindowOpacity(float(set))
+                            windowopacity = float(set)
                         if lcsetting.startswith("backgroundcolor"):
-                            Form.setStyleSheet("background-color: %s;" % set)
+                            backgroundcolor = set
                         if "lyricsbackgroundcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
                             style = style + "background-color: %s;" % set
@@ -301,6 +301,10 @@ class Ui_Form(object):
                                 style = self.label_songname.styleSheet()
                                 style = style + "text-decoration: underline;"
                                 self.label_songname.setStyleSheet(style)
+                    
+                    Form.setWindowOpacity(windowopacity)
+                    Form.setStyleSheet("background-color: %s;" % backgroundcolor)
+                    
                 except Exception:
                     pass
         else:
