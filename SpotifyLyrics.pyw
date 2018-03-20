@@ -527,6 +527,7 @@ class Ui_Form(object):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle("fusion")
     Form = QtWidgets.QWidget()
     ui = Ui_Form()
     Form.show()
