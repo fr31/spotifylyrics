@@ -150,15 +150,17 @@ class Ui_Form(object):
                                 self.open_spotify = False
                         if "darktheme" in lcline:
                             if "true" in lcline:
-                                self.set_darktheme()
+                                self.darktheme = True
                             else:
-                                pass
+                                self.darktheme = False
             else:
                 directory = os.path.dirname(settingsfile)
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 with open(settingsfile, 'w+') as settings:
                     settings.write("[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme=False")
+            if self.darktheme is True:
+                self.set_darktheme()
             if self.sync is True:
                 self.comboBox.setItemText(2, ("Synced Lyrics (on)"))
             if self.ontop is True:
@@ -195,8 +197,6 @@ class Ui_Form(object):
                 self.set_darktheme()
             else:
                 self.darktheme = False
-                Form.setWindowOpacity(1.0)
-                Form.setStyleSheet("")
                 self.textBrowser.setStyleSheet("")
                 self.label_songname.setStyleSheet("")
                 self.comboBox.setStyleSheet("")
@@ -206,6 +206,8 @@ class Ui_Form(object):
                 self.comboBox.setItemText(1, ("Dark Theme"))
                 text = re.sub("color:.*?;", "color: black;", self.label_songname.text())
                 self.label_songname.setText(text)
+                Form.setWindowOpacity(1.0)
+                Form.setStyleSheet("")
                 self.set_style()
         elif current_index == 2:
             if self.sync is True:
