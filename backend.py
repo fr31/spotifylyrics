@@ -40,7 +40,6 @@ current_service = -1
 
 
 def load_lyrics(artist, song, sync=False):
-    error = "Error: Could not find lyrics."
     global current_service
 
     if current_service == len(services_list2)-1: current_service = -1
@@ -49,17 +48,22 @@ def load_lyrics(artist, song, sync=False):
         lyrics, url, service_name, timed = s._minilyrics(artist, song)
         current_service = -1
 
-    if sync == True and lyrics == error or sync == False:
+    if sync == True and not lyrics_found(lyrics) or sync == False:
         timed = False
         for i in range (current_service+1, len(services_list2)):
             lyrics, url, service_name = services_list2[i](artist, song)
             current_service = i
-            if lyrics != error:
+            if lyrics_found(lyrics):
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
 
     #return "Error: Could not find lyrics."  if the for loop doens't find any lyrics
     return(lyrics, url, service_name, timed)
+
+
+def lyrics_found(lyrics):
+    error = "Error: Could not find lyrics."
+    return lyrics != error
 
 
 def getlyrics(songname, sync=False):
@@ -75,9 +79,18 @@ def getlyrics(songname, sync=False):
         artist, song, garbage = songname.rsplit(" - ", 2)
     if " / " in song:
         song, garbage = song.rsplit(" / ", 1)
-    song = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
+    
+    # remove letters between parenthesis from song title
+    song_name_without_parenthesis_content = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
+    lyrics_content = load_lyrics(artist, song_name_without_parenthesis_content, sync)
 
-    return load_lyrics(artist, song, sync)
+    # if not found try without removing letters between parenthesis
+    if not lyrics_found(lyrics_content[0]):
+        song_name_with_parenthesis_content = re.sub('[\(\\.)]', '', song)
+        print("second",song_name_with_parenthesis_content)
+        lyrics_content = load_lyrics(artist, song_name_with_parenthesis_content, sync)
+        
+    return lyrics_content
 
 
 def next_lyrics():

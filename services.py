@@ -122,7 +122,7 @@ def _genius(artist, song):
     service_name = "Genius"
     url = ""
     try:
-        url = "http://genius.com/%s-%s-lyrics" % (artist.replace(' ', '-'), song.replace(' ', '-'))
+        url = "http://genius.com/%s-%s-lyrics" % (artist.replace(' ', '-'), song.replace(' ', '-').replace('\'', ''))
         lyricspage = requests.get(url, proxies=proxy)
         soup = BeautifulSoup(lyricspage.text, 'html.parser')
         lyrics = soup.find("div", {"class": "lyrics"}).get_text()
