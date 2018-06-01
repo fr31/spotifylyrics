@@ -87,7 +87,6 @@ def getlyrics(songname, sync=False):
     # if not found try without removing letters between parenthesis
     if not lyrics_found(lyrics_content[0]):
         song_name_with_parenthesis_content = re.sub('[\(\\.)]', '', song)
-        print("second",song_name_with_parenthesis_content)
         lyrics_content = load_lyrics(artist, song_name_with_parenthesis_content, sync)
         
     return lyrics_content
