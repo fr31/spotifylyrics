@@ -92,29 +92,49 @@ def load_chords():
             webbrowser.open(urls[0])
             break
 
-def getwindowtitle():
-    if sys.platform == "win32":
-        spotifypids = []
-        for proc in psutil.process_iter():
-            if proc.name() == 'Spotify.exe':
-                spotifypids.append(proc.pid)
+spids = []
 
+# windows only
+def update_spids():
+    global spids
+    for proc in psutil.process_iter():
+        if proc.name() == 'Spotify.exe':
+            spids.append(proc.pid)
+
+def getwindowtitle():
+    global spids
+    if sys.platform == "win32":
+        if len(spids) == 0:
+            update_spids()
+
+        windows = []
         def enum_window_callback(hwnd, pid):
+            nonlocal windows
             tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
             if pid == current_pid and win32gui.IsWindowVisible(hwnd):
                 windows.append(hwnd)
 
-        windows = []
         windowname = ''        
+        def get_title():
+            global spids
+            nonlocal windows
+            nonlocal windowname
+            windows = []
 
-        try:
-            for pid in spotifypids:
-                win32gui.EnumWindows(enum_window_callback, pid)
-                for item in windows:
-                    if win32gui.GetWindowText(item) != '':
-                        windowname = win32gui.GetWindowText(item)
-                        raise StopIteration
-        except StopIteration: pass
+            try:
+                for pid in spids:
+                    win32gui.EnumWindows(enum_window_callback, pid)
+                    for item in windows:
+                        if win32gui.GetWindowText(item) != '':
+                            windowname = win32gui.GetWindowText(item)
+                            raise StopIteration
+            except StopIteration: pass
+
+        get_title()
+    
+        if windowname == '':
+            update_spids()
+            get_title()
 
     elif sys.platform == "darwin":
         windowname = ''
