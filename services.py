@@ -1,13 +1,16 @@
-from bs4 import BeautifulSoup
-import requests
-import urllib
-import re
-import unidecode # to remove accents
 import codecs
+import re
+import urllib
+
+import requests
+import unidecode  # to remove accents
+from bs4 import BeautifulSoup
+
 import lyrics as minilyrics
 
 error = "Error: Could not find lyrics."
 proxy = urllib.request.getproxies()
+
 
 def _minilyrics(artist, song):
     service_name = "Mini Lyrics"
@@ -29,7 +32,8 @@ def _minilyrics(artist, song):
         lyrics = error
         timed = False
 
-    return(lyrics, url, service_name, timed)
+    return lyrics, url, service_name, timed
+
 
 def _wikia(artist, song):
     service_name = "Wikia"
@@ -45,14 +49,16 @@ def _wikia(artist, song):
         lyrics = "(Instrumental)"
     if lyrics == "error":
         lyrics = error
-    return(lyrics, url, service_name)
+    return lyrics, url, service_name
+
 
 def _musixmatch(artist, song):
     service_name = "Musixmatch"
     url = ""
     try:
-        searchurl = "https://www.musixmatch.com/search/%s-%s/tracks" % (artist.replace(' ', '-'), song.replace(' ', '-'))
-        header = {"User-Agent":"curl/7.9.8 (i686-pc-linux-gnu) libcurl 7.9.8 (OpenSSL 0.9.6b) (ipv6 enabled)"}
+        searchurl = "https://www.musixmatch.com/search/%s-%s/tracks" % (
+        artist.replace(' ', '-'), song.replace(' ', '-'))
+        header = {"User-Agent": "curl/7.9.8 (i686-pc-linux-gnu) libcurl 7.9.8 (OpenSSL 0.9.6b) (ipv6 enabled)"}
         searchresults = requests.get(searchurl, headers=header, proxies=proxy)
         soup = BeautifulSoup(searchresults.text, 'html.parser')
         page = re.findall('"track_share_url":"([^"]*)', soup.text)
@@ -66,7 +72,8 @@ def _musixmatch(artist, song):
             lyrics = error
     except Exception:
         lyrics = error
-    return(lyrics, url, service_name)
+    return lyrics, url, service_name
+
 
 def _songmeanings(artist, song):
     service_name = "Songmeanings"
@@ -96,8 +103,9 @@ def _songmeanings(artist, song):
     if lyrics == "We are currently missing these lyrics.":
         lyrics = error
 
-    #lyrics = lyrics.encode('cp437', errors='replace').decode('utf-8', errors='replace')
-    return(lyrics, url, service_name)
+    # lyrics = lyrics.encode('cp437', errors='replace').decode('utf-8', errors='replace')
+    return lyrics, url, service_name
+
 
 def _songlyrics(artist, song):
     service_name = "Songlyrics"
@@ -115,7 +123,7 @@ def _songlyrics(artist, song):
         lyrics = error
     if "We do not have" in lyrics:
         lyrics = error
-    return(lyrics, url, service_name)
+    return lyrics, url, service_name
 
 
 def _genius(artist, song):
@@ -130,7 +138,8 @@ def _genius(artist, song):
             lyrics = error
     except Exception:
         lyrics = error
-    return(lyrics, url, service_name)
+    return lyrics, url, service_name
+
 
 def _versuri(artist, song):
     service_name = "Versuri"
@@ -150,12 +159,13 @@ def _versuri(artist, song):
         else:
             lyricspage = requests.get(url, proxies=proxy)
             soup = BeautifulSoup(lyricspage.text, 'html.parser')
-            content = soup.find_all('div',{'id':'pagecontent'})[0]
+            content = soup.find_all('div', {'id': 'pagecontent'})[0]
             lyrics = str(content)[str(content).find("</script><br/>") + 14:str(content).find("<br/><br/><center>")]
             lyrics = lyrics.replace("<br/>", "")
     except Exception:
         lyrics = error
-    return(lyrics, url, service_name)
+    return lyrics, url, service_name
+
 
 # tab/chord services
 
@@ -167,7 +177,7 @@ def _ultimateguitar(artist, song):
     url_pt3 = '&type%5B%5D=300&type%5B%5D=200&rating%5B%5D=5&version_la='
     # song = song.replace('-', '+')
     # artist = artist.replace('-', '+')
-    url = url_pt1+artist+url_pt2+song+url_pt3
+    url = url_pt1 + artist + url_pt2 + song + url_pt3
     page = requests.get(url)
 
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -185,6 +195,7 @@ def _cifraclub(artist, song):
     url = 'https://www.cifraclub.com.br/{}/{}'.format(artist.replace(" ", "-").lower(), song.replace(" ", "-").lower())
 
     return [url]
+
 
 # don't even get to this point, but it's an option for source
 # just got to change services_list3 list order

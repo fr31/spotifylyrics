@@ -15,6 +15,7 @@
 
 import hashlib
 import json
+
 try:
     import xmltodict
 except:
@@ -29,12 +30,13 @@ try:
     from BeautifulSoup import BeautifulSoup
 except:
     try:
-        from  bs4 import BeautifulSoup
+        from bs4 import BeautifulSoup
     except:
         SystemExit("can\'t find BeautifulSoup, please install it via \"pip install BeautifulSoup\"")
 
 import re
 import urllib
+
 
 # function to return python workable results from Minilyrics
 def MiniLyrics(artist, title):
@@ -73,8 +75,9 @@ def MiniLyrics(artist, title):
         else:
             magickey = ord(magickey)
         for i in range(datalen):
-            # Python doesn't do bitwise operations with characters, so we need to convert them to integers first.
-            # It also doesn't like it if you put integers in the ord() to be translated to integers, that's what the IF, ELSE is for.
+            # Python doesn't do bitwise operations with characters, so we need to convert them to integers first. It
+            # also doesn't like it if you put integers in the ord() to be translated to integers, that's what the IF,
+            # ELSE is for.
             if isinstance(data[i], int):
                 encddata[i] = data[i] ^ magickey
             else:
@@ -136,10 +139,10 @@ def MiniLyrics(artist, title):
                 result += chr(ord(data[i]) ^ magickey)
         return (result)
 
-    if ('search_result' not in locals()):
+    if 'search_result' not in locals():
         # didn't receive a reply from the server
         print("FAILED")
-        return ("Script might be broken :(")
+        return "Script might be broken :("
     else:
         # Server returned possible answers
         xml = vl_dec(search_result)
@@ -149,7 +152,8 @@ def MiniLyrics(artist, title):
         i = 0
         if isinstance(xml["return"]["fileinfo"], list):
             for item in xml["return"]["fileinfo"]:
-                # because the rating will sometimes not be filled, it could give an error, so the rating will be 0 for unrated items
+                # because the rating will sometimes not be filled, it could give an error, so the rating will be 0
+                # for unrated items
                 try:
                     rating = item["@rate"]
                 except:
@@ -168,7 +172,8 @@ def MiniLyrics(artist, title):
             results = sorted(results, key=lambda result: (result["rating"]))
             results.reverse()
         else:
-            # because the rating will sometimes not be filled, it could give an error, so the rating will be 0 for unrated items
+            # because the rating will sometimes not be filled, it could give an error, so the rating will be 0 for
+            # unrated items
             try:
                 rating = xml["return"]["fileinfo"]["@rate"]
             except:
@@ -184,13 +189,15 @@ def MiniLyrics(artist, title):
             results.append({'artist': artist, 'title': title, 'rating': float(rating),
                             'filetype': xml["return"]["fileinfo"]["@link"].split(".")[-1],
                             'url': (server_url + xml["return"]["fileinfo"]["@link"])})
-    return(results)
+    return results
+
 
 # function to return lyrics grabbed from lyricwikia
 def LyricWikia(artist, title):
     proxy = urllib.request.getproxies()
-    url = 'http://lyrics.wikia.com/api.php?action=lyrics&artist={artist}&song={title}&fmt=json&func=getSong'.format(artist=artist,
-                                                                                                                    title=title).replace(" ","%20")
+    url = 'http://lyrics.wikia.com/api.php?action=lyrics&artist={artist}&song={title}&fmt=json&func=getSong'.format(
+        artist=artist,
+        title=title).replace(" ", "%20")
     r = requests.get(url, timeout=15, proxies=proxy)
     # We got some bad formatted JSON data... So we need to fix stuff :/
     returned = r.text
@@ -204,14 +211,14 @@ def LyricWikia(artist, title):
         soup = soup.find("div", {"class": "lyricbox"})
         [elem.extract() for elem in soup.findAll('div')]
         [elem.replaceWith('\n') for elem in soup.findAll('br')]
-        #with old BeautifulSoup the following is needed..? For recent versions, this isn't needed/doesn't work
+        # with old BeautifulSoup the following is needed..? For recent versions, this isn't needed/doesn't work
         try:
-            #soup = BeautifulSoup(str(soup), convertEntities=BeautifulSoup.HTML_ENTITIES)
+            # soup = BeautifulSoup(str(soup), convertEntities=BeautifulSoup.HTML_ENTITIES)
             soup = BeautifulSoup(str(soup), 'html.parser')
         except:
             pass
         soup = BeautifulSoup(re.sub(r'(<!--[.\s\S]*-->)', '', str(soup)), 'html.parser')
         [elem.extract() for elem in soup.findAll('script')]
-        return(soup.getText())
+        return soup.getText()
     else:
-        return("error")
+        return "error"

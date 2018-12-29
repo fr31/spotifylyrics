@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-import requests
-import urllib
-import time
 import os
-import sys
 import re
-import webbrowser # to open link on browser
-import services as s
 import subprocess
+import sys
+import time
+import urllib
+import webbrowser  # to open link on browser
+
+import requests
+
+import services as s
 
 if sys.platform == "win32":
     import win32process
@@ -43,7 +45,7 @@ def load_lyrics(artist, song, sync=False):
     error = "Error: Could not find lyrics."
     global current_service
 
-    if current_service == len(services_list2)-1: current_service = -1
+    if current_service == len(services_list2) - 1: current_service = -1
 
     if sync == True:
         lyrics, url, service_name, timed = s._minilyrics(artist, song)
@@ -51,15 +53,15 @@ def load_lyrics(artist, song, sync=False):
 
     if sync == True and lyrics == error or sync == False:
         timed = False
-        for i in range (current_service+1, len(services_list2)):
+        for i in range(current_service + 1, len(services_list2)):
             lyrics, url, service_name = services_list2[i](artist, song)
             current_service = i
             if lyrics != error:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
 
-    #return "Error: Could not find lyrics."  if the for loop doens't find any lyrics
-    return(lyrics, url, service_name, timed)
+    # return "Error: Could not find lyrics."  if the for loop doens't find any lyrics
+    return (lyrics, url, service_name, timed)
 
 
 def getlyrics(songname, sync=False):
@@ -83,14 +85,16 @@ def getlyrics(songname, sync=False):
 def next_lyrics():
     global current_service
     lyrics, url, service_name, timed = load_lyrics(artist, song)
-    return (lyrics, url, service_name, timed)
+    return lyrics, url, service_name, timed
+
 
 def load_chords():
     for i in range(len(services_list3)):
         urls = services_list3[i](artist, song)
-        if len(urls) != 0: 
+        if len(urls) != 0:
             webbrowser.open(urls[0])
             break
+
 
 def getwindowtitle():
     if sys.platform == "win32":
@@ -105,7 +109,7 @@ def getwindowtitle():
                 windows.append(hwnd)
 
         windows = []
-        windowname = ''        
+        windowname = ''
 
         try:
             for pid in spotifypids:
@@ -114,7 +118,8 @@ def getwindowtitle():
                     if win32gui.GetWindowText(item) != '':
                         windowname = win32gui.GetWindowText(item)
                         raise StopIteration
-        except StopIteration: pass
+        except StopIteration:
+            pass
 
     elif sys.platform == "darwin":
         windowname = ''
@@ -148,32 +153,36 @@ def getwindowtitle():
             pass
         if windowname != 'Spotify' and windowname != 'Spotify Lyrics':
             try:
-                windowname = "%s - %s" %(metadata['xesam:artist'][0], metadata['xesam:title'])
+                windowname = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
             except Exception:
                 pass
     if "—" in windowname:
         windowname = windowname.replace("—", "-")
     if "Spotify - " in windowname:
         windowname = windowname.strip("Spotify - ")
-    return(windowname)
+    return (windowname)
+
 
 def versioncheck():
     proxy = urllib.request.getproxies()
     try:
-        currentversion = requests.get("https://raw.githubusercontent.com/fr31/spotifylyrics/master/currentversion", timeout=5, proxies=proxy).text
+        currentversion = requests.get("https://raw.githubusercontent.com/fr31/spotifylyrics/master/currentversion",
+                                      timeout=5, proxies=proxy).text
     except Exception:
-        return(True)
+        return (True)
     try:
         if float(version()) >= float(currentversion):
-            return(True)
+            return (True)
         else:
-            return(False)
+            return (False)
     except Exception:
-        return(True)
+        return (True)
+
 
 def version():
     version = "1.21"
-    return(version)
+    return (version)
+
 
 def open_spotify():
     if sys.platform == "win32":
@@ -197,14 +206,17 @@ def open_spotify():
     else:
         pass
 
+
 def main():
     if os.name == "nt":
         os.system("chcp 65001")
+
     def clear():
         if os.name == "nt":
             os.system("cls")
         else:
             os.system("clear")
+
     clear()
     oldsongname = ""
     while True:
@@ -217,6 +229,7 @@ def main():
                 lyrics, url, service_name, timed = getlyrics(songname)
                 # print(lyrics+"\n")
         time.sleep(1)
+
 
 if __name__ == '__main__':
     main()
