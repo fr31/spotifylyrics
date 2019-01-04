@@ -20,6 +20,30 @@ elif sys.platform == "linux":
 else:
     pass
 
+
+class Song:
+    name = ""
+    artist = ""
+    album = "UNKNOWN"
+    year = -1
+    genre = "UNKNOWN"
+
+    cycles_per_minute = -1
+    beats_per_minute = -1
+    dances = []
+
+    def __init__(self, artist, name):
+        self.artist = artist
+        self.name = name
+        self.dances = []
+
+    def __str__(self):
+        return self.artist + ": " + self.name + " (" + str(
+            self.year) + ") " + "\nGenre: " + self.genre + "\nAlbum: " + self.album + "\nCycles per minute: " + str(
+            self.cycles_per_minute) + "\nBeats per minute: " + str(
+            self.beats_per_minute) + "\nDances: " + str(self.dances) + "\n"
+
+
 # With Sync. Of course, there is one for now, but for the sake of
 # make the code a little bit more cleaner, is declared.
 services_list1 = [s._minilyrics]
@@ -29,9 +53,7 @@ services_list2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._ge
 
 services_list3 = [s._ultimateguitar, s._cifraclub, s._songsterr]
 
-artist = ""
-song = ""
-url = ""
+song = Song("", "")
 
 '''
 current_service is used to store the current index of the list.
@@ -41,62 +63,74 @@ the service returned a wrong song
 current_service = -1
 
 
-def load_lyrics(artist, song, sync=False):
+def set_song(songname):
+    global song
+    song = get_song_from_string(songname)
+
+
+def load_lyrics(song, sync=False):
     error = "Error: Could not find lyrics."
     global current_service
 
     if current_service == len(services_list2) - 1: current_service = -1
 
-    if sync == True:
-        lyrics, url, service_name, timed = s._minilyrics(artist, song)
+    if sync:
+        lyrics, url, service_name, timed = s._minilyrics(song)
         current_service = -1
 
-    if sync == True and lyrics == error or sync == False:
+    if sync and lyrics == error or sync is False:
         timed = False
         for i in range(current_service + 1, len(services_list2)):
-            lyrics, url, service_name = services_list2[i](artist, song)
+            lyrics, url, service_name = services_list2[i](song)
             current_service = i
             if lyrics != error:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
 
-    # return "Error: Could not find lyrics."  if the for loop doens't find any lyrics
-    return (lyrics, url, service_name, timed)
+    # return "Error: Could not find lyrics."  if the for loop doesn't find any lyrics
+    return lyrics, url, service_name, timed
 
 
-def getlyrics(songname, sync=False):
-    global artist, song, url, current_service
-    artist = ""
-    song = ""
-    url = ""
+def load_infos():
+    s._tanzmusikonline(song)
+    s._welchertanz(song)
+
+
+def get_song_from_string(songname):
+    artist, name = "", ""
+    if songname.count(" - ") == 1:
+        artist, name = songname.rsplit(" - ", 1)
+    if songname.count(" - ") == 2:
+        artist, name, garbage = songname.rsplit(" - ", 2)
+    if " / " in name:
+        name, garbage = name.rsplit(" / ", 1)
+    name = re.sub(r' \(.*?\)', '', name, flags=re.DOTALL)
+    name = re.sub(r' \[.*?\]', '', name, flags=re.DOTALL)
+    return Song(artist, name)
+
+
+def get_lyrics(sync=False):
+    global current_service
     current_service = -1
 
-    if songname.count(" - ") == 1:
-        artist, song = songname.rsplit(" - ", 1)
-    if songname.count(" - ") == 2:
-        artist, song, garbage = songname.rsplit(" - ", 2)
-    if " / " in song:
-        song, garbage = song.rsplit(" / ", 1)
-    song = re.sub(' \(.*?\)', '', song, flags=re.DOTALL)
-
-    return load_lyrics(artist, song, sync)
+    return load_lyrics(song, sync)
 
 
 def next_lyrics():
     global current_service
-    lyrics, url, service_name, timed = load_lyrics(artist, song)
+    lyrics, url, service_name, timed = load_lyrics(song)
     return lyrics, url, service_name, timed
 
 
 def load_chords():
     for i in range(len(services_list3)):
-        urls = services_list3[i](artist, song)
+        urls = services_list3[i](song)
         if len(urls) != 0:
             webbrowser.open(urls[0])
             break
 
 
-def getwindowtitle():
+def get_window_title():
     if sys.platform == "win32":
         spotifypids = []
         for proc in psutil.process_iter():
@@ -160,46 +194,43 @@ def getwindowtitle():
         windowname = windowname.replace("—", "-")
     if "Spotify - " in windowname:
         windowname = windowname.strip("Spotify - ")
-    return (windowname)
+    return windowname
 
 
-def versioncheck():
+def check_version():
     proxy = urllib.request.getproxies()
     try:
         currentversion = requests.get("https://raw.githubusercontent.com/fr31/spotifylyrics/master/currentversion",
                                       timeout=5, proxies=proxy).text
     except Exception:
-        return (True)
+        return True
     try:
-        if float(version()) >= float(currentversion):
-            return (True)
-        else:
-            return (False)
+        return float(version()) >= float(currentversion)
     except Exception:
-        return (True)
+        return True
 
 
 def version():
     version = "1.21"
-    return (version)
+    return version
 
 
 def open_spotify():
     if sys.platform == "win32":
-        if getwindowtitle() == "":
+        if get_window_title() == "":
             path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
             subprocess.Popen(path)
         else:
             pass
     elif sys.platform == "linux":
-        if getwindowtitle() == "":
+        if get_window_title() == "":
             subprocess.Popen("spotify")
         else:
             pass
     elif sys.platform == "darwin":
         # I don't have a mac so I don't know if this actually works
         # If it does, please let me know, if it doesn't please fix it :)
-        if getwindowtitle() == "":
+        if get_window_title() == "":
             subprocess.Popen("open -a Spotify")
         else:
             pass
@@ -220,14 +251,11 @@ def main():
     clear()
     oldsongname = ""
     while True:
-        songname = getwindowtitle()
+        songname = get_window_title()
         if oldsongname != songname:
             if songname != "Spotify":
                 oldsongname = songname
                 clear()
-                # print(songname+"\n")
-                lyrics, url, service_name, timed = getlyrics(songname)
-                # print(lyrics+"\n")
         time.sleep(1)
 
 

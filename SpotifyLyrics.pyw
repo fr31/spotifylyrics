@@ -29,10 +29,10 @@ class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
                 numPixels = e.pixelDelta()
                 numDegrees = e.angleDelta()
                 factor = 1
-                if (not numPixels.isNull()):
+                if not numPixels.isNull():
                     sign = 1 if numPixels.y() > 0 else -1
                     ui.change_fontsize(sign * factor)
-                elif (not numDegrees.isNull()):
+                elif not numDegrees.isNull():
                     sign = 1 if numDegrees.y() > 0 else -1
                     ui.change_fontsize(sign * factor)
             else:
@@ -41,12 +41,17 @@ class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
             pass
 
 
+brackets = re.compile(r'\[.+?\]')
+lessthan = re.compile(r'<.+?>')
+
+
 class Ui_Form(object):
     sync = False
     ontop = False
     open_spotify = False
     changed = False
     darktheme = False
+    infos = False
     if os.name == "nt":
         settingsdir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
     else:
@@ -74,6 +79,8 @@ class Ui_Form(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.horizontalLayout_1 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_1.setObjectName("horizontalLayout_1")
         self.label_songname = QtWidgets.QLabel(Form)
         self.label_songname.setObjectName("label_songname")
         self.label_songname.setOpenExternalLinks(True)
@@ -103,6 +110,7 @@ class Ui_Form(object):
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
+        self.comboBox.addItem("")
         self.horizontalLayout_2.addWidget(self.comboBox, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.fontBox = QtWidgets.QSpinBox(Form)
@@ -116,12 +124,20 @@ class Ui_Form(object):
         self.textBrowser.setAcceptRichText(True)
         self.textBrowser.setStyleSheet("font-size: %spt;" % self.fontBox.value() * 2)
         self.textBrowser.setFontPointSize(self.fontBox.value())
-        self.verticalLayout_2.addWidget(self.textBrowser)
+        self.horizontalLayout_1.addWidget(self.textBrowser)
+        self.infoTable = QtWidgets.QTableWidget(Form)
+        self.infoTable.setStyleSheet("font-size: %spt;" % self.fontBox.value() * 2)
+        self.infoTable.setColumnCount(2)
+        self.infoTable.verticalHeader().setVisible(False)
+        self.infoTable.horizontalHeader().setVisible(False)
+        self.infoTable.horizontalHeader().setStretchLastSection(True)
+        self.infoTable.setVisible(False)
+        self.horizontalLayout_1.addWidget(self.infoTable)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_1)
         self.gridLayout_2.addLayout(self.verticalLayout_2, 2, 0, 1, 1)
-
         self.retranslateUi(Form)
         self.fontBox.valueChanged.connect(self.update_fontsize)
-        self.comboBox.currentIndexChanged.connect(self.optionschanged)
+        self.comboBox.currentIndexChanged.connect(self.options_changed)
         QtCore.QMetaObject.connectSlotsByName(Form)
         Form.setTabOrder(self.textBrowser, self.comboBox)
         Form.setTabOrder(self.comboBox, self.fontBox)
@@ -144,9 +160,9 @@ class Ui_Form(object):
                             else:
                                 self.ontop = False
                         if "fontsize" in lcline:
-                            set = line.split("=", 1)[1].strip()
+                            size = line.split("=", 1)[1].strip()
                             try:
-                                self.fontBox.setValue(int(set))
+                                self.fontBox.setValue(int(size))
                             except ValueError:
                                 pass
                         if "openspotify" in lcline:
@@ -159,45 +175,55 @@ class Ui_Form(object):
                                 self.darktheme = True
                             else:
                                 self.darktheme = False
+                        if "infos" in lcline:
+                            self.infos = "true" in lcline
             else:
                 directory = os.path.dirname(settingsfile)
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 with open(settingsfile, 'w+') as settings:
                     settings.write(
-                        "[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme=False")
-            if self.darktheme is True:
+                        "[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme"
+                        "=False\nInfos=False")
+            if self.darktheme:
                 self.set_darktheme()
-            if self.sync is True:
-                self.comboBox.setItemText(2, ("Synced Lyrics (on)"))
-            if self.ontop is True:
+            if self.sync:
+                self.comboBox.setItemText(2, "Synced Lyrics (on)")
+            if self.ontop:
                 Form.setWindowFlags(Form.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-                self.comboBox.setItemText(3, ("Always on Top (on)"))
+                self.comboBox.setItemText(3, "Always on Top (on)")
                 Form.show()
-            if self.open_spotify is True:
-                self.comboBox.setItemText(4, ("Open Spotify (on)"))
+            if self.open_spotify:
+                self.comboBox.setItemText(4, "Open Spotify (on)")
+            if self.infos:
+                self.comboBox.setItemText(5, "Infos (on)")
+                self.infoTable.setVisible(True)
         else:
             with open(settingsfile, 'w+') as settings:
                 settings.write("[settings]\n")
-                if self.sync is True:
+                if self.sync:
                     settings.write("SyncedLyrics=True\n")
                 else:
                     settings.write("SyncedLyrics=False\n")
-                if self.ontop is True:
+                if self.ontop:
                     settings.write("AlwaysOnTop=True\n")
                 else:
                     settings.write("AlwaysOnTop=False\n")
-                if self.open_spotify is True:
+                if self.open_spotify:
                     settings.write("OpenSpotify=True\n")
                 else:
                     settings.write("OpenSpotify=False\n")
-                if self.darktheme is True:
+                if self.darktheme:
                     settings.write("DarkTheme=True\n")
                 else:
                     settings.write("DarkTheme=False\n")
+                if self.infos:
+                    settings.write("Infos=True\n")
+                else:
+                    settings.write("Infos=False\n")
                 settings.write("FontSize=%s" % str(self.fontBox.value()))
 
-    def optionschanged(self):
+    def options_changed(self):
         current_index = self.comboBox.currentIndex()
         if current_index == 1:
             if self.darktheme is False:
@@ -210,6 +236,7 @@ class Ui_Form(object):
                 self.fontBox.setStyleSheet("")
                 self.pushButton.setStyleSheet("")
                 self.chordsButton.setStyleSheet("")
+                self.infoTable.setStyleSheet("")
                 self.comboBox.setItemText(1, ("Dark Theme"))
                 text = re.sub("color:.*?;", "color: black;", self.label_songname.text())
                 self.label_songname.setText(text)
@@ -217,7 +244,7 @@ class Ui_Form(object):
                 Form.setStyleSheet("")
                 self.set_style()
         elif current_index == 2:
-            if self.sync is True:
+            if self.sync:
                 self.sync = False
                 self.comboBox.setItemText(2, ("Synced Lyrics"))
             else:
@@ -235,13 +262,22 @@ class Ui_Form(object):
                 self.comboBox.setItemText(3, ("Always on Top"))
                 Form.show()
         elif current_index == 4:
-            if self.open_spotify is True:
+            if self.open_spotify:
                 self.open_spotify = False
                 self.comboBox.setItemText(4, ("Open Spotify"))
             else:
                 self.open_spotify = True
                 self.comboBox.setItemText(4, ("Open Spotify (on)"))
         elif current_index == 5:
+            if self.infos:
+                self.infos = False
+                self.comboBox.setItemText(5, ("Infos"))
+                self.infoTable.setVisible(False)
+            else:
+                self.infos = True
+                self.comboBox.setItemText(5, ("Infos (on)"))
+                self.infoTable.setVisible(True)
+        elif current_index == 6:
             self.load_save_settings(save=True)
         else:
             pass
@@ -259,54 +295,54 @@ class Ui_Form(object):
                     for setting in theme.readlines():
                         lcsetting = setting.lower()
                         try:
-                            set = setting.split("=", 1)[1].strip()
+                            align = setting.split("=", 1)[1].strip()
                         except IndexError:
-                            set = ""
+                            align = ""
                         if "lyricstextalign" in lcsetting:
-                            if set == "center":
+                            if align == "center":
                                 self.lyricsTextAlign = QtCore.Qt.AlignCenter
-                            elif set == "right":
+                            elif align == "right":
                                 self.lyricsTextAlign = QtCore.Qt.AlignRight
                             else:
                                 pass
                         if "windowopacity" in lcsetting:
-                            windowopacity = float(set)
+                            windowopacity = float(align)
                         if lcsetting.startswith("backgroundcolor"):
-                            backgroundcolor = set
+                            backgroundcolor = align
                         if "lyricsbackgroundcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
-                            style = style + "background-color: %s;" % set
+                            style = style + "background-color: %s;" % align
                             self.textBrowser.setStyleSheet(style)
                         if "lyricstextcolor" in lcsetting:
                             style = self.textBrowser.styleSheet()
-                            style = style + "color: %s;" % set
+                            style = style + "color: %s;" % align
                             self.textBrowser.setStyleSheet(style)
                         if "lyricsfont" in lcsetting:
                             style = self.textBrowser.styleSheet()
-                            style = style + "font-family: %s;" % set
+                            style = style + "font-family: %s;" % align
                             self.textBrowser.setStyleSheet(style)
                         if "songnamecolor" in lcsetting:
                             style = self.label_songname.styleSheet()
-                            style = style + "color: %s;" % set
+                            style = style + "color: %s;" % align
                             self.label_songname.setStyleSheet(style)
-                            text = re.sub("color:.*?;", "color: %s;" % set, self.label_songname.text())
+                            text = re.sub("color:.*?;", "color: %s;" % align, self.label_songname.text())
                             self.label_songname.setText(text)
                         if "fontboxbackgroundcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
-                            style = style + "background-color: %s;" % set
+                            style = style + "background-color: %s;" % align
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                             self.pushButton.setStyleSheet(style)
                             self.chordsButton.setStyleSheet(style)
                         if "fontboxtextcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
-                            style = style + "color: %s;" % set
+                            style = style + "color: %s;" % align
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                             self.pushButton.setStyleSheet(style)
                             self.chordsButton.setStyleSheet(style)
                         if "songnameunderline" in lcsetting:
-                            if "true" in set.lower():
+                            if "true" in align.lower():
                                 style = self.label_songname.styleSheet()
                                 style = style + "text-decoration: underline;"
                                 self.label_songname.setStyleSheet(style)
@@ -330,6 +366,7 @@ class Ui_Form(object):
         self.fontBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.pushButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.chordsButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
+        self.infoTable.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.comboBox.setItemText(1, ("Dark Theme (on)"))
         Form.setWindowOpacity(1.0)
         Form.setStyleSheet("background-color: #282828;")
@@ -364,11 +401,14 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Spotify Lyrics - {}".format(backend.version())))
         Form.setWindowIcon(QtGui.QIcon(self.resource_path('icon.png')))
-        if backend.versioncheck() == True:
+        if backend.check_version():
             self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
         else:
             self.label_songname.setText(_translate("Form",
-                                                   "Spotify Lyrics <style type=\"text/css\">a {text-decoration: none}</style><a href=\"https://github.com/fr31/spotifylyrics/releases\"><sup>(update)</sup></a>"))
+                                                   "Spotify Lyrics <style type=\"text/css\">a {text-decoration: "
+                                                   "none}</style><a "
+                                                   "href=\"https://github.com/fr31/spotifylyrics/releases\"><sup>("
+                                                   "update)</sup></a>"))
         self.textBrowser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.fontBox.setToolTip(_translate("Form", "Font Size"))
         self.comboBox.setItemText(0, _translate("Form", "Options"))
@@ -376,7 +416,8 @@ class Ui_Form(object):
         self.comboBox.setItemText(2, _translate("Form", "Synced Lyrics"))
         self.comboBox.setItemText(3, _translate("Form", "Always on Top"))
         self.comboBox.setItemText(4, _translate("Form", "Open Spotify"))
-        self.comboBox.setItemText(5, _translate("Form", "Save Settings"))
+        self.comboBox.setItemText(5, _translate("Form", "Infos"))
+        self.comboBox.setItemText(6, _translate("Form", "Save Settings"))
 
     def add_service_name_to_lyrics(self, lyrics, service_name):
         return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % (
@@ -385,17 +426,22 @@ class Ui_Form(object):
     def lyrics_thread(self, comm):
         oldsongname = ""
         while True:
-            songname = backend.getwindowtitle()
+            songname = backend.get_window_title()
             self.changed = False
             if oldsongname != songname:
                 if songname != "Spotify" and songname != "":
                     oldsongname = songname
                     comm.signal.emit(songname, "Loading...")
                     start = time.time()
-                    if self.sync == True:
-                        lyrics, url, service_name, timed = backend.getlyrics(songname, sync=True)
+                    backend.set_song(songname)
+                    if self.sync:
+                        lyrics, url, service_name, timed = backend.get_lyrics(sync=True)
                     else:
-                        lyrics, url, service_name, timed = backend.getlyrics(songname)
+                        lyrics, url, service_name, timed = backend.get_lyrics()
+                    if self.infos:
+                        backend.load_infos()
+                        self.refresh_info()
+                        print(backend.song)  # TODO
                     if url == "":
                         header = songname
                     else:
@@ -414,23 +460,21 @@ class Ui_Form(object):
                             lrc.append(line)
                             if line.startswith(("[0", "[1", "[2")):
                                 firstline = True
-                                regex = re.compile('\[.+?\]')
-                                line = regex.sub('', line)
+                                line = brackets.sub('', line)
                                 lyricsclean = lyricsclean + line.strip() + "\n"
-                            elif line == "" and firstline == True:
+                            elif line == "" and firstline:
                                 lyricsclean = lyricsclean + "\n"
-
                         comm.signal.emit(header, self.add_service_name_to_lyrics(lyricsclean, service_name))
                         count = -1
                         firstline = False
                         for line in lrc:
-                            if self.sync == False:
+                            if not self.sync:
                                 self.change_lyrics()
                                 break
-                            if self.changed == True:
+                            if self.changed:
                                 self.changed = False
                                 break
-                            if line == "" and firstline == True:
+                            if line == "" and firstline:
                                 count += 1
                             if line.startswith(("[0", "[1", "[2")):
                                 firstline = True
@@ -443,10 +487,8 @@ class Ui_Form(object):
                                     ltime = 0.0
                                 rtime = add + ltime - 0.5
                                 lyrics1 = lyricsclean.splitlines()
-                                regex = re.compile('\[.+?\]')
-                                line = regex.sub('', line)
-                                regex = re.compile('\<.+?\>')
-                                line = regex.sub('', line)
+                                line = brackets.sub('', line)
+                                line = lessthan.sub('', line)
                                 lyrics1[count] = "<b>%s</b>" % line.strip()
                                 if count - 2 > 0:
                                     lyrics1[count - 2] = "<a name=\"#scrollHere\">%s</a>" % lyrics1[count - 2].strip()
@@ -459,25 +501,25 @@ class Ui_Form(object):
                                         color = style
                                     header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (
                                         color, url, songname)
-                                    if rtime <= time.time() - start and backend.getwindowtitle() != "Spotify":
-                                        if self.changed == True or self.sync == False:
+                                    if rtime <= time.time() - start and backend.get_window_title() != "Spotify":
+                                        if self.changed or not self.sync:
                                             break
                                         boldlyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % self.fontBox.value() * 2 + boldlyrics + '</p>'
                                         comm.signal.emit(header,
                                                          self.add_service_name_to_lyrics(boldlyrics, service_name))
                                         time.sleep(0.5)
                                         break
-                                    elif backend.getwindowtitle() == "Spotify":
+                                    elif backend.get_window_title() == "Spotify":
                                         time.sleep(0.2)
                                         start = start + 0.2
                                     else:
-                                        if songname != backend.getwindowtitle():
+                                        if songname != backend.get_window_title():
                                             break
                                         else:
                                             time.sleep(0.2)
-                            if songname != backend.getwindowtitle() and backend.getwindowtitle() != "Spotify":
+                            if songname != backend.get_window_title() and backend.get_window_title() != "Spotify":
                                 break
-                    if timed == False:
+                    else:
                         comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
             time.sleep(1)
 
@@ -488,15 +530,60 @@ class Ui_Form(object):
 
     def refresh_lyrics(self, songname, lyrics):
         _translate = QtCore.QCoreApplication.translate
-        if backend.getwindowtitle() != "":
+        if backend.get_window_title() != "":
             self.label_songname.setText(_translate("Form", songname))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
 
+    def refresh_info(self):
+        self.infoTable.clearContents()
+        self.infoTable.setRowCount(8)
+        song = backend.song
+        index = 0
+
+        self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("name"))
+        self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(song.name))
+        index += 1
+
+        self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("artist"))
+        self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(song.artist))
+        index += 1
+
+        if song.album != "UNKNOWN":
+            self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("album"))
+            self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(song.album))
+            index += 1
+
+        if song.genre != "UNKNOWN":
+            self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("genre"))
+            self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(song.genre))
+            index += 1
+
+        if song.year != -1:
+            self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("year"))
+            self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(song.year)))
+            index += 1
+
+        if song.cycles_per_minute != -1:
+            self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("cycles per minute"))
+            self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(song.cycles_per_minute)))
+            index += 1
+
+        if song.beats_per_minute != -1:
+            self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("beats per minute"))
+            self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem(str(song.beats_per_minute)))
+            index += 1
+
+        if len(song.dances) > 0:
+            self.infoTable.setItem(index, 0, QtWidgets.QTableWidgetItem("dances"))
+            self.infoTable.setItem(index, 1, QtWidgets.QTableWidgetItem("\n".join(song.dances)))
+
+        self.infoTable.resizeRowsToContents()
+        self.infoTable.resizeColumnsToContents()
+
     def get_chords(self):
         _translate = QtCore.QCoreApplication.translate
         if self.label_songname.text() not in ("", "Spotify", "Spotify Lyrics"):
-            songname = backend.getwindowtitle()
             backend.load_chords()
         else:
             self.textBrowser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
@@ -511,9 +598,8 @@ class Ui_Form(object):
             self.textBrowser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics_thread(self):
-        songname = backend.getwindowtitle()
+        songname = backend.get_window_title()
         self.comm.signal.emit(songname, "Loading...")
-        oldsongname = ""
         style = self.label_songname.styleSheet()
 
         if style == "":
