@@ -440,8 +440,6 @@ class Ui_Form(object):
                         lyrics, url, service_name, timed = backend.get_lyrics()
                     if self.infos:
                         backend.load_infos()
-                        self.refresh_info()
-                        print(backend.song)  # TODO
                     if url == "":
                         header = songname
                     else:
@@ -534,6 +532,7 @@ class Ui_Form(object):
             self.label_songname.setText(_translate("Form", songname))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.textBrowser.scrollToAnchor("#scrollHere")
+        self.refresh_info()
 
     def refresh_info(self):
         self.infoTable.clearContents()
