@@ -5,6 +5,7 @@ import re
 import threading
 import time
 
+import pylrc
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import backend
@@ -448,23 +449,15 @@ class Ui_Form(object):
                             color = "color: black"
                         else:
                             color = style
-                        header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (
-                            color, url, songname)
+                        header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' \
+                                 % (color, url, songname)
                     if timed:
-                        lrc = []
-                        lyricsclean = ""
-                        firstline = False
-                        for line in lyrics.splitlines():
-                            lrc.append(line)
-                            if line.startswith(("[0", "[1", "[2")):
-                                firstline = True
-                                line = brackets.sub('', line)
-                                lyricsclean = lyricsclean + line.strip() + "\n"
-                            elif line == "" and firstline:
-                                lyricsclean = lyricsclean + "\n"
+                        lrc = pylrc.parse(lyrics)
+                        if lrc.album != "":
+                            backend.song.album = lrc.album
+                        lyricsclean = '\n'.join(e.text for e in lrc)
                         comm.signal.emit(header, self.add_service_name_to_lyrics(lyricsclean, service_name))
                         count = -1
-                        firstline = False
                         for line in lrc:
                             if not self.sync:
                                 self.change_lyrics()
@@ -472,49 +465,38 @@ class Ui_Form(object):
                             if self.changed:
                                 self.changed = False
                                 break
-                            if line == "" and firstline:
-                                count += 1
-                            if line.startswith(("[0", "[1", "[2")):
-                                firstline = True
-                                count += 1
-                                ltime = line[line.find("[") + 1:line.find("]")]
-                                add = float(ltime[0:2]) * 60
-                                try:
-                                    ltime = float(ltime[3:])
-                                except ValueError:
-                                    ltime = 0.0
-                                rtime = add + ltime - 0.5
-                                lyrics1 = lyricsclean.splitlines()
-                                line = brackets.sub('', line)
-                                line = lessthan.sub('', line)
-                                lyrics1[count] = "<b>%s</b>" % line.strip()
-                                if count - 2 > 0:
-                                    lyrics1[count - 2] = "<a name=\"#scrollHere\">%s</a>" % lyrics1[count - 2].strip()
-                                boldlyrics = '<br>'.join(lyrics1)
-                                while True:
-                                    style = self.label_songname.styleSheet()
-                                    if style == "":
-                                        color = "color: black"
-                                    else:
-                                        color = style
-                                    header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (
-                                        color, url, songname)
-                                    if rtime <= time.time() - start and backend.get_window_title() != "Spotify":
-                                        if self.changed or not self.sync:
-                                            break
-                                        boldlyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % self.fontBox.value() * 2 + boldlyrics + '</p>'
-                                        comm.signal.emit(header,
-                                                         self.add_service_name_to_lyrics(boldlyrics, service_name))
-                                        time.sleep(0.5)
+                            count += 1
+                            lrc[count - 1].text = lrc[count - 1].text.replace("<b>", "").replace("</b>", "")
+                            lrc[count].text = "<b>%s</b>" % line.text
+                            if count - 2 > 0:
+                                lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
+                            boldlyrics = '<br>'.join(e.text for e in lrc)
+                            while True:
+                                style = self.label_songname.styleSheet()
+                                if style == "":
+                                    color = "color: black"
+                                else:
+                                    color = style
+                                header = '''<style type="text/css">a {text-decoration: none; %s}</style><a 
+                                href="%s">%s</a>''' % (color, url, songname)
+                                if line.time - (lrc.offset / 1000) <= time.time() - start \
+                                        and backend.get_window_title() != "Spotify":
+                                    if self.changed or not self.sync:
                                         break
-                                    elif backend.get_window_title() == "Spotify":
-                                        time.sleep(0.2)
-                                        start = start + 0.2
+                                    boldlyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % \
+                                                 self.fontBox.value() * 2 + boldlyrics + '</p>'
+                                    comm.signal.emit(header,
+                                                     self.add_service_name_to_lyrics(boldlyrics, service_name))
+                                    time.sleep(0.5)
+                                    break
+                                elif backend.get_window_title() == "Spotify":
+                                    time.sleep(0.2)
+                                    start = start + 0.2
+                                else:
+                                    if songname != backend.get_window_title():
+                                        break
                                     else:
-                                        if songname != backend.get_window_title():
-                                            break
-                                        else:
-                                            time.sleep(0.2)
+                                        time.sleep(0.2)
                             if songname != backend.get_window_title() and backend.get_window_title() != "Spotify":
                                 break
                     else:
