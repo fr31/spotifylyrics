@@ -440,7 +440,7 @@ class Ui_Form(object):
                     else:
                         lyrics, url, service_name, timed = backend.get_lyrics()
                     if self.infos:
-                        backend.load_infos()
+                        threading.Thread(target=backend.load_infos).start()
                     if url == "":
                         header = songname
                     else:
