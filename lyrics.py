@@ -50,10 +50,10 @@ def MiniLyrics(artist, title):
     def hexToStr(hexx):
         string = ''
         i = 0
-        while (i < (len(hexx) - 1)):
+        while i < (len(hexx) - 1):
             string += chr(int(hexx[i] + hexx[i + 1], 16))
             i += 2
-        return (string)
+        return string
 
     def vl_enc(data, md5_extra):
         datalen = len(data)
@@ -62,7 +62,7 @@ def MiniLyrics(artist, title):
         hasheddata = hexToStr(md5.hexdigest())
         j = 0
         i = 0
-        while (i < datalen):
+        while i < datalen:
             try:
                 j += data[i]
             except TypeError:
@@ -86,7 +86,7 @@ def MiniLyrics(artist, title):
             result = "\x02" + chr(magickey) + "\x04\x00\x00\x00" + str(hasheddata) + bytearray(encddata).decode("utf-8")
         except UnicodeDecodeError:
             result = "\x02" + chr(magickey) + "\x04\x00\x00\x00" + str(hasheddata) + bytearray(encddata)
-        return (result)
+        return result
 
     search_encquery = vl_enc(search_query_base.format(artist=artist, title=title).encode("utf-8"), search_md5watermark)
 
@@ -100,9 +100,9 @@ def MiniLyrics(artist, title):
         # trying to keep the script as sturdy as possible
         try:
             r = requests.post(url, data=data, headers=headers, proxies=proxy)
-            return (r.text)
+            return r.text
         except Exception as exceptio:
-            print(exceoptio)
+            print(exceptio)
             pass
         # if the request was denied, or the connection was interrupted, retrying. (up to five times)
         fail_count = 0
@@ -137,7 +137,7 @@ def MiniLyrics(artist, title):
                 result += chr(data[i] ^ magickey)
             else:
                 result += chr(ord(data[i]) ^ magickey)
-        return (result)
+        return result
 
     if 'search_result' not in locals():
         # didn't receive a reply from the server

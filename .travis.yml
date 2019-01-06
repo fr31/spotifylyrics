@@ -1,0 +1,10 @@
+dist: xenial
+language: python
+sudo: required
+python:
+  - "3.6"
+before_install:
+  - sudo apt-get install libdbus-1-dev libdbus-glib-1-dev --yes
+  - chmod +x SpotifyLyrics.pyw
+script:
+  - xvfb-run ./SpotifyLyrics.pyw
