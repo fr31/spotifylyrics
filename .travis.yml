@@ -1,15 +1,12 @@
-os:
-  - windows
-  - linux
-  - osx
-
 matrix:
   include:
     - os: linux
       dist: xenial
+      sudo: required
+    - os: osx
+    - os: windows
 
 language: python
-sudo: required
 python:
   - "3.6"
 
@@ -18,6 +15,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then chmod +x SpotifyLyrics.pyw; fi
 
 script:
+  - echo
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./SpotifyLyrics.pyw; fi
 
 before_deploy:
