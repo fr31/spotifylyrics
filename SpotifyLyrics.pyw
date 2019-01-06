@@ -43,7 +43,7 @@ class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
 
 
 brackets = re.compile(r'\[.+?\]')
-lessthan = re.compile(r'<.+?>')
+html_tags = re.compile(r'<.+?>')
 
 
 class Ui_Form(object):
@@ -466,9 +466,10 @@ class Ui_Form(object):
                                 self.changed = False
                                 break
                             count += 1
-                            lrc[count - 1].text = lrc[count - 1].text.replace("<b>", "").replace("</b>", "")
+                            lrc[count - 1].text = html_tags.sub("", lrc[count - 1].text)
                             lrc[count].text = "<b>%s</b>" % line.text
                             if count - 2 > 0:
+                                lrc[count - 3].text = html_tags.sub("", lrc[count - 3].text)
                                 lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
                             boldlyrics = '<br>'.join(e.text for e in lrc)
                             while True:
