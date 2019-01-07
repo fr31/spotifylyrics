@@ -284,7 +284,11 @@ def _welchertanz(song):
                 if len(infos) > 0 and song.name.lower() in infos[1].getText().strip().lower():
                     dances = infos[2].find_all("a")
                     for dance in dances:
-                        dance_name = dance.getText().strip().replace("Cha-Cha-Cha", "Cha Cha Cha")
+                        dance_name = dance.getText().strip()\
+                            .replace("Cha-Cha-Cha", "Cha Cha Cha")\
+                            .replace("Wiener", "Viennese")\
+                            .replace("Walzer", "Waltz")\
+                            .replace("Foxtrott", "Foxtrot")
                         if dance_name != "---" and dance_name not in song.dances:
                             song.dances.append(dance_name)
     except requests.exceptions.ConnectionError as e:
