@@ -134,8 +134,12 @@ def get_window_title():
     if sys.platform == "win32":
         spotifypids = []
         for proc in psutil.process_iter():
-            if proc.name() == 'Spotify.exe':
-                spotifypids.append(proc.pid)
+            if proc:
+                try:
+                    if proc.name() == 'Spotify.exe':
+                        spotifypids.append(proc.pid)
+                except psutil.NoSuchProcess:
+                    print("Process does not exist anymore")
 
         def enum_window_callback(hwnd, pid):
             tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
