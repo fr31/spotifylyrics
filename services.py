@@ -1,4 +1,5 @@
 import codecs
+import json
 import re
 import urllib
 
@@ -185,9 +186,16 @@ def _ultimateguitar(song):
 
     soup = BeautifulSoup(page.content, 'html.parser')
 
+    for script in soup.find_all("script"):
+        json_info_script = script.getText()
+        if "window.UGAPP.store.page" in json_info_script:
+            json_string = json_info_script \
+                .replace("window.UGAPP.store.page = ", "") \
+                .replace(";\n    window.UGAPP.store.i18n = {};\n", "")
+            break
     urls = []
-    for a in soup.find_all(class_='song result-link js-search-spelling-link', href=True):
-        urls.append(a['href'])
+    for result in json.loads(json_string)["data"]["results"]:
+        urls.append(result["tab_url"])
 
     return urls
 
@@ -287,10 +295,10 @@ def _welchertanz(song):
                 if len(infos) > 0 and song.name.lower() in infos[1].getText().strip().lower():
                     dances = infos[2].find_all("a")
                     for dance in dances:
-                        dance_name = dance.getText().strip()\
-                            .replace("Cha-Cha-Cha", "Cha Cha Cha")\
-                            .replace("Wiener", "Viennese")\
-                            .replace("Walzer", "Waltz")\
+                        dance_name = dance.getText().strip() \
+                            .replace("Cha-Cha-Cha", "Cha Cha Cha") \
+                            .replace("Wiener", "Viennese") \
+                            .replace("Walzer", "Waltz") \
                             .replace("Foxtrott", "Foxtrot")
                         if dance_name != "---" and dance_name not in song.dances:
                             song.dances.append(dance_name)
