@@ -151,8 +151,10 @@ def _versuri(song):
         soup = BeautifulSoup(searchresults.text, 'html.parser')
         for x in soup.findAll('a'):
             if "/versuri/" in x['href']:
-                url = "https://www.versuri.ro" + x['href']
-                break
+                link_text = x.getText().lower()
+                if song.artist.lower() in link_text and song.name.lower() in link_text:
+                    url = "https://www.versuri.ro" + x['href']
+                    break
             else:
                 pass
         if url is "":
