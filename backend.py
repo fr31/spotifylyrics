@@ -86,6 +86,8 @@ def load_lyrics(song, sync=False):
             if lyrics != error:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
+    if lyrics == error:
+        service_name = "---"
 
     # return "Error: Could not find lyrics."  if the for loop doesn't find any lyrics
     return lyrics, url, service_name, timed

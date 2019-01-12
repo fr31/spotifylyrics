@@ -145,12 +145,13 @@ def _versuri(song):
     service_name = "Versuri"
     url = ""
     try:
-        searchurl = "http://www.versuri.ro/q/%s+%s/" % (song.artist.replace(" ", "+"), song.name.replace(" ", "+"))
+        searchurl = "https://www.versuri.ro/q/%s+%s/" % \
+                    (song.artist.replace(" ", "+").lower(), song.name.replace(" ", "+").lower())
         searchresults = requests.get(searchurl, proxies=proxy)
         soup = BeautifulSoup(searchresults.text, 'html.parser')
         for x in soup.findAll('a'):
             if "/versuri/" in x['href']:
-                url = "http://www.versuri.ro" + x['href']
+                url = "https://www.versuri.ro" + x['href']
                 break
             else:
                 pass
