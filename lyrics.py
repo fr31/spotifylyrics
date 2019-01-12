@@ -118,7 +118,7 @@ def MiniLyrics(artist, title):
                 return
 
     try:
-        search_result = http_post(search_url, search_encquery, search_useragent);
+        search_result = http_post(search_url, search_encquery, search_useragent)
     except:
         print("something went wrong, could be a lot of things :(")
 

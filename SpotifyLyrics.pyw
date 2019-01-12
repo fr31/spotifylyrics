@@ -95,6 +95,12 @@ class Ui_Form(object):
         self.pushButton.clicked.connect(self.change_lyrics)
         self.horizontalLayout_2.addWidget(self.pushButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
+        self.saveButton = QtWidgets.QPushButton(Form)
+        self.saveButton.setObjectName("saveButton")
+        self.saveButton.setText("Save Lyrics")
+        self.saveButton.clicked.connect(self.save_lyrics)
+        self.horizontalLayout_2.addWidget(self.saveButton, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
         # Open Tab Button
         self.chordsButton = QtWidgets.QPushButton(Form)
         self.chordsButton.setObjectName("chordsButton")
@@ -236,6 +242,7 @@ class Ui_Form(object):
                 self.comboBox.setStyleSheet("")
                 self.fontBox.setStyleSheet("")
                 self.pushButton.setStyleSheet("")
+                self.saveButton.setStyleSheet("")
                 self.chordsButton.setStyleSheet("")
                 self.infoTable.setStyleSheet("")
                 self.comboBox.setItemText(1, ("Dark Theme"))
@@ -334,6 +341,7 @@ class Ui_Form(object):
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                             self.pushButton.setStyleSheet(style)
+                            self.saveButton.setStyle(style)
                             self.chordsButton.setStyleSheet(style)
                         if "fontboxtextcolor" in lcsetting:
                             style = self.fontBox.styleSheet()
@@ -341,6 +349,7 @@ class Ui_Form(object):
                             self.comboBox.setStyleSheet(style)
                             self.fontBox.setStyleSheet(style)
                             self.pushButton.setStyleSheet(style)
+                            self.saveButton.setStyleSheet(style)
                             self.chordsButton.setStyleSheet(style)
                         if "songnameunderline" in lcsetting:
                             if "true" in align.lower():
@@ -366,6 +375,7 @@ class Ui_Form(object):
         self.comboBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.fontBox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.pushButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
+        self.saveButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.chordsButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.infoTable.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.comboBox.setItemText(1, ("Dark Theme (on)"))
@@ -598,7 +608,12 @@ class Ui_Form(object):
 
         self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
-    def spotify(self):
+    def save_lyrics(self):
+        with open(backend.song.artist + " - " + backend.song.name + ".txt", "w", encoding="utf-8") as lyrics_file:
+            lyrics_file.write(self.textBrowser.toPlainText())
+
+    @staticmethod
+    def spotify():
         backend.open_spotify()
 
 
