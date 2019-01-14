@@ -166,6 +166,8 @@ def _versuri(song):
             content = soup.find_all('div', {'id': 'pagecontent'})[0]
             lyrics = str(content)[str(content).find("</script><br/>") + 14:str(content).find("<br/><br/><center>")]
             lyrics = lyrics.replace("<br/>", "")
+        if "nu există" in lyrics:
+            lyrics = error
     except Exception:
         lyrics = error
     return lyrics, url, service_name

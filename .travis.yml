@@ -3,27 +3,44 @@ matrix:
     - os: linux
       dist: xenial
       sudo: required
-    - os: osx
-    - os: windows
+      before_install:
+        - sudo apt-get install libdbus-1-dev libdbus-glib-1-dev --yes
+        - chmod +x SpotifyLyrics.pyw
+        - pip install --upgrade pip
+      language: python
+      python:
+        - 3.6
+    #- os: osx
+    #  language: generic
+    #  before_install:
+    #    - brew update
+    #    - pip install --upgrade pip
+    #  install:
+    #    - pip install -r requirements.txt
+    #- os: windows
+    #  language: cpp
+    #  before_install:
+    #    - choco upgrade chocolatey -y -v -d
+    #    - choco install python -v -d
 
-language: python
-python:
-  - "3.6"
-
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libdbus-1-dev libdbus-glib-1-dev --yes; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then chmod +x SpotifyLyrics.pyw; fi
+before_script:
+  - export PYTHONPATH=$PYTHONPATH:$PWD
 
 script:
-  - echo
+  - python tests/services_test.py
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./SpotifyLyrics.pyw; fi
 
 before_deploy:
   - pip install pyinstaller
-  - pyinstaller SpotifyLyrics.pyw
+  - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico
 
 deploy:
   provider: releases
   pre-release: true
   skip_cleanup: true
   api_key: ${GH_TOKEN}
+  file: $CI_HOME/dist/SpotifyLyrics.*
+  on:
+    repo: SimonIT/spotifylyrics
+    tags: true
+    all_branches: true
