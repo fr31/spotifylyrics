@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 import re
 import subprocess
@@ -206,9 +207,9 @@ def get_window_title():
 def check_version():
     proxy = urllib.request.getproxies()
     try:
-        currentversion = requests.get("https://raw.githubusercontent.com/fr31/spotifylyrics/master/currentversion",
-                                      timeout=5, proxies=proxy).text
-    except Exception:
+        currentversion = json.loads(requests.get("https://api.github.com/repos/SimonIT/spotifylyrics/tags",
+                                      timeout=5, proxies=proxy).text)[0]["name"]
+    except Exception as e:
         return True
     try:
         return float(version()) >= float(currentversion)
@@ -217,7 +218,7 @@ def check_version():
 
 
 def version():
-    version = "1.21"
+    version = "1.22"
     return version
 
 
