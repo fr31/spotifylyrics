@@ -1,4 +1,6 @@
 # Spotify Lyrics
+[![Build Status](https://travis-ci.com/SimonIT/spotifylyrics.svg?branch=master)](https://travis-ci.com/SimonIT/spotifylyrics)
+
 Fetches and displays lyrics to currently playing song in the Spotify desktop client.
 
 # how to
