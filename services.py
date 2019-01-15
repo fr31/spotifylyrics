@@ -196,8 +196,10 @@ def _ultimateguitar(song):
                 .replace(";\n    window.UGAPP.store.i18n = {};\n", "")
             break
     urls = []
-    for result in json.loads(json_string)["data"]["results"]:
-        urls.append(result["tab_url"])
+    data = json.loads(json_string)["data"]
+    if "results" in data.keys():
+        for result in data["results"]:
+            urls.append(result["tab_url"])
 
     return urls
 
