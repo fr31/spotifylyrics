@@ -378,7 +378,7 @@ class Ui_Form(object):
         self.saveButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.chordsButton.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.infoTable.setStyleSheet("background-color: #181818; color: #9c9c9c;")
-        self.comboBox.setItemText(1, ("Dark Theme (on)"))
+        self.comboBox.setItemText(1, "Dark Theme (on)")
         Form.setWindowOpacity(1.0)
         Form.setStyleSheet("background-color: #282828;")
 

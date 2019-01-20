@@ -71,6 +71,9 @@ def _musixmatch(song):
         lyrics = lyrics.replace("\\", "")
         if lyrics.strip() == "":
             lyrics = error
+        album = soup.find(class_="mxm-track-footer__album")
+        if album:
+            song.album = album.find(class_="mui-cell__title").getText()
     except Exception:
         lyrics = error
     return lyrics, url, service_name
