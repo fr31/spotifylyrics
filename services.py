@@ -9,8 +9,8 @@ from bs4 import BeautifulSoup
 
 import lyrics as minilyrics
 
-error = "Error: Could not find lyrics."
-proxy = urllib.request.getproxies()
+ERROR = "Error: Could not find lyrics."
+PROXY = urllib.request.getproxies()
 
 
 def _minilyrics(song):
@@ -23,14 +23,14 @@ def _minilyrics(song):
             if item['url'].endswith(".lrc"):
                 url = item['url']
                 break
-        lyrics = requests.get(url, proxies=proxy).text
+        lyrics = requests.get(url, proxies=PROXY).text
         timed = True
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     if url == "":
-        lyrics = error
+        lyrics = ERROR
     if song.artist.lower().replace(" ", "") not in lyrics.lower().replace(" ", ""):
-        lyrics = error
+        lyrics = ERROR
         timed = False
 
     return lyrics, url, service_name, timed
@@ -43,13 +43,13 @@ def _wikia(song):
         lyrics = minilyrics.LyricWikia(song.artist, song.name)
         url = "http://lyrics.wikia.com/%s:%s" % (song.artist.replace(' ', '_'), song.name.replace(' ', '_'))
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     if "TrebleClef.png" in lyrics:
         lyrics = "(Instrumental)"
     if "Instrumental" in lyrics:
         lyrics = "(Instrumental)"
     if lyrics == "error":
-        lyrics = error
+        lyrics = ERROR
     return lyrics, url, service_name
 
 
@@ -57,25 +57,25 @@ def _musixmatch(song):
     service_name = "Musixmatch"
     url = ""
     try:
-        searchurl = "https://www.musixmatch.com/search/%s-%s/tracks" % (
+        search_url = "https://www.musixmatch.com/search/%s-%s/tracks" % (
             song.artist.replace(' ', '-'), song.name.replace(' ', '-'))
         header = {"User-Agent": "curl/7.9.8 (i686-pc-linux-gnu) libcurl 7.9.8 (OpenSSL 0.9.6b) (ipv6 enabled)"}
-        searchresults = requests.get(searchurl, headers=header, proxies=proxy)
-        soup = BeautifulSoup(searchresults.text, 'html.parser')
+        search_results = requests.get(search_url, headers=header, proxies=PROXY)
+        soup = BeautifulSoup(search_results.text, 'html.parser')
         page = re.findall('"track_share_url":"([^"]*)', soup.text)
         url = codecs.decode(page[0], 'unicode-escape')
-        lyricspage = requests.get(url, headers=header, proxies=proxy)
-        soup = BeautifulSoup(lyricspage.text, 'html.parser')
+        lyrics_page = requests.get(url, headers=header, proxies=PROXY)
+        soup = BeautifulSoup(lyrics_page.text, 'html.parser')
         lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
         lyrics = lyrics.replace("\\n", "\n")
         lyrics = lyrics.replace("\\", "")
         if lyrics.strip() == "":
-            lyrics = error
+            lyrics = ERROR
         album = soup.find(class_="mxm-track-footer__album")
         if album:
             song.album = album.find(class_="mui-cell__title").getText()
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     return lyrics, url, service_name
 
 
@@ -83,9 +83,9 @@ def _songmeanings(song):
     service_name = "Songmeanings"
     url = ""
     try:
-        searchurl = "http://songmeanings.com/m/query/?q=%s %s" % (song.artist, song.name)
-        searchresults = requests.get(searchurl, proxies=proxy)
-        soup = BeautifulSoup(searchresults.text, 'html.parser')
+        search_url = "http://songmeanings.com/m/query/?q=%s %s" % (song.artist, song.name)
+        search_results = requests.get(search_url, proxies=PROXY)
+        soup = BeautifulSoup(search_results.text, 'html.parser')
         url = ""
         for link in soup.find_all('a', href=True):
             if "songmeanings.com/m/songs/view/" in link['href']:
@@ -93,19 +93,19 @@ def _songmeanings(song):
                 break
             elif "/m/songs/view/" in link['href']:
                 result = "http://songmeanings.com" + link['href']
-                lyricspage = requests.get(result, proxies=proxy)
-                soup = BeautifulSoup(lyricspage.text, 'html.parser')
+                lyrics_page = requests.get(result, proxies=PROXY)
+                soup = BeautifulSoup(lyrics_page.text, 'html.parser')
                 url = "http://songmeanings.com" + link['href'][2:]
                 break
             else:
                 pass
-        templyrics = soup.find_all("li")[4]
-        lyrics = templyrics.getText()
+        temp_lyrics = soup.find_all("li")[4]
+        lyrics = temp_lyrics.getText()
         lyrics = lyrics.split("(r,s)};})();")[1]
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     if lyrics == "We are currently missing these lyrics.":
-        lyrics = error
+        lyrics = ERROR
 
     # lyrics = lyrics.encode('cp437', errors='replace').decode('utf-8', errors='replace')
     return lyrics, url, service_name
@@ -118,15 +118,15 @@ def _songlyrics(song):
         artistm = song.artist.replace(" ", "-")
         songm = song.name.replace(" ", "-")
         url = "http://www.songlyrics.com/%s/%s-lyrics" % (artistm, songm)
-        lyricspage = requests.get(url, proxies=proxy)
-        soup = BeautifulSoup(lyricspage.text, 'html.parser')
+        lyrics_page = requests.get(url, proxies=PROXY)
+        soup = BeautifulSoup(lyrics_page.text, 'html.parser')
         lyrics = soup.find(id="songLyricsDiv").get_text()
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     if "Sorry, we have no" in lyrics:
-        lyrics = error
+        lyrics = ERROR
     if "We do not have" in lyrics:
-        lyrics = error
+        lyrics = ERROR
     return lyrics, url, service_name
 
 
@@ -135,13 +135,13 @@ def _genius(song):
     url = ""
     try:
         url = "http://genius.com/%s-%s-lyrics" % (song.artist.replace(' ', '-'), song.name.replace(' ', '-'))
-        lyricspage = requests.get(url, proxies=proxy)
-        soup = BeautifulSoup(lyricspage.text, 'html.parser')
+        lyrics_page = requests.get(url, proxies=PROXY)
+        soup = BeautifulSoup(lyrics_page.text, 'html.parser')
         lyrics = soup.find("div", {"class": "lyrics"}).get_text()
         if song.artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
-            lyrics = error
+            lyrics = ERROR
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     return lyrics, url, service_name
 
 
@@ -149,10 +149,10 @@ def _versuri(song):
     service_name = "Versuri"
     url = ""
     try:
-        searchurl = "https://www.versuri.ro/q/%s+%s/" % \
+        search_url = "https://www.versuri.ro/q/%s+%s/" % \
                     (song.artist.replace(" ", "+").lower(), song.name.replace(" ", "+").lower())
-        searchresults = requests.get(searchurl, proxies=proxy)
-        soup = BeautifulSoup(searchresults.text, 'html.parser')
+        search_results = requests.get(search_url, proxies=PROXY)
+        soup = BeautifulSoup(search_results.text, 'html.parser')
         for x in soup.findAll('a'):
             if "/versuri/" in x['href']:
                 link_text = x.getText().lower()
@@ -162,17 +162,17 @@ def _versuri(song):
             else:
                 pass
         if url is "":
-            lyrics = error
+            lyrics = ERROR
         else:
-            lyricspage = requests.get(url, proxies=proxy)
-            soup = BeautifulSoup(lyricspage.text, 'html.parser')
+            lyrics_page = requests.get(url, proxies=PROXY)
+            soup = BeautifulSoup(lyrics_page.text, 'html.parser')
             content = soup.find_all('div', {'id': 'pagecontent'})[0]
             lyrics = str(content)[str(content).find("</script><br/>") + 14:str(content).find("<br/><br/><center>")]
             lyrics = lyrics.replace("<br/>", "")
         if "nu există" in lyrics:
-            lyrics = error
+            lyrics = ERROR
     except Exception:
-        lyrics = error
+        lyrics = ERROR
     return lyrics, url, service_name
 
 
@@ -239,7 +239,7 @@ def _tanzmusikonline(song):
             song_urls = []
             base_result_url = 'https://www.tanzmusik-online.de/search/result'
             while page < highest_page:
-                search_results = requests.post(base_result_url + "?page=" + str(page), proxies=proxy,
+                search_results = requests.post(base_result_url + "?page=" + str(page), proxies=PROXY,
                                                cookies=token_request.cookies,
                                                data={"artist": song.artist, "song": song.name, "_token": token,
                                                      "searchMode": "extended", "genre": 0, "submit": "Suchen"})
@@ -249,15 +249,15 @@ def _tanzmusikonline(song):
                 if page == 1:
                     pagination = search_soup.find(class_="pagination")
                     if pagination:
-                        for page_number in pagination.find_all("a"):
-                            t = page_number.getText()
-                            if t.isdigit():
-                                highest_page = int(t) + 1
+                        for page_number_element in pagination.find_all("a"):
+                            page_number = page_number_element.getText()
+                            if page_number.isdigit():
+                                highest_page = int(page_number) + 1
                 page += 1
 
-            language = requests.get("https://www.tanzmusik-online.de/locale/en", proxies=proxy)
+            language = requests.get("https://www.tanzmusik-online.de/locale/en", proxies=PROXY)
             for song_url in song_urls:
-                page = requests.get(song_url, proxies=proxy, cookies=language.cookies)
+                page = requests.get(song_url, proxies=PROXY, cookies=language.cookies)
 
                 soup = BeautifulSoup(page.content, 'html.parser')
 
@@ -288,18 +288,18 @@ def _tanzmusikonline(song):
 
 def _welchertanz(song):
     try:
-        interpreter_request = requests.get("https://www.welcher-tanz.de/interpreten/", proxies=proxy)
+        interpreter_request = requests.get("https://www.welcher-tanz.de/interpreten/", proxies=PROXY)
         interpreter_soup = BeautifulSoup(interpreter_request.content, 'html.parser')
         interpreter_links = []
         for interpreter in interpreter_soup.find_all(class_="chip"):
             if song.artist.lower() in interpreter.getText().split("(", 1)[0].strip().lower():
                 interpreter_links.append(interpreter.get("href"))
         for interpreter_link in interpreter_links:
-            interpreter_songs = requests.get("https://www.welcher-tanz.de" + interpreter_link, proxies=proxy)
+            interpreter_songs = requests.get("https://www.welcher-tanz.de" + interpreter_link, proxies=PROXY)
             interpreter_songs_soup = BeautifulSoup(interpreter_songs.content, 'html.parser')
             for interpreter_song in interpreter_songs_soup.find(class_="card-content").find_all("tr"):
                 infos = interpreter_song.find_all("td")
-                if len(infos) > 0 and song.name.lower() in infos[1].getText().strip().lower():
+                if infos and song.name.lower() in infos[1].getText().strip().lower():
                     dances = infos[2].find_all("a")
                     for dance in dances:
                         dance_name = dance.getText().strip() \

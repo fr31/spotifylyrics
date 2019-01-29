@@ -135,12 +135,12 @@ def load_chords():
 
 def get_window_title():
     if sys.platform == "win32":
-        spotifypids = []
+        spotify_pids = []
         for proc in psutil.process_iter():
             if proc:
                 try:
                     if proc.name() == 'Spotify.exe':
-                        spotifypids.append(proc.pid)
+                        spotify_pids.append(proc.pid)
                 except psutil.NoSuchProcess:
                     print("Process does not exist anymore")
 
@@ -150,32 +150,32 @@ def get_window_title():
                 windows.append(hwnd)
 
         windows = []
-        windowname = ''
+        window_name = ''
 
         try:
-            for pid in spotifypids:
+            for pid in spotify_pids:
                 win32gui.EnumWindows(enum_window_callback, pid)
                 for item in windows:
                     if win32gui.GetWindowText(item) != '':
-                        windowname = win32gui.GetWindowText(item)
+                        window_name = win32gui.GetWindowText(item)
                         raise StopIteration
         except StopIteration:
             pass
 
     elif sys.platform == "darwin":
-        windowname = ''
+        window_name = ''
         try:
             command = "osascript getCurrentSong.AppleScript"
-            windowname = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
+            window_name = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
         except Exception:
             pass
     else:
-        windowname = ''
+        window_name = ''
         try:
             session = dbus.SessionBus()
-            spotifydbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
-            spotifyinterface = dbus.Interface(spotifydbus, "org.freedesktop.DBus.Properties")
-            metadata = spotifyinterface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+            spotify_dbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
+            spotify_interface = dbus.Interface(spotify_dbus, "org.freedesktop.DBus.Properties")
+            metadata = spotify_interface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
         except Exception:
             pass
         try:
@@ -189,35 +189,32 @@ def get_window_title():
                         break
                 spotify = 'Spotify Lyrics'
             if spotify == '':
-                windowname = 'Spotify'
+                window_name = 'Spotify'
         except Exception:
             pass
-        if windowname != 'Spotify' and windowname != 'Spotify Lyrics':
+        if window_name != 'Spotify' and window_name != 'Spotify Lyrics':
             try:
-                windowname = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
+                window_name = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
             except Exception:
                 pass
-    if "—" in windowname:
-        windowname = windowname.replace("—", "-")
-    if "Spotify - " in windowname:
-        windowname = windowname.strip("Spotify - ")
-    return windowname
+    if "—" in window_name:
+        window_name = window_name.replace("—", "-")
+    if "Spotify - " in window_name:
+        window_name = window_name.strip("Spotify - ")
+    return window_name
 
 
 def check_version():
     proxy = urllib.request.getproxies()
     try:
-        currentversion = json.loads(requests.get("https://api.github.com/repos/SimonIT/spotifylyrics/tags",
-                                      timeout=5, proxies=proxy).text)[0]["name"]
-    except Exception as e:
-        return True
-    try:
-        return float(version()) >= float(currentversion)
+        return float(get_version()) >= float(
+            json.loads(requests.get("https://api.github.com/repos/SimonIT/spotifylyrics/tags",
+                                    timeout=5, proxies=proxy).text)[0]["name"])
     except Exception:
         return True
 
 
-def version():
+def get_version():
     version = "1.22"
     return version
 
@@ -256,12 +253,12 @@ def main():
             os.system("clear")
 
     clear()
-    oldsongname = ""
+    old_song_name = ""
     while True:
-        songname = get_window_title()
-        if oldsongname != songname:
-            if songname != "Spotify":
-                oldsongname = songname
+        song_name = get_window_title()
+        if old_song_name != song_name:
+            if song_name != "Spotify":
+                old_song_name = song_name
                 clear()
         time.sleep(1)
 

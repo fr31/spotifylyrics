@@ -1,10 +1,12 @@
 # Spotify Lyrics
 [![Build Status](https://travis-ci.com/SimonIT/spotifylyrics.svg?branch=master)](https://travis-ci.com/SimonIT/spotifylyrics)
+[![Current Release](https://img.shields.io/github/release/SimonIT/spotifylyrics.svg)](https://github.com/SimonIT/spotifylyrics/releases)
+[![License](https://img.shields.io/github/license/SimonIT/spotifylyrics.svg)](https://github.com/SimonIT/spotifylyrics/blob/master/LICENSE)
 
 Fetches and displays lyrics to currently playing song in the Spotify desktop client.
 
 # how to
-You can grab the latest release exe in the [release section](https://github.com/fr31/spotifylyrics/releases).
+You can grab the latest release exe in the [release section](https://github.com/SimonIT/spotifylyrics/releases).
 
 Just double click and start playing songs in spotify. 
 
