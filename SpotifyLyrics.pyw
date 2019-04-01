@@ -441,7 +441,7 @@ class UiForm(object):
             song_name = backend.get_window_title()
             self.changed = False
             if old_song_name != song_name:
-                if song_name not in ('Spotify', ''):
+                if song_name not in ('Spotify', 'Spotify Premium', ''):
                     old_song_name = song_name
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
