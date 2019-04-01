@@ -491,8 +491,9 @@ class UiForm(object):
                                     color = style
                                 header = '''<style type="text/css">a {text-decoration: none; %s}</style><a 
                                 href="%s">%s</a>''' % (color, url, song_name)
+                                window_title = backend.get_window_title()
                                 if line.time - (lrc.offset / 1000) <= time.time() - start \
-                                        and backend.get_window_title() != "Spotify":
+                                        and window_title != "Spotify" and window_title != "Spotify Premium":
                                     if self.changed or not self.sync:
                                         break
                                     bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % \
@@ -501,15 +502,17 @@ class UiForm(object):
                                                      self.add_service_name_to_lyrics(bold_lyrics, service_name))
                                     time.sleep(0.5)
                                     break
-                                elif backend.get_window_title() == "Spotify":
+                                elif window_title == "Spotify" or window_title == "Spotify Premium":
                                     time.sleep(0.2)
                                     start = start + 0.2
                                 else:
-                                    if song_name != backend.get_window_title():
+                                    if song_name != window_title:
                                         break
                                     else:
                                         time.sleep(0.2)
-                            if song_name != backend.get_window_title() and backend.get_window_title() != "Spotify":
+                            window_title = backend.get_window_title()
+                            if song_name != window_title and window_title != "Spotify" \
+                                    and window_title != "Spotify Premium":
                                 break
                     else:
                         comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
