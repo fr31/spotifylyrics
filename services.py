@@ -150,7 +150,7 @@ def _versuri(song):
     url = ""
     try:
         search_url = "https://www.versuri.ro/q/%s+%s/" % \
-                    (song.artist.replace(" ", "+").lower(), song.name.replace(" ", "+").lower())
+                     (song.artist.replace(" ", "+").lower(), song.name.replace(" ", "+").lower())
         search_results = requests.get(search_url, proxies=PROXY)
         soup = BeautifulSoup(search_results.text, 'html.parser')
         for x in soup.findAll('a'):
@@ -189,22 +189,24 @@ def _ultimateguitar(song):
     url = url_pt1 + artist + url_pt2 + title + url_pt3
     page = requests.get(url)
 
-    soup = BeautifulSoup(page.content, 'html.parser')
+    if page.status_code == 200:
+        soup = BeautifulSoup(page.content, 'html.parser')
 
-    for script in soup.find_all("script"):
-        json_info_script = script.getText()
-        if "window.UGAPP.store.page" in json_info_script:
-            json_string = json_info_script \
-                .replace("window.UGAPP.store.page = ", "") \
-                .replace(";\n    window.UGAPP.store.i18n = {};\n", "")
-            break
-    urls = []
-    data = json.loads(json_string)["data"]
-    if "results" in data.keys():
-        for result in data["results"]:
-            urls.append(result["tab_url"])
+        for script in soup.find_all("script"):
+            json_info_script = script.getText()
+            if "window.UGAPP.store.page" in json_info_script:
+                json_string = json_info_script \
+                    .replace("window.UGAPP.store.page = ", "") \
+                    .replace(";\n    window.UGAPP.store.i18n = {};\n", "")
+                break
+        urls = []
+        data = json.loads(json_string)["data"]
+        if "results" in data.keys():
+            for result in data["results"]:
+                urls.append(result["tab_url"])
 
-    return urls
+        return urls
+    return []
 
 
 def _cifraclub(song):

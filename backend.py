@@ -125,11 +125,10 @@ def next_lyrics():
 
 
 def load_chords():
-    for i in range(len(services_list3)):
-        urls = services_list3[i](song)
-        if len(urls) != 0:
-            webbrowser.open(urls[0])
-            break
+    for i in services_list3:
+        urls = i(song)
+        for url in urls:
+            webbrowser.open(url)
 
 
 def get_window_title():
