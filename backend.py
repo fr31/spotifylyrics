@@ -121,8 +121,7 @@ def get_lyrics(sync=False):
 
 def next_lyrics():
     global current_service
-    lyrics, url, service_name, timed = load_lyrics(song)
-    return lyrics, url, service_name, timed
+    return load_lyrics(song)
 
 
 def load_chords():

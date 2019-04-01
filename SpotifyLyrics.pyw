@@ -603,7 +603,7 @@ class UiForm(object):
         else:
             color = style
 
-        lyrics, url, service_name = backend.next_lyrics()
+        lyrics, url, service_name, timed = backend.next_lyrics()
         if url == "":
             header = song_name
         else:
