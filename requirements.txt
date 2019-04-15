@@ -4,7 +4,7 @@ win32gui; sys.platform == 'win32'
 dbus-python; sys.platform == 'linux'
 sip==4.19.8
 PyQt5==5.9.2
-requests==2.18.4
+requests>=2.20.0
 xmltodict==0.11.0
 psutil==5.4.3; sys.platform == 'win32'
 unidecode==1.0.22
