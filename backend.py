@@ -213,7 +213,7 @@ def check_version():
 
 
 def get_version():
-    version = "1.22"
+    version = "1.23"
     return version
 
 
