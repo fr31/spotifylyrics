@@ -33,13 +33,17 @@ script:
 before_deploy:
   - pip install pyinstaller
   - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
+  - ls dist/
 
 deploy:
   provider: releases
   pre-release: true
   skip_cleanup: true
   api_key: ${GH_TOKEN}
-  file: $CI_HOME/dist/SpotifyLyrics*
+  file:
+    - dist/SpotifyLyrics
+    - dist/SpotifyLyrics.exe
+    - dist/SpotifyLyrics.app
   on:
     repo: SimonIT/spotifylyrics
     tags: true
