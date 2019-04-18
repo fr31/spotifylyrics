@@ -35,7 +35,7 @@ You can store lyrics on you hard drive which can automatically loaded.
 
 You have to put them on windows in `C:\Users\<User>\AppData\Roaming\SpotifyLyrics\lyrics` and on the other OS's in `/home/<User>/.SpotifyLyrics/lyrics`. Replace `<User>` with your username.
   
-There you can put `.lrc` files with synced text (You can make them on [lrcgenerator.com](https://lrcgenerator.com/) or simple `.txt` files with non-synced text.
+There you can put `.lrc` files with synced text (You can make them on [lrcgenerator.com](https://lrcgenerator.com/)) or simple `.txt` files with non-synced text.
  
 **Important: The file names must include the artist and the name of the song**
 
