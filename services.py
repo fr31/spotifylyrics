@@ -1,5 +1,6 @@
 import codecs
 import json
+import os
 import re
 import urllib
 
@@ -7,10 +8,35 @@ import requests
 import unidecode  # to remove accents
 from bs4 import BeautifulSoup
 
+import SpotifyLyrics
 import lyrics as minilyrics
 
 ERROR = "Error: Could not find lyrics."
 PROXY = urllib.request.getproxies()
+
+
+def _local(song):
+    service_name = "Local"
+    url = ""
+    timed = False
+    lyrics = ERROR
+
+    if os.path.isdir(SpotifyLyrics.lyrics_dir):
+        for file in os.listdir(SpotifyLyrics.lyrics_dir):
+            file = SpotifyLyrics.lyrics_dir + file
+            if os.path.isfile(file):
+                file_parts = os.path.os.path.splitext(file)
+                file_extension = file_parts[1].lower()
+                if file_extension in (".txt", ".lrc"):
+                    file_name = file_parts[0].lower()
+                    if song.name.lower() in file_name and song.artist.lower() in file_name:
+                        with open(file, "r", encoding="UTF-8") as lyrics_file:
+                            lyrics = lyrics_file.read()
+                        timed = file_extension == ".lrc"
+                        url = os.path.abspath(file)
+                        break
+
+    return lyrics, url, service_name, timed
 
 
 def _minilyrics(song):

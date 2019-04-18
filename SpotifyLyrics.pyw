@@ -2,6 +2,7 @@
 
 import os
 import re
+import subprocess
 import threading
 import time
 
@@ -45,6 +46,13 @@ class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
 BRACKETS = re.compile(r'\[.+?\]')
 HTML_TAGS = re.compile(r'<.+?>')
 
+if os.name == "nt":
+    settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
+    lyrics_dir = settings_dir + "lyrics\\"
+else:
+    settings_dir = os.path.expanduser("~") + "/.SpotifyLyrics/"
+    lyrics_dir = settings_dir + "lyrics/"
+
 
 class UiForm(object):
     sync = False
@@ -53,10 +61,6 @@ class UiForm(object):
     changed = False
     dark_theme = False
     infos = False
-    if os.name == "nt":
-        settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
-    else:
-        settings_dir = os.path.expanduser("~") + "/.SpotifyLyrics/"
 
     def __init__(self):
         super().__init__()
@@ -118,6 +122,8 @@ class UiForm(object):
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
+        if os.name == "nt":
+            self.options_combobox.addItem("")
         self.horizontal_layout_2.addWidget(self.options_combobox, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.font_size_box = QtWidgets.QSpinBox(form)
@@ -150,7 +156,7 @@ class UiForm(object):
         form.setTabOrder(self.options_combobox, self.font_size_box)
 
     def load_save_settings(self, save=False):
-        settings_file = self.settings_dir + "settings.ini"
+        settings_file = settings_dir + "settings.ini"
         if save is False:
             if os.path.exists(settings_file):
                 with open(settings_file, 'r') as settings:
@@ -287,14 +293,17 @@ class UiForm(object):
                 self.info_table.setVisible(True)
         elif current_index == 6:
             self.load_save_settings(save=True)
+        elif current_index == 7:
+            if os.name == "nt":
+                subprocess.Popen(r'explorer "' + lyrics_dir + '"')
         else:
             pass
         self.options_combobox.setCurrentIndex(0)
 
     def set_style(self):
         self.lyrics_text_align = QtCore.Qt.AlignLeft
-        if os.path.exists(self.settings_dir + "theme.ini"):
-            theme_file = self.settings_dir + "theme.ini"
+        if os.path.exists(settings_dir + "theme.ini"):
+            theme_file = settings_dir + "theme.ini"
         else:
             theme_file = "theme.ini"
         if os.path.exists(theme_file):
@@ -430,6 +439,8 @@ class UiForm(object):
         self.options_combobox.setItemText(4, _translate("Form", "Open Spotify"))
         self.options_combobox.setItemText(5, _translate("Form", "Infos"))
         self.options_combobox.setItemText(6, _translate("Form", "Save Settings"))
+        if os.name == "nt":
+            self.options_combobox.setItemText(7, _translate("Form", "Open Lyrics Directory"))
 
     def add_service_name_to_lyrics(self, lyrics, service_name):
         return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % (
@@ -446,10 +457,9 @@ class UiForm(object):
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
                     backend.set_song(song_name)
-                    if self.sync:
-                        lyrics, url, service_name, timed = backend.get_lyrics(sync=True)
-                    else:
-                        lyrics, url, service_name, timed = backend.get_lyrics()
+                    lyrics, url, service_name, timed = backend.get_lyrics(sync=self.sync)
+                    self.lyrics = lyrics
+                    self.timed = timed
                     if self.infos:
                         threading.Thread(target=backend.load_infos).start()
                     if url == "":
@@ -613,8 +623,33 @@ class UiForm(object):
         self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
     def save_lyrics(self):
-        with open(backend.song.artist + " - " + backend.song.name + ".txt", "w", encoding="utf-8") as lyrics_file:
-            lyrics_file.write(self.text_browser.toPlainText())
+        if not os.path.exists(lyrics_dir):
+            os.makedirs(lyrics_dir)
+
+        for file in os.listdir(lyrics_dir):
+            file = lyrics_dir + file
+            if os.path.isfile(file):
+                file_parts = os.path.os.path.splitext(file)
+                file_extension = file_parts[1].lower()
+                if file_extension in (".txt", ".lrc"):
+                    file_name = file_parts[0].lower()
+                    if backend.song.name.lower() in file_name and backend.song.artist.lower() in file_name:
+                        return
+
+        file = lyrics_dir + backend.song.artist + " - " + backend.song.name
+
+        if self.lyrics:
+            if self.timed:
+                file = file + ".lrc"
+            else:
+                file = file + ".txt"
+            text = self.lyrics
+        else:
+            file = file + ".txt"
+            text = self.text_browser.toPlainText()
+
+        with open(file, "w", encoding="utf-8") as lyrics_file:
+            lyrics_file.write(text)
 
     @staticmethod
     def spotify():

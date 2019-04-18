@@ -10,6 +10,9 @@ matrix:
       language: python
       python:
         - 3.6
+      before_deploy:
+        - pip install pyinstaller
+        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
     #- os: osx
     #  language: generic
     #  before_install:
@@ -17,11 +20,17 @@ matrix:
     #    - pip install --upgrade pip
     #  install:
     #    - pip install -r requirements.txt
+    #  before_deploy:
+    #    - pip install pyinstaller
+    #    - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
     #- os: windows
     #  language: cpp
     #  before_install:
     #    - choco upgrade chocolatey -y -v -d
     #    - choco install python -v -d
+    #  before_deploy:
+    #    - pip install pyinstaller
+    #    - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;."
 
 before_script:
   - export PYTHONPATH=$PYTHONPATH:$PWD
@@ -29,11 +38,6 @@ before_script:
 script:
   - python tests/services_test.py
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./SpotifyLyrics.pyw; fi
-
-before_deploy:
-  - pip install pyinstaller
-  - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
-  - ls dist/
 
 deploy:
   provider: releases

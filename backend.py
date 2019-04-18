@@ -45,9 +45,8 @@ class Song:
             self.beats_per_minute) + "\nDances: " + str(self.dances) + "\n"
 
 
-# With Sync. Of course, there is one for now, but for the sake of
-# make the code a little bit more cleaner, is declared.
-services_list1 = [s._minilyrics]
+# With Sync.
+services_list1 = [s._local, s._minilyrics]
 
 # Without Sync.
 services_list2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
@@ -70,24 +69,32 @@ def set_song(songname):
 
 
 def load_lyrics(song, sync=False):
-    error = "Error: Could not find lyrics."
     global current_service
 
     if current_service == len(services_list2) - 1: current_service = -1
 
     if sync:
-        lyrics, url, service_name, timed = s._minilyrics(song)
+        temp_lyrics = []
+        for service_synced in services_list1:
+            lyrics, url, service_name, timed = service_synced(song)
+            if lyrics != s.ERROR:
+                if timed:
+                    break
+                else:
+                    temp_lyrics = lyrics, url, service_name, timed
+        if not timed and temp_lyrics and temp_lyrics[0] != s.ERROR:
+            lyrics, url, service_name, timed = temp_lyrics
         current_service = -1
 
-    if sync and lyrics == error or sync is False:
+    if sync and lyrics == s.ERROR or sync is False:
         timed = False
         for i in range(current_service + 1, len(services_list2)):
             lyrics, url, service_name = services_list2[i](song)
             current_service = i
-            if lyrics != error:
+            if lyrics != s.ERROR:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
-    if lyrics == error:
+    if lyrics == s.ERROR:
         service_name = "---"
 
     # return "Error: Could not find lyrics."  if the for loop doesn't find any lyrics
