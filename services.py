@@ -39,7 +39,7 @@ def _local(song):
                         with open(file, "r", encoding="UTF-8") as lyrics_file:
                             lyrics = lyrics_file.read()
                         timed = file_extension == ".lrc"
-                        url = os.path.abspath(file)
+                        url = "file:///" + os.path.abspath(file)
                         break
 
     return lyrics, url, service_name, timed
