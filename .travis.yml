@@ -37,8 +37,9 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:$PWD
 
 script:
-  - python -m unittest discover tests/ "*_test.py"
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./SpotifyLyrics.pyw; fi
+  - cd tests/
+  - python -m unittest discover . "*_test.py"
 
 deploy:
   provider: releases
