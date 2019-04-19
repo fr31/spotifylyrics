@@ -8,6 +8,7 @@ matrix:
         - chmod +x SpotifyLyrics.pyw
         - pip install --upgrade pip
       language: python
+      cache: pip
       python:
         - 3.6
       before_deploy:
@@ -36,7 +37,7 @@ before_script:
   - export PYTHONPATH=$PYTHONPATH:$PWD
 
 script:
-  - python -m unittest discover -s tests/
+  - python -m unittest discover tests/ "*_test.py"
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./SpotifyLyrics.pyw; fi
 
 deploy:
