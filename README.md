@@ -23,7 +23,7 @@ If you want to run from source you need:
 Ubuntu/Debian Example:
 ```
 sudo apt-get install python3-pip
-git clone https://github.com/fr31/spotifylyrics.git
+git clone https://github.com/SimonIT/spotifylyrics.git
 cd spotifylyrics/
 sudo pip3 install -r requirements.txt
 chmod +x SpotifyLyrics.pyw
