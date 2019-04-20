@@ -15,10 +15,9 @@ PROXY = urllib.request.getproxies()
 
 if os.name == "nt":
     settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
-    lyrics_dir = settings_dir + "lyrics\\"
 else:
     settings_dir = os.path.expanduser("~") + "/.SpotifyLyrics/"
-    lyrics_dir = settings_dir + "lyrics/"
+lyrics_dir = os.path.join(settings_dir, "lyrics")
 
 
 def _local(song):
@@ -29,9 +28,9 @@ def _local(song):
 
     if os.path.isdir(lyrics_dir):
         for file in os.listdir(lyrics_dir):
-            file = lyrics_dir + file
+            file = os.path.join(lyrics_dir, file)
             if os.path.isfile(file):
-                file_parts = os.path.os.path.splitext(file)
+                file_parts = os.path.splitext(file)
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()

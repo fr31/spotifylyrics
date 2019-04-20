@@ -48,10 +48,9 @@ HTML_TAGS = re.compile(r'<.+?>')
 
 if os.name == "nt":
     settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
-    lyrics_dir = settings_dir + "lyrics\\"
 else:
     settings_dir = os.path.expanduser("~") + "/.SpotifyLyrics/"
-    lyrics_dir = settings_dir + "lyrics/"
+lyrics_dir = os.path.join(settings_dir, "lyrics")
 
 
 class UiForm(object):
@@ -627,9 +626,9 @@ class UiForm(object):
             os.makedirs(lyrics_dir)
 
         for file in os.listdir(lyrics_dir):
-            file = lyrics_dir + file
+            file = os.path.join(lyrics_dir, file)
             if os.path.isfile(file):
-                file_parts = os.path.os.path.splitext(file)
+                file_parts = os.path.splitext(file)
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
