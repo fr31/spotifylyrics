@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import time
 import urllib
 import webbrowser  # to open link on browser
@@ -102,8 +103,8 @@ def load_lyrics(song, sync=False):
 
 
 def load_infos():
-    s._tanzmusikonline(song)
-    s._welchertanz(song)
+    threading.Thread(target=s._tanzmusikonline, args=(song,)).start()
+    threading.Thread(target=s._welchertanz, args=(song,)).start()
 
 
 def get_song_from_string(songname):

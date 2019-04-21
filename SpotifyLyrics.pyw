@@ -460,7 +460,7 @@ class UiForm(object):
                     self.lyrics = lyrics
                     self.timed = timed
                     if self.infos:
-                        threading.Thread(target=backend.load_infos).start()
+                        backend.load_infos()
                     if url == "":
                         header = song_name
                     else:
