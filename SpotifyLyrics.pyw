@@ -635,7 +635,7 @@ class UiForm(object):
                     if backend.song.name.lower() in file_name and backend.song.artist.lower() in file_name:
                         return
 
-        file = os.path.join(lyrics_dir, "%s - %s" % (backend.song.name, backend.song.artist))
+        file = os.path.join(lyrics_dir, "%s - %s" % (backend.song.artist, backend.song.name))
 
         if self.lyrics:
             if self.timed:
