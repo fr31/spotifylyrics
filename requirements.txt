@@ -8,4 +8,4 @@ requests>=2.20.0
 xmltodict==0.11.0
 psutil==5.4.3; sys.platform == 'win32'
 unidecode==1.0.22
-pylrc>=0.0.7
+pylrc>=0.0.8
