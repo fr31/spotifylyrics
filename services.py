@@ -2,7 +2,7 @@ import codecs
 import json
 import os
 import re
-import urllib
+from urllib import request
 
 import requests
 import unidecode  # to remove accents
@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 import lyrics as minilyrics
 
 ERROR = "Error: Could not find lyrics."
-PROXY = urllib.request.getproxies()
+PROXY = request.getproxies()
 
 if os.name == "nt":
     settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"

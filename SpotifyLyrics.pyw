@@ -53,7 +53,7 @@ else:
 lyrics_dir = os.path.join(settings_dir, "lyrics")
 
 
-class UiForm(object):
+class UiForm:
     sync = False
     ontop = False
     open_spotify = False
@@ -66,18 +66,11 @@ class UiForm(object):
 
         self.comm = Communicate()
         self.comm.signal.connect(self.refresh_lyrics)
-        self.setup_ui(FORM)
-        self.set_style()
-        self.load_save_settings()
-        if self.open_spotify:
-            self.spotify()
-        self.start_thread()
 
-    def setup_ui(self, form):
-        form.setObjectName("Form")
-        form.resize(550, 610)
-        form.setMinimumSize(QtCore.QSize(350, 310))
-        self.grid_layout_2 = QtWidgets.QGridLayout(form)
+        FORM.setObjectName("Form")
+        FORM.resize(550, 610)
+        FORM.setMinimumSize(QtCore.QSize(350, 310))
+        self.grid_layout_2 = QtWidgets.QGridLayout(FORM)
         self.grid_layout_2.setObjectName("gridLayout_2")
         self.vertical_layout_2 = QtWidgets.QVBoxLayout()
         self.vertical_layout_2.setObjectName("verticalLayout_2")
@@ -85,33 +78,33 @@ class UiForm(object):
         self.horizontal_layout_2.setObjectName("horizontalLayout_2")
         self.horizontal_layout_1 = QtWidgets.QHBoxLayout()
         self.horizontal_layout_1.setObjectName("horizontalLayout_1")
-        self.label_songname = QtWidgets.QLabel(form)
-        self.label_songname.setObjectName("label_songname")
-        self.label_songname.setOpenExternalLinks(True)
-        self.horizontal_layout_2.addWidget(self.label_songname, 0, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.label_song_name = QtWidgets.QLabel(FORM)
+        self.label_song_name.setObjectName("label_song_name")
+        self.label_song_name.setOpenExternalLinks(True)
+        self.horizontal_layout_2.addWidget(self.label_song_name, 0, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         spacer_item = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontal_layout_2.addItem(spacer_item)
 
-        self.change_lyrics_button = QtWidgets.QPushButton(form)
+        self.change_lyrics_button = QtWidgets.QPushButton(FORM)
         self.change_lyrics_button.setObjectName("pushButton")
         self.change_lyrics_button.setText("Change Lyrics")
         self.change_lyrics_button.clicked.connect(self.change_lyrics)
         self.horizontal_layout_2.addWidget(self.change_lyrics_button, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
-        self.save_button = QtWidgets.QPushButton(form)
+        self.save_button = QtWidgets.QPushButton(FORM)
         self.save_button.setObjectName("saveButton")
         self.save_button.setText("Save Lyrics")
         self.save_button.clicked.connect(self.save_lyrics)
         self.horizontal_layout_2.addWidget(self.save_button, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         # Open Tab Button
-        self.chords_button = QtWidgets.QPushButton(form)
+        self.chords_button = QtWidgets.QPushButton(FORM)
         self.chords_button.setObjectName("chordsButton")
         self.chords_button.setText("Chords")
         self.chords_button.clicked.connect(self.get_chords)
         self.horizontal_layout_2.addWidget(self.chords_button, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
-        self.options_combobox = QtWidgets.QComboBox(form)
+        self.options_combobox = QtWidgets.QComboBox(FORM)
         self.options_combobox.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.options_combobox.setObjectName("comboBox")
         self.options_combobox.addItem("")
@@ -125,19 +118,19 @@ class UiForm(object):
             self.options_combobox.addItem("")
         self.horizontal_layout_2.addWidget(self.options_combobox, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
-        self.font_size_box = QtWidgets.QSpinBox(form)
+        self.font_size_box = QtWidgets.QSpinBox(FORM)
         self.font_size_box.setMinimum(1)
         self.font_size_box.setProperty("value", 10)
         self.font_size_box.setObjectName("fontBox")
         self.horizontal_layout_2.addWidget(self.font_size_box, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.vertical_layout_2.addLayout(self.horizontal_layout_2)
-        self.text_browser = LyricsTextBrowserWidget(form)
+        self.text_browser = LyricsTextBrowserWidget(FORM)
         self.text_browser.setObjectName("textBrowser")
         self.text_browser.setAcceptRichText(True)
         self.text_browser.setStyleSheet("font-size: %spt;" % self.font_size_box.value() * 2)
         self.text_browser.setFontPointSize(self.font_size_box.value())
         self.horizontal_layout_1.addWidget(self.text_browser)
-        self.info_table = QtWidgets.QTableWidget(form)
+        self.info_table = QtWidgets.QTableWidget(FORM)
         self.info_table.setStyleSheet("font-size: %spt;" % self.font_size_box.value() * 2)
         self.info_table.setColumnCount(2)
         self.info_table.verticalHeader().setVisible(False)
@@ -147,12 +140,18 @@ class UiForm(object):
         self.horizontal_layout_1.addWidget(self.info_table)
         self.vertical_layout_2.addLayout(self.horizontal_layout_1)
         self.grid_layout_2.addLayout(self.vertical_layout_2, 2, 0, 1, 1)
-        self.retranslate_ui(form)
+        self.retranslate_ui(FORM)
         self.font_size_box.valueChanged.connect(self.update_fontsize)
         self.options_combobox.currentIndexChanged.connect(self.options_changed)
-        QtCore.QMetaObject.connectSlotsByName(form)
-        form.setTabOrder(self.text_browser, self.options_combobox)
-        form.setTabOrder(self.options_combobox, self.font_size_box)
+        QtCore.QMetaObject.connectSlotsByName(FORM)
+        FORM.setTabOrder(self.text_browser, self.options_combobox)
+        FORM.setTabOrder(self.options_combobox, self.font_size_box)
+
+        self.set_style()
+        self.load_save_settings()
+        if self.open_spotify:
+            self.spotify()
+        self.start_thread()
 
     def load_save_settings(self, save=False):
         settings_file = settings_dir + "settings.ini"
@@ -243,52 +242,52 @@ class UiForm(object):
             else:
                 self.dark_theme = False
                 self.text_browser.setStyleSheet("")
-                self.label_songname.setStyleSheet("")
+                self.label_song_name.setStyleSheet("")
                 self.options_combobox.setStyleSheet("")
                 self.font_size_box.setStyleSheet("")
                 self.change_lyrics_button.setStyleSheet("")
                 self.save_button.setStyleSheet("")
                 self.chords_button.setStyleSheet("")
                 self.info_table.setStyleSheet("")
-                self.options_combobox.setItemText(1, ("Dark Theme"))
-                text = re.sub("color:.*?;", "color: black;", self.label_songname.text())
-                self.label_songname.setText(text)
+                self.options_combobox.setItemText(1, "Dark Theme")
+                text = re.sub("color:.*?;", "color: black;", self.label_song_name.text())
+                self.label_song_name.setText(text)
                 FORM.setWindowOpacity(1.0)
                 FORM.setStyleSheet("")
                 self.set_style()
         elif current_index == 2:
             if self.sync:
                 self.sync = False
-                self.options_combobox.setItemText(2, ("Synced Lyrics"))
+                self.options_combobox.setItemText(2, "Synced Lyrics")
             else:
                 self.sync = True
-                self.options_combobox.setItemText(2, ("Synced Lyrics (on)"))
+                self.options_combobox.setItemText(2, "Synced Lyrics (on)")
         elif current_index == 3:
             if self.ontop is False:
                 self.ontop = True
                 FORM.setWindowFlags(FORM.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
-                self.options_combobox.setItemText(3, ("Always on Top (on)"))
+                self.options_combobox.setItemText(3, "Always on Top (on)")
                 FORM.show()
             else:
                 self.ontop = False
                 FORM.setWindowFlags(FORM.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
-                self.options_combobox.setItemText(3, ("Always on Top"))
+                self.options_combobox.setItemText(3, "Always on Top")
                 FORM.show()
         elif current_index == 4:
             if self.open_spotify:
                 self.open_spotify = False
-                self.options_combobox.setItemText(4, ("Open Spotify"))
+                self.options_combobox.setItemText(4, "Open Spotify")
             else:
                 self.open_spotify = True
-                self.options_combobox.setItemText(4, ("Open Spotify (on)"))
+                self.options_combobox.setItemText(4, "Open Spotify (on)")
         elif current_index == 5:
             if self.infos:
                 self.infos = False
-                self.options_combobox.setItemText(5, ("Infos"))
+                self.options_combobox.setItemText(5, "Infos")
                 self.info_table.setVisible(False)
             else:
                 self.infos = True
-                self.options_combobox.setItemText(5, ("Infos (on)"))
+                self.options_combobox.setItemText(5, "Infos (on)")
                 self.info_table.setVisible(True)
         elif current_index == 6:
             self.load_save_settings(save=True)
@@ -338,11 +337,11 @@ class UiForm(object):
                             style = style + "font-family: %s;" % align
                             self.text_browser.setStyleSheet(style)
                         if "songnamecolor" in lcsetting:
-                            style = self.label_songname.styleSheet()
+                            style = self.label_song_name.styleSheet()
                             style = style + "color: %s;" % align
-                            self.label_songname.setStyleSheet(style)
-                            text = re.sub("color:.*?;", "color: %s;" % align, self.label_songname.text())
-                            self.label_songname.setText(text)
+                            self.label_song_name.setStyleSheet(style)
+                            text = re.sub("color:.*?;", "color: %s;" % align, self.label_song_name.text())
+                            self.label_song_name.setText(text)
                         if "fontboxbackgroundcolor" in lcsetting:
                             style = self.font_size_box.styleSheet()
                             style = style + "background-color: %s;" % align
@@ -361,9 +360,9 @@ class UiForm(object):
                             self.chords_button.setStyleSheet(style)
                         if "songnameunderline" in lcsetting:
                             if "true" in align.lower():
-                                style = self.label_songname.styleSheet()
+                                style = self.label_song_name.styleSheet()
                                 style = style + "text-decoration: underline;"
-                                self.label_songname.setStyleSheet(style)
+                                self.label_song_name.setStyleSheet(style)
 
                     FORM.setWindowOpacity(window_opacity)
                     FORM.setStyleSheet("background-color: %s;" % background_color)
@@ -371,15 +370,15 @@ class UiForm(object):
                 except Exception:
                     pass
         else:
-            self.label_songname.setStyleSheet("color: black; text-decoration: underline;")
+            self.label_song_name.setStyleSheet("color: black; text-decoration: underline;")
             pass
 
     def set_dark_theme(self):
         self.dark_theme = True
         self.text_browser.setStyleSheet("background-color: #181818; color: #ffffff;")
-        self.label_songname.setStyleSheet("color: #9c9c9c; text-decoration: underline;")
-        text = re.sub("color:.*?;", "color: #9c9c9c;", self.label_songname.text())
-        self.label_songname.setText(text)
+        self.label_song_name.setStyleSheet("color: #9c9c9c; text-decoration: underline;")
+        text = re.sub("color:.*?;", "color: #9c9c9c;", self.label_song_name.text())
+        self.label_song_name.setText(text)
         self.options_combobox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.font_size_box.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.change_lyrics_button.setStyleSheet("background-color: #181818; color: #9c9c9c;")
@@ -422,13 +421,13 @@ class UiForm(object):
         form.setWindowTitle(_translate("Form", "Spotify Lyrics - {}".format(backend.get_version())))
         form.setWindowIcon(QtGui.QIcon(self.get_resource_path('icon.png')))
         if backend.check_version():
-            self.label_songname.setText(_translate("Form", "Spotify Lyrics"))
+            self.label_song_name.setText(_translate("Form", "Spotify Lyrics"))
         else:
-            self.label_songname.setText(_translate("Form",
-                                                   "Spotify Lyrics <style type=\"text/css\">a {text-decoration: "
-                                                   "none}</style><a "
-                                                   "href=\"https://github.com/SimonIT/spotifylyrics/releases\"><sup>("
-                                                   "update)</sup></a>"))
+            self.label_song_name.setText(_translate("Form",
+                                                    "Spotify Lyrics <style type=\"text/css\">a {text-decoration: "
+                                                    "none}</style><a "
+                                                    "href=\"https://github.com/SimonIT/spotifylyrics/releases\"><sup>("
+                                                    "update)</sup></a>"))
         self.text_browser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.font_size_box.setToolTip(_translate("Form", "Font Size"))
         self.options_combobox.setItemText(0, _translate("Form", "Options"))
@@ -455,16 +454,16 @@ class UiForm(object):
                     old_song_name = song_name
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
-                    backend.set_song(song_name)
-                    lyrics, url, service_name, timed = backend.get_lyrics(sync=self.sync)
+                    self.song = backend.Song.get_from_string(song_name)
+                    lyrics, url, service_name, timed = backend.get_lyrics(song=self.song, sync=self.sync)
                     self.lyrics = lyrics
                     self.timed = timed
                     if self.infos:
-                        backend.load_infos()
+                        backend.load_infos(self.song)
                     if url == "":
                         header = song_name
                     else:
-                        style = self.label_songname.styleSheet()
+                        style = self.label_song_name.styleSheet()
                         if style == "":
                             color = "color: black"
                         else:
@@ -474,7 +473,7 @@ class UiForm(object):
                     if timed:
                         lrc = pylrc.parse(lyrics)
                         if lrc.album != "":
-                            backend.song.album = lrc.album
+                            self.song.album = lrc.album
                         lyrics_clean = '\n'.join(e.text for e in lrc)
                         comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics_clean, service_name))
                         count = -1
@@ -493,7 +492,7 @@ class UiForm(object):
                                 lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
                             bold_lyrics = '<br>'.join(e.text for e in lrc)
                             while True:
-                                style = self.label_songname.styleSheet()
+                                style = self.label_song_name.styleSheet()
                                 if style == "":
                                     color = "color: black"
                                 else:
@@ -511,7 +510,7 @@ class UiForm(object):
                                                      self.add_service_name_to_lyrics(bold_lyrics, service_name))
                                     time.sleep(0.5)
                                     break
-                                elif window_title == "Spotify" or window_title == "Spotify Premium":
+                                elif window_title in ('Spotify', 'Spotify Premium'):
                                     time.sleep(0.2)
                                     start = start + 0.2
                                 else:
@@ -520,8 +519,7 @@ class UiForm(object):
                                     else:
                                         time.sleep(0.2)
                             window_title = backend.get_window_title()
-                            if song_name != window_title and window_title != "Spotify" \
-                                    and window_title != "Spotify Premium":
+                            if window_title not in (song_name, 'Spotify', 'Spotify Premium'):
                                 break
                     else:
                         comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
@@ -535,7 +533,7 @@ class UiForm(object):
     def refresh_lyrics(self, song_name, lyrics):
         _translate = QtCore.QCoreApplication.translate
         if backend.get_window_title() != "":
-            self.label_songname.setText(_translate("Form", song_name))
+            self.label_song_name.setText(_translate("Form", song_name))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.text_browser.scrollToAnchor("#scrollHere")
         self.refresh_info()
@@ -543,76 +541,75 @@ class UiForm(object):
     def refresh_info(self):
         self.info_table.clearContents()
         self.info_table.setRowCount(8)
-        song = backend.song
         index = 0
 
         self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("name"))
-        self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(song.name))
+        self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.name))
         index += 1
 
         self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("artist"))
-        self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(song.artist))
+        self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.artist))
         index += 1
 
-        if song.album != "UNKNOWN":
+        if self.song.album != "UNKNOWN":
             self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("album"))
-            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(song.album))
+            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.album))
             index += 1
 
-        if song.genre != "UNKNOWN":
+        if self.song.genre != "UNKNOWN":
             self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("genre"))
-            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(song.genre))
+            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.genre))
             index += 1
 
-        if song.year != -1:
+        if self.song.year != -1:
             self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("year"))
-            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(song.year)))
+            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(self.song.year)))
             index += 1
 
-        if song.cycles_per_minute != -1:
+        if self.song.cycles_per_minute != -1:
             self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("cycles per minute"))
-            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(song.cycles_per_minute)))
+            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(self.song.cycles_per_minute)))
             index += 1
 
-        if song.beats_per_minute != -1:
+        if self.song.beats_per_minute != -1:
             self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("beats per minute"))
-            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(song.beats_per_minute)))
+            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(self.song.beats_per_minute)))
             index += 1
 
-        if song.dances:
+        if self.song.dances:
             self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("dances"))
-            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem("\n".join(song.dances)))
+            self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem("\n".join(self.song.dances)))
 
         self.info_table.resizeRowsToContents()
         self.info_table.resizeColumnsToContents()
 
     def get_chords(self):
         _translate = QtCore.QCoreApplication.translate
-        if self.label_songname.text() not in ("", "Spotify", "Spotify Lyrics"):
-            backend.load_chords()
+        if self.label_song_name.text() not in ("", "Spotify", "Spotify Lyrics"):
+            backend.load_chords(self.song)
         else:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics(self):
         _translate = QtCore.QCoreApplication.translate
-        if self.label_songname.text() not in ("", "Spotify", "Spotify Lyrics"):
+        if self.label_song_name.text() not in ("", "Spotify", "Spotify Lyrics"):
             self.changed = True
-            changethread = threading.Thread(target=self.change_lyrics_thread)
-            changethread.start()
+            change_lyrics_thread = threading.Thread(target=self.change_lyrics_thread)
+            change_lyrics_thread.start()
         else:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics_thread(self):
         song_name = backend.get_window_title()
         self.comm.signal.emit(song_name, "Loading...")
-        style = self.label_songname.styleSheet()
+        style = self.label_song_name.styleSheet()
 
         if style == "":
             color = "color: black"
         else:
             color = style
 
-        lyrics, url, service_name, timed = backend.next_lyrics()
+        lyrics, url, service_name, timed = backend.next_lyrics(self.song)
         if url == "":
             header = song_name
         else:
@@ -632,10 +629,10 @@ class UiForm(object):
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
-                    if backend.song.name.lower() in file_name and backend.song.artist.lower() in file_name:
+                    if self.song.name.lower() in file_name and self.song.artist.lower() in file_name:
                         return
 
-        file = os.path.join(lyrics_dir, "%s - %s" % (backend.song.artist, backend.song.name))
+        file = os.path.join(lyrics_dir, "%s - %s" % (self.song.artist, self.song.name))
 
         if self.lyrics:
             if self.timed:

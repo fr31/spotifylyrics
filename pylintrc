@@ -1,0 +1,2 @@
+[master]
+extension-pkg-whitelist=PyQt5,win32process,win32gui

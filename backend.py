@@ -6,8 +6,8 @@ import subprocess
 import sys
 import threading
 import time
-import urllib
 import webbrowser  # to open link on browser
+from urllib import request
 
 import requests
 
@@ -39,11 +39,25 @@ class Song:
         self.name = name
         self.dances = []
 
+    @classmethod
+    def get_from_string(cls, songstring):
+        artist, name = "", ""
+        if songstring.count(" - ") == 1:
+            artist, name = songstring.rsplit(" - ", 1)
+        if songstring.count(" - ") == 2:
+            artist, name, garbage = songstring.rsplit(" - ", 2)
+        if " / " in name:
+            name, garbage = name.rsplit(" / ", 1)
+        name = re.sub(r' \(.*?\)', '', name, flags=re.DOTALL)
+        name = re.sub(r' \[.*?\]', '', name, flags=re.DOTALL)
+        return cls(artist, name)
+
     def __str__(self):
-        return self.artist + ": " + self.name + " (" + str(
-            self.year) + ") " + "\nGenre: " + self.genre + "\nAlbum: " + self.album + "\nCycles per minute: " + str(
-            self.cycles_per_minute) + "\nBeats per minute: " + str(
-            self.beats_per_minute) + "\nDances: " + str(self.dances) + "\n"
+        return "%s: %s (%d) \nGenre: %s\nAlbum: %s\n" \
+               "Cycles per minute: %d\nBeats per minute: %d\nDances: %s\n" \
+               % (
+                   self.artist, self.name, self.year, self.genre, self.album,
+                   self.cycles_per_minute, self.beats_per_minute, self.dances)
 
 
 # With Sync.
@@ -54,19 +68,12 @@ services_list2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._ge
 
 services_list3 = [s._ultimateguitar, s._cifraclub, s._songsterr]
 
-song = Song("", "")
-
 '''
 current_service is used to store the current index of the list.
 Useful to change the lyrics with the button "Next Lyric" if
 the service returned a wrong song
 '''
 current_service = -1
-
-
-def set_song(songname):
-    global song
-    song = get_song_from_string(songname)
 
 
 def load_lyrics(song, sync=False):
@@ -102,44 +109,31 @@ def load_lyrics(song, sync=False):
     return lyrics, url, service_name, timed
 
 
-def load_infos():
+def load_infos(song: Song):
     threading.Thread(target=s._tanzmusikonline, args=(song,)).start()
     threading.Thread(target=s._welchertanz, args=(song,)).start()
 
 
-def get_song_from_string(songname):
-    artist, name = "", ""
-    if songname.count(" - ") == 1:
-        artist, name = songname.rsplit(" - ", 1)
-    if songname.count(" - ") == 2:
-        artist, name, garbage = songname.rsplit(" - ", 2)
-    if " / " in name:
-        name, garbage = name.rsplit(" / ", 1)
-    name = re.sub(r' \(.*?\)', '', name, flags=re.DOTALL)
-    name = re.sub(r' \[.*?\]', '', name, flags=re.DOTALL)
-    return Song(artist, name)
-
-
-def get_lyrics(sync=False):
+def get_lyrics(song: Song, sync=False):
     global current_service
     current_service = -1
 
     return load_lyrics(song, sync)
 
 
-def next_lyrics():
+def next_lyrics(song: Song):
     global current_service
     return load_lyrics(song)
 
 
-def load_chords():
+def load_chords(song: Song):
     for i in services_list3:
         urls = i(song)
         for url in urls:
             webbrowser.open(url)
 
 
-def get_window_title():
+def get_window_title() -> str:
     if sys.platform == "win32":
         spotify_pids = []
         for proc in psutil.process_iter():
@@ -198,7 +192,7 @@ def get_window_title():
                 window_name = 'Spotify'
         except Exception:
             pass
-        if window_name != 'Spotify' and window_name != 'Spotify Lyrics':
+        if window_name not in ('Spotify', 'Spotify Lyrics'):
             try:
                 window_name = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
             except Exception:
@@ -210,8 +204,8 @@ def get_window_title():
     return window_name
 
 
-def check_version():
-    proxy = urllib.request.getproxies()
+def check_version() -> bool:
+    proxy = request.getproxies()
     try:
         return float(get_version()) >= float(
             json.loads(requests.get("https://api.github.com/repos/SimonIT/spotifylyrics/tags",
@@ -228,7 +222,7 @@ def get_version():
 def open_spotify():
     if sys.platform == "win32":
         if get_window_title() == "":
-            path = os.getenv("APPDATA") + '\Spotify\Spotify.exe'
+            path = os.getenv("APPDATA") + '\\Spotify\\Spotify.exe'
             subprocess.Popen(path)
         else:
             pass

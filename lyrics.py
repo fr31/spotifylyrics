@@ -15,6 +15,7 @@
 
 import hashlib
 import json
+from urllib import request
 
 try:
     import xmltodict
@@ -35,7 +36,6 @@ except:
         SystemExit("can\'t find BeautifulSoup, please install it via \"pip install BeautifulSoup\"")
 
 import re
-import urllib
 
 
 # function to return python workable results from Minilyrics
@@ -45,7 +45,7 @@ def MiniLyrics(artist, title):
                         "client=\"ViewLyricsOpenSearcher\" artist=\"{artist}\" title=\"{title}\" OnlyMatched=\"1\" /> "
     search_useragent = "MiniLyrics"
     search_md5watermark = b"Mlv1clt4.0"
-    proxy = urllib.request.getproxies()
+    proxy = request.getproxies()
 
     # hex is a registered value in python, so i used hexx as an alternative
     def hex_to_str(hexx):
@@ -195,7 +195,7 @@ def MiniLyrics(artist, title):
 
 # function to return lyrics grabbed from lyricwikia
 def LyricWikia(artist, title):
-    proxy = urllib.request.getproxies()
+    proxy = request.getproxies()
     url = 'http://lyrics.wikia.com/api.php?action=lyrics&artist={artist}&song={title}&fmt=json&func=getSong'.format(
         artist=artist, title=title).replace(" ", "%20")
     r = requests.get(url, timeout=15, proxies=proxy)
