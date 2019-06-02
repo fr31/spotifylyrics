@@ -6,6 +6,7 @@ import subprocess
 import threading
 import time
 
+import pathvalidate
 import pylrc
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -632,7 +633,8 @@ class UiForm:
                     if self.song.name.lower() in file_name and self.song.artist.lower() in file_name:
                         return
 
-        file = os.path.join(lyrics_dir, "%s - %s" % (self.song.artist, self.song.name))
+        file = os.path.join(lyrics_dir, "%s - %s" % (
+            pathvalidate.sanitize_filename(self.song.artist), pathvalidate.sanitize_filename(self.song.name)))
 
         if self.lyrics:
             if self.timed:

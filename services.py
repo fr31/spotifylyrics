@@ -4,6 +4,7 @@ import os
 import re
 from urllib import request
 
+import pathvalidate
 import requests
 import unidecode  # to remove accents
 from bs4 import BeautifulSoup
@@ -34,7 +35,9 @@ def _local(song):
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
-                    if song.name.lower() in file_name and song.artist.lower() in file_name:
+                    n = pathvalidate.sanitize_filename(song.name.lower())
+                    a = pathvalidate.sanitize_filename(song.artist.lower())
+                    if n in file_name and a in file_name:
                         with open(file, "r", encoding="UTF-8") as lyrics_file:
                             lyrics = lyrics_file.read()
                         timed = file_extension == ".lrc"
