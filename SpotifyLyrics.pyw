@@ -11,6 +11,7 @@ import pylrc
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import backend
+from services import SETTINGS_DIR, LYRICS_DIR
 
 if os.name == "nt":
     import ctypes
@@ -46,12 +47,6 @@ class LyricsTextBrowserWidget(QtWidgets.QTextBrowser):
 
 BRACKETS = re.compile(r'\[.+?\]')
 HTML_TAGS = re.compile(r'<.+?>')
-
-if os.name == "nt":
-    settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
-else:
-    settings_dir = os.path.expanduser("~") + "/.SpotifyLyrics/"
-lyrics_dir = os.path.join(settings_dir, "lyrics")
 
 
 class UiForm:
@@ -155,7 +150,7 @@ class UiForm:
         self.start_thread()
 
     def load_save_settings(self, save=False):
-        settings_file = settings_dir + "settings.ini"
+        settings_file = SETTINGS_DIR + "settings.ini"
         if save is False:
             if os.path.exists(settings_file):
                 with open(settings_file, 'r') as settings:
@@ -294,15 +289,15 @@ class UiForm:
             self.load_save_settings(save=True)
         elif current_index == 7:
             if os.name == "nt":
-                subprocess.Popen(r'explorer "' + lyrics_dir + '"')
+                subprocess.Popen(r'explorer "' + LYRICS_DIR + '"')
         else:
             pass
         self.options_combobox.setCurrentIndex(0)
 
     def set_style(self):
         self.lyrics_text_align = QtCore.Qt.AlignLeft
-        if os.path.exists(settings_dir + "theme.ini"):
-            theme_file = settings_dir + "theme.ini"
+        if os.path.exists(SETTINGS_DIR + "theme.ini"):
+            theme_file = SETTINGS_DIR + "theme.ini"
         else:
             theme_file = "theme.ini"
         if os.path.exists(theme_file):
@@ -372,7 +367,6 @@ class UiForm:
                     pass
         else:
             self.label_song_name.setStyleSheet("color: black; text-decoration: underline;")
-            pass
 
     def set_dark_theme(self):
         self.dark_theme = True
@@ -620,11 +614,11 @@ class UiForm:
         self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
     def save_lyrics(self):
-        if not os.path.exists(lyrics_dir):
-            os.makedirs(lyrics_dir)
+        if not os.path.exists(LYRICS_DIR):
+            os.makedirs(LYRICS_DIR)
 
-        for file in os.listdir(lyrics_dir):
-            file = os.path.join(lyrics_dir, file)
+        for file in os.listdir(LYRICS_DIR):
+            file = os.path.join(LYRICS_DIR, file)
             if os.path.isfile(file):
                 file_parts = os.path.splitext(file)
                 file_extension = file_parts[1].lower()
@@ -633,7 +627,7 @@ class UiForm:
                     if self.song.name.lower() in file_name and self.song.artist.lower() in file_name:
                         return
 
-        file = os.path.join(lyrics_dir, "%s - %s" % (
+        file = os.path.join(LYRICS_DIR, "%s - %s" % (
             pathvalidate.sanitize_filename(self.song.artist), pathvalidate.sanitize_filename(self.song.name)))
 
         if self.lyrics:

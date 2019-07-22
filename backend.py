@@ -57,33 +57,35 @@ class Song:
                "Cycles per minute: %d\nBeats per minute: %d\nDances: %s\n" \
                % (
                    self.artist, self.name, self.year, self.genre, self.album,
-                   self.cycles_per_minute, self.beats_per_minute, self.dances)
+                   self.cycles_per_minute, self.beats_per_minute, self.dances,
+               )
 
 
 # With Sync.
-services_list1 = [s._local, s._minilyrics]
+SERVICES_LIST1 = [s._local, s._minilyrics]
 
 # Without Sync.
-services_list2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
+SERVICES_LIST2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
 
-services_list3 = [s._ultimateguitar, s._cifraclub, s._songsterr]
+# Accords
+SERVICES_LIST3 = [s._ultimateguitar, s._cifraclub, s._songsterr]
 
 '''
 current_service is used to store the current index of the list.
 Useful to change the lyrics with the button "Next Lyric" if
 the service returned a wrong song
 '''
-current_service = -1
+CURRENT_SERVICE = -1
 
 
 def load_lyrics(song, sync=False):
-    global current_service
+    global CURRENT_SERVICE
 
-    if current_service == len(services_list2) - 1: current_service = -1
+    if CURRENT_SERVICE == len(SERVICES_LIST2) - 1: CURRENT_SERVICE = -1
 
     if sync:
         temp_lyrics = []
-        for service_synced in services_list1:
+        for service_synced in SERVICES_LIST1:
             lyrics, url, service_name, timed = service_synced(song)
             if lyrics != s.ERROR:
                 if timed:
@@ -92,13 +94,13 @@ def load_lyrics(song, sync=False):
                     temp_lyrics = lyrics, url, service_name, timed
         if not timed and temp_lyrics and temp_lyrics[0] != s.ERROR:
             lyrics, url, service_name, timed = temp_lyrics
-        current_service = -1
+        CURRENT_SERVICE = -1
 
     if sync and lyrics == s.ERROR or sync is False:
         timed = False
-        for i in range(current_service + 1, len(services_list2)):
-            lyrics, url, service_name = services_list2[i](song)
-            current_service = i
+        for i in range(CURRENT_SERVICE + 1, len(SERVICES_LIST2)):
+            lyrics, url, service_name = SERVICES_LIST2[i](song)
+            CURRENT_SERVICE = i
             if lyrics != s.ERROR:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 break
@@ -115,19 +117,19 @@ def load_infos(song: Song):
 
 
 def get_lyrics(song: Song, sync=False):
-    global current_service
-    current_service = -1
+    global CURRENT_SERVICE
+    CURRENT_SERVICE = -1
 
     return load_lyrics(song, sync)
 
 
 def next_lyrics(song: Song):
-    global current_service
+    global CURRENT_SERVICE
     return load_lyrics(song)
 
 
 def load_chords(song: Song):
-    for i in services_list3:
+    for i in SERVICES_LIST3:
         urls = i(song)
         for url in urls:
             webbrowser.open(url)

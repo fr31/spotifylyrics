@@ -20,7 +20,7 @@ if __name__ == "__main__":
     SONG_ON_ALL_SERVICES = True
 
     if SONG_ON_ALL_SERVICES:
-        for service in backend.services_list1:
+        for service in backend.SERVICES_LIST1:
             result = service(SONG)
             if result[0] == services.ERROR:
                 SONG_ON_ALL_SERVICES = False
@@ -29,7 +29,7 @@ if __name__ == "__main__":
             LYRICS.append(words)
 
     if SONG_ON_ALL_SERVICES:
-        for service in backend.services_list2:
+        for service in backend.SERVICES_LIST2:
             result = service(SONG)
             if result[0] == services.ERROR:
                 SONG_ON_ALL_SERVICES = False

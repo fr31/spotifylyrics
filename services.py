@@ -15,10 +15,10 @@ ERROR = "Error: Could not find lyrics."
 PROXY = request.getproxies()
 
 if os.name == "nt":
-    settings_dir = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
+    SETTINGS_DIR = os.getenv("APPDATA") + "\\SpotifyLyrics\\"
 else:
-    settings_dir = os.path.expanduser("~") + "/.SpotifyLyrics/"
-lyrics_dir = os.path.join(settings_dir, "lyrics")
+    SETTINGS_DIR = os.path.expanduser("~") + "/.SpotifyLyrics/"
+LYRICS_DIR = os.path.join(SETTINGS_DIR, "lyrics")
 
 
 def _local(song):
@@ -27,17 +27,17 @@ def _local(song):
     timed = False
     lyrics = ERROR
 
-    if os.path.isdir(lyrics_dir):
-        for file in os.listdir(lyrics_dir):
-            file = os.path.join(lyrics_dir, file)
+    if os.path.isdir(LYRICS_DIR):
+        for file in os.listdir(LYRICS_DIR):
+            file = os.path.join(LYRICS_DIR, file)
             if os.path.isfile(file):
                 file_parts = os.path.splitext(file)
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
-                    n = pathvalidate.sanitize_filename(song.name.lower())
-                    a = pathvalidate.sanitize_filename(song.artist.lower())
-                    if n in file_name and a in file_name:
+                    path_song_name = pathvalidate.sanitize_filename(song.name.lower())
+                    path_artist_name = pathvalidate.sanitize_filename(song.artist.lower())
+                    if path_song_name in file_name and path_artist_name in file_name:
                         with open(file, "r", encoding="UTF-8") as lyrics_file:
                             lyrics = lyrics_file.read()
                         timed = file_extension == ".lrc"
@@ -187,11 +187,11 @@ def _versuri(song):
                      (song.artist.replace(" ", "+").lower(), song.name.replace(" ", "+").lower())
         search_results = requests.get(search_url, proxies=PROXY)
         soup = BeautifulSoup(search_results.text, 'html.parser')
-        for x in soup.findAll('a'):
-            if "/versuri/" in x['href']:
-                link_text = x.getText().lower()
+        for search_results in soup.findAll('a'):
+            if "/versuri/" in search_results['href']:
+                link_text = search_results.getText().lower()
                 if song.artist.lower() in link_text and song.name.lower() in link_text:
-                    url = "https://www.versuri.ro" + x['href']
+                    url = "https://www.versuri.ro" + search_results['href']
                     break
             else:
                 pass
