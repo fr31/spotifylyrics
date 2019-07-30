@@ -1,6 +1,5 @@
 beautifulsoup4
-pypiwin32==220; sys.platform == 'win32'
-win32gui; sys.platform == 'win32'
+pywin32; sys.platform == 'win32'
 dbus-python; sys.platform == 'linux'
 sip
 PyQt5
