@@ -40,7 +40,7 @@ class Song:
         self.dances = []
 
     @classmethod
-    def get_from_string(cls, songstring):
+    def get_from_string(cls, songstring: str):
         artist, name = "", ""
         if songstring.count(" - ") == 1:
             artist, name = songstring.rsplit(" - ", 1)
@@ -78,7 +78,7 @@ the service returned a wrong song
 CURRENT_SERVICE = -1
 
 
-def load_lyrics(song, sync=False):
+def load_lyrics(song: Song, sync=False):
     global CURRENT_SERVICE
 
     if CURRENT_SERVICE == len(SERVICES_LIST2) - 1: CURRENT_SERVICE = -1
@@ -216,8 +216,8 @@ def check_version() -> bool:
         return True
 
 
-def get_version():
-    version = "1.23"
+def get_version() -> str:
+    version = "1.30"
     return version
 
 
