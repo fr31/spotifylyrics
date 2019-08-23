@@ -148,6 +148,7 @@ class UiForm:
         if self.open_spotify:
             self.spotify()
         self.start_thread()
+        self.song = None
 
     def load_save_settings(self, save=False):
         settings_file = SETTINGS_DIR + "settings.ini"
@@ -614,6 +615,9 @@ class UiForm:
         self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
     def save_lyrics(self):
+        if not self.song:
+            return
+
         if not os.path.exists(LYRICS_DIR):
             os.makedirs(LYRICS_DIR)
 
