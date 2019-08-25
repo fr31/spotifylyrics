@@ -234,10 +234,8 @@ def open_spotify():
         else:
             pass
     elif sys.platform == "darwin":
-        # I don't have a mac so I don't know if this actually works
-        # If it does, please let me know, if it doesn't please fix it :)
         if get_window_title() == "":
-            subprocess.Popen("open -a Spotify")
+            subprocess.call(["open", "-a", "Spotify"])
         else:
             pass
     else:
