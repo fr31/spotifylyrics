@@ -17,7 +17,7 @@ https://www.microsoft.com/en-us/download/details.aspx?id=48145
 # running from source
 If you want to run from source you need:
 
-* Python 3.6.2 (probably any version of Python 3)
+* Python 3.6 (probably any version greater than Python 3.6)
 * pip install -r requirements.txt
 
 Ubuntu/Debian Example:
