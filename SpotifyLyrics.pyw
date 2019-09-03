@@ -451,12 +451,12 @@ class UiForm:
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
                     self.song = backend.Song.get_from_string(song_name)
-                    lyrics, url, service_name, timed = backend.get_lyrics(song=self.song, sync=self.sync)
-                    self.lyrics = lyrics
-                    self.timed = timed
+                    lyrics_metadata = backend.get_lyrics(song=self.song, sync=self.sync)
+                    self.lyrics = lyrics_metadata.lyrics
+                    self.timed = lyrics_metadata.timed
                     if self.infos:
                         backend.load_infos(self.song)
-                    if url == "":
+                    if lyrics_metadata.url == "":
                         header = song_name
                     else:
                         style = self.label_song_name.styleSheet()
@@ -465,13 +465,14 @@ class UiForm:
                         else:
                             color = style
                         header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' \
-                                 % (color, url, song_name)
-                    if timed:
-                        lrc = pylrc.parse(lyrics)
+                                 % (color, lyrics_metadata.url, song_name)
+                    if lyrics_metadata.timed:
+                        lrc = pylrc.parse(lyrics_metadata.lyrics)
                         if lrc.album != "":
                             self.song.album = lrc.album
                         lyrics_clean = '\n'.join(e.text for e in lrc)
-                        comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics_clean, service_name))
+                        comm.signal.emit(header,
+                                         self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
                         count = -1
                         for line in lrc:
                             if not self.sync:
@@ -494,7 +495,7 @@ class UiForm:
                                 else:
                                     color = style
                                 header = '''<style type="text/css">a {text-decoration: none; %s}</style><a 
-                                href="%s">%s</a>''' % (color, url, song_name)
+                                href="%s">%s</a>''' % (color, lyrics_metadata.url, song_name)
                                 window_title = backend.get_window_title()
                                 if line.time - (lrc.offset / 1000) <= time.time() - start \
                                         and window_title != "Spotify" and window_title != "Spotify Premium":
@@ -503,7 +504,8 @@ class UiForm:
                                     bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % \
                                                   self.font_size_box.value() * 2 + bold_lyrics + '</p>'
                                     comm.signal.emit(header,
-                                                     self.add_service_name_to_lyrics(bold_lyrics, service_name))
+                                                     self.add_service_name_to_lyrics(bold_lyrics,
+                                                                                     lyrics_metadata.service_name))
                                     time.sleep(0.5)
                                     break
                                 elif window_title in ('Spotify', 'Spotify Premium'):
@@ -518,7 +520,9 @@ class UiForm:
                             if window_title not in (song_name, 'Spotify', 'Spotify Premium'):
                                 break
                     else:
-                        comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
+                        comm.signal.emit(
+                            header,
+                            self.add_service_name_to_lyrics(lyrics_metadata.lyrics, lyrics_metadata.service_name))
             time.sleep(1)
 
     def start_thread(self):

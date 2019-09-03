@@ -7,11 +7,15 @@ import sys
 import threading
 import time
 import webbrowser  # to open link on browser
+from collections import namedtuple
 from urllib import request
 
 import requests
+from diskcache import Cache
 
 import services as s
+
+cache = Cache('spotifylyrics')
 
 if sys.platform == "win32":
     import win32process
@@ -76,8 +80,24 @@ Useful to change the lyrics with the button "Next Lyric" if
 the service returned a wrong song
 '''
 CURRENT_SERVICE = -1
+SECONDS_IN_WEEK = 604800
+LyricsMetadata = namedtuple("LyricsMetadata", ["lyrics", "url", "service_name", "timed"])
 
 
+def cache_lyrics(func):
+    def wrapper(song, sync):
+        clean_song_name = '{}-{}'.format(song.artist, song.name)
+        lyrics_metadata = cache.get(clean_song_name)
+        if lyrics_metadata:
+            return lyrics_metadata
+        else:
+            lyrics_metadata = func(song, sync)
+            cache.set(clean_song_name, lyrics_metadata, expire=SECONDS_IN_WEEK)
+            return lyrics_metadata
+    return wrapper
+
+
+@cache_lyrics
 def load_lyrics(song: Song, sync=False):
     global CURRENT_SERVICE
 
@@ -108,7 +128,7 @@ def load_lyrics(song: Song, sync=False):
         service_name = "---"
 
     # return "Error: Could not find lyrics."  if the for loop doesn't find any lyrics
-    return lyrics, url, service_name, timed
+    return LyricsMetadata(lyrics, url, service_name, timed)
 
 
 def load_infos(song: Song):
