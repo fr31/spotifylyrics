@@ -15,7 +15,7 @@ from diskcache import Cache
 
 import services as s
 
-cache = Cache('spotifylyrics')
+cache = Cache(os.path.join(s.SETTINGS_DIR, 'cache'))
 
 if sys.platform == "win32":
     import win32process
@@ -94,6 +94,7 @@ def cache_lyrics(func):
             lyrics_metadata = func(song, sync)
             cache.set(clean_song_name, lyrics_metadata, expire=SECONDS_IN_WEEK)
             return lyrics_metadata
+
     return wrapper
 
 
