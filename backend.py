@@ -132,7 +132,7 @@ def load_lyrics(song: Song, sync=False):
     return LyricsMetadata(lyrics, url, service_name, timed)
 
 
-def load_infos(song: Song):
+def load_info(song: Song):
     threading.Thread(target=s._tanzmusikonline, args=(song,)).start()
     threading.Thread(target=s._welchertanz, args=(song,)).start()
 
