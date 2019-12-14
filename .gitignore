@@ -184,3 +184,6 @@ fabric.properties
 # Ignore pipenv
 Pipfile.lock
 Pipfile
+
+# VsCode
+.vscode/settings.json
