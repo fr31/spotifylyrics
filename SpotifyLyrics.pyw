@@ -57,7 +57,7 @@ class UiForm:
     changed = False
     dark_theme = False
     info = False
-    minimize_to_tray = False
+    minimise_to_tray = False
 
     tray_icon = None
 
@@ -205,11 +205,11 @@ class UiForm:
                                 self.dark_theme = False
                         if "info" in lcline:
                             self.info = "true" in lcline
-                        if "minimizetotray" in lcline:
+                        if "minimisetotray" in lcline:
                             if "true" in lcline:
-                                self.minimize_to_tray = True
+                                self.minimise_to_tray = True
                             else:
-                                self.minimize_to_tray = False
+                                self.minimise_to_tray = False
             else:
                 directory = os.path.dirname(settings_file)
                 if not os.path.exists(directory):
@@ -217,7 +217,7 @@ class UiForm:
                 with open(settings_file, 'w+') as settings:
                     settings.write(
                         "[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme"
-                        "=False\nInfo=False\nMinimizeToTray=False\n")
+                        "=False\nInfo=False\nminimiseToTray=False\n")
             if self.dark_theme:
                 self.set_dark_theme()
             if self.sync:
@@ -231,8 +231,8 @@ class UiForm:
             if self.info:
                 self.options_combobox.setItemText(5, "Info (on)")
                 self.info_table.setVisible(True)
-            if self.minimize_to_tray:
-                self.options_combobox.setItemText(8, "Minimize to Tray (on)")
+            if self.minimise_to_tray:
+                self.options_combobox.setItemText(8, "Minimise to Tray (on)")
         else:
             with open(settings_file, 'w+') as settings:
                 settings.write("[settings]\n")
@@ -256,10 +256,10 @@ class UiForm:
                     settings.write("Info=True\n")
                 else:
                     settings.write("Info=False\n")
-                if self.minimize_to_tray:
-                    settings.write("MinimizeToTray=True\n")
+                if self.minimise_to_tray:
+                    settings.write("minimiseToTray=True\n")
                 else:
-                    settings.write("MinimizeToTray=False\n")
+                    settings.write("minimiseToTray=False\n")
 
                 settings.write("FontSize=%s" % str(self.font_size_box.value()))
 
@@ -324,12 +324,12 @@ class UiForm:
             if os.name == "nt":
                 subprocess.Popen(r'explorer "' + LYRICS_DIR + '"')
         elif current_index == 8:
-            if self.minimize_to_tray:
-                self.minimize_to_tray = False
-                self.options_combobox.setItemText(8, "Minimize to System Tray")
+            if self.minimise_to_tray:
+                self.minimise_to_tray = False
+                self.options_combobox.setItemText(8, "Minimise to System Tray")
             else:
-                self.minimize_to_tray = True
-                self.options_combobox.setItemText(8, "Minimize to System Tray (on)")
+                self.minimise_to_tray = True
+                self.options_combobox.setItemText(8, "Minimise to System Tray (on)")
         else:
             pass
         self.options_combobox.setCurrentIndex(0)
@@ -472,7 +472,7 @@ class UiForm:
         self.options_combobox.setItemText(4, _translate("Form", "Open Spotify"))
         self.options_combobox.setItemText(5, _translate("Form", "Info"))
         self.options_combobox.setItemText(6, _translate("Form", "Save Settings"))
-        self.options_combobox.setItemText(8, _translate("Form", "Minimize to Tray"))
+        self.options_combobox.setItemText(8, _translate("Form", "Minimise to Tray"))
         if os.name == "nt":
             self.options_combobox.setItemText(7, _translate("Form", "Open Lyrics Directory"))
 
@@ -703,7 +703,7 @@ class FormWidget(QtWidgets.QWidget):
         super().__init__()
 
     def closeEvent(self, event):
-        if UI.minimize_to_tray:
+        if UI.minimise_to_tray:
             event.ignore()
             self.hide()
 
