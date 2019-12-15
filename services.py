@@ -226,6 +226,7 @@ def _ultimateguitar(song):
     if page.status_code == 200:
         soup = BeautifulSoup(page.content, 'html.parser')
 
+        json_string = ""
         for script in soup.find_all("script"):
             json_info_script = script.getText()
             if "window.UGAPP.store.page" in json_info_script:
@@ -233,6 +234,8 @@ def _ultimateguitar(song):
                     .replace("window.UGAPP.store.page = ", "") \
                     .replace(";\n    window.UGAPP.store.i18n = {};\n", "")
                 break
+        if json_string == "":
+            return []
         urls = []
         data = json.loads(json_string)["data"]
         if "results" in data.keys():
