@@ -9,6 +9,7 @@ import time
 import pathvalidate
 import pylrc
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu, qApp
 
 import backend
 from services import SETTINGS_DIR, LYRICS_DIR
@@ -55,7 +56,10 @@ class UiForm:
     open_spotify = False
     changed = False
     dark_theme = False
-    infos = False
+    info = False
+    minimize_to_tray = False
+
+    tray_icon = None
 
     def __init__(self):
         super().__init__()
@@ -110,6 +114,22 @@ class UiForm:
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
+        self.options_combobox.addItem("")
+
+        self.tray_icon = QSystemTrayIcon(FORM)
+        self.tray_icon.setIcon(QtGui.QIcon(self.get_resource_path('icon.png')))
+
+        show_action = QAction("Show", FORM)
+        quit_action = QAction("Exit", FORM)
+        show_action.triggered.connect(FORM.show)
+        quit_action.triggered.connect(qApp.quit)
+        tray_menu = QMenu()
+        tray_menu.addAction(show_action)
+        tray_menu.addAction(quit_action)
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
+        self.tray_icon.activated.connect(FORM.icon_activated)
+
         if os.name == "nt":
             self.options_combobox.addItem("")
         self.horizontal_layout_2.addWidget(self.options_combobox, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
@@ -183,8 +203,13 @@ class UiForm:
                                 self.dark_theme = True
                             else:
                                 self.dark_theme = False
-                        if "infos" in lcline:
-                            self.infos = "true" in lcline
+                        if "info" in lcline:
+                            self.info = "true" in lcline
+                        if "minimizetotray" in lcline:
+                            if "true" in lcline:
+                                self.minimize_to_tray = True
+                            else:
+                                self.minimize_to_tray = False
             else:
                 directory = os.path.dirname(settings_file)
                 if not os.path.exists(directory):
@@ -192,7 +217,7 @@ class UiForm:
                 with open(settings_file, 'w+') as settings:
                     settings.write(
                         "[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme"
-                        "=False\nInfos=False")
+                        "=False\nInfo=False\nMinimizeToTray=False\n")
             if self.dark_theme:
                 self.set_dark_theme()
             if self.sync:
@@ -203,9 +228,11 @@ class UiForm:
                 FORM.show()
             if self.open_spotify:
                 self.options_combobox.setItemText(4, "Open Spotify (on)")
-            if self.infos:
-                self.options_combobox.setItemText(5, "Infos (on)")
+            if self.info:
+                self.options_combobox.setItemText(5, "Info (on)")
                 self.info_table.setVisible(True)
+            if self.minimize_to_tray:
+                self.options_combobox.setItemText(8, "Minimize to Tray (on)")
         else:
             with open(settings_file, 'w+') as settings:
                 settings.write("[settings]\n")
@@ -225,10 +252,15 @@ class UiForm:
                     settings.write("DarkTheme=True\n")
                 else:
                     settings.write("DarkTheme=False\n")
-                if self.infos:
-                    settings.write("Infos=True\n")
+                if self.info:
+                    settings.write("Info=True\n")
                 else:
-                    settings.write("Infos=False\n")
+                    settings.write("Info=False\n")
+                if self.minimize_to_tray:
+                    settings.write("MinimizeToTray=True\n")
+                else:
+                    settings.write("MinimizeToTray=False\n")
+
                 settings.write("FontSize=%s" % str(self.font_size_box.value()))
 
     def options_changed(self):
@@ -278,19 +310,26 @@ class UiForm:
                 self.open_spotify = True
                 self.options_combobox.setItemText(4, "Open Spotify (on)")
         elif current_index == 5:
-            if self.infos:
-                self.infos = False
-                self.options_combobox.setItemText(5, "Infos")
+            if self.info:
+                self.info = False
+                self.options_combobox.setItemText(5, "Info")
                 self.info_table.setVisible(False)
             else:
-                self.infos = True
-                self.options_combobox.setItemText(5, "Infos (on)")
+                self.info = True
+                self.options_combobox.setItemText(5, "Info (on)")
                 self.info_table.setVisible(True)
         elif current_index == 6:
             self.load_save_settings(save=True)
         elif current_index == 7:
             if os.name == "nt":
                 subprocess.Popen(r'explorer "' + LYRICS_DIR + '"')
+        elif current_index == 8:
+            if self.minimize_to_tray:
+                self.minimize_to_tray = False
+                self.options_combobox.setItemText(8, "Minimize to System Tray")
+            else:
+                self.minimize_to_tray = True
+                self.options_combobox.setItemText(8, "Minimize to System Tray (on)")
         else:
             pass
         self.options_combobox.setCurrentIndex(0)
@@ -431,8 +470,9 @@ class UiForm:
         self.options_combobox.setItemText(2, _translate("Form", "Synced Lyrics"))
         self.options_combobox.setItemText(3, _translate("Form", "Always on Top"))
         self.options_combobox.setItemText(4, _translate("Form", "Open Spotify"))
-        self.options_combobox.setItemText(5, _translate("Form", "Infos"))
+        self.options_combobox.setItemText(5, _translate("Form", "Info"))
         self.options_combobox.setItemText(6, _translate("Form", "Save Settings"))
+        self.options_combobox.setItemText(8, _translate("Form", "Minimize to Tray"))
         if os.name == "nt":
             self.options_combobox.setItemText(7, _translate("Form", "Open Lyrics Directory"))
 
@@ -454,8 +494,8 @@ class UiForm:
                     lyrics_metadata = backend.get_lyrics(song=self.song, sync=self.sync)
                     self.lyrics = lyrics_metadata.lyrics
                     self.timed = lyrics_metadata.timed
-                    if self.infos:
-                        backend.load_infos(self.song)
+                    if self.info:
+                        backend.load_info(self.song)
                     if lyrics_metadata.url == "":
                         header = song_name
                     else:
@@ -494,7 +534,7 @@ class UiForm:
                                     color = "color: black"
                                 else:
                                     color = style
-                                header = '''<style type="text/css">a {text-decoration: none; %s}</style><a 
+                                header = '''<style type="text/css">a {text-decoration: none; %s}</style><a
                                 href="%s">%s</a>''' % (color, lyrics_metadata.url, song_name)
                                 window_title = backend.get_window_title()
                                 if line.time - (lrc.offset / 1000) <= time.time() - start \
@@ -543,41 +583,41 @@ class UiForm:
         self.info_table.setRowCount(8)
         index = 0
 
-        self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("name"))
+        self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Title"))
         self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.name))
         index += 1
 
-        self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("artist"))
+        self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Artist"))
         self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.artist))
         index += 1
 
         if self.song.album != "UNKNOWN":
-            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("album"))
+            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Album"))
             self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.album))
             index += 1
 
         if self.song.genre != "UNKNOWN":
-            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("genre"))
+            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Genre"))
             self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(self.song.genre))
             index += 1
 
         if self.song.year != -1:
-            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("year"))
+            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Year"))
             self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(self.song.year)))
             index += 1
 
         if self.song.cycles_per_minute != -1:
-            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("cycles per minute"))
+            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Cycles Per Minute"))
             self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(self.song.cycles_per_minute)))
             index += 1
 
         if self.song.beats_per_minute != -1:
-            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("beats per minute"))
+            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Beats Per Minute"))
             self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem(str(self.song.beats_per_minute)))
             index += 1
 
         if self.song.dances:
-            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("dances"))
+            self.info_table.setItem(index, 0, QtWidgets.QTableWidgetItem("Dances"))
             self.info_table.setItem(index, 1, QtWidgets.QTableWidgetItem("\n".join(self.song.dances)))
 
         self.info_table.resizeRowsToContents()
@@ -656,12 +696,28 @@ class UiForm:
         backend.open_spotify()
 
 
+
+
+class FormWidget(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+
+    def closeEvent(self, event):
+        if UI.minimize_to_tray:
+            event.ignore()
+            self.hide()
+
+    def icon_activated(self, reason):
+        if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
+            self.show()
+
+
 if __name__ == "__main__":
     import sys
 
     APP = QtWidgets.QApplication(sys.argv)
     APP.setStyle("fusion")
-    FORM = QtWidgets.QWidget()
+    FORM = FormWidget()
     UI = UiForm()
     FORM.show()
     sys.exit(APP.exec_())

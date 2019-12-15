@@ -195,7 +195,7 @@ def _versuri(song):
                     break
             else:
                 pass
-        if url is "":
+        if url == "":
             lyrics = ERROR
         else:
             lyrics_page = requests.get(url, proxies=PROXY)
