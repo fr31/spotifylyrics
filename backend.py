@@ -85,13 +85,20 @@ LyricsMetadata = namedtuple("LyricsMetadata", ["lyrics", "url", "service_name", 
 
 
 def cache_lyrics(func):
-    def wrapper(song, sync):
+    def wrapper(*args, **kwargs):
+        song = args[0]
+        sync = kwargs.get("sync", False)
+        ignore_cache = kwargs.get("ignore_cache", False)
+
         clean_song_name = '{}-{}'.format(song.artist, song.name)
-        lyrics_metadata = cache.get(clean_song_name)
-        if lyrics_metadata:
+        if not ignore_cache:
+            lyrics_metadata = cache.get(clean_song_name)
+            if lyrics_metadata is None:
+                lyrics_metadata = func(*args, **kwargs)
+                cache.set(clean_song_name, lyrics_metadata, expire=SECONDS_IN_WEEK)
             return lyrics_metadata
         else:
-            lyrics_metadata = func(song, sync)
+            lyrics_metadata = func(*args, **kwargs)
             cache.set(clean_song_name, lyrics_metadata, expire=SECONDS_IN_WEEK)
             return lyrics_metadata
 
@@ -99,7 +106,8 @@ def cache_lyrics(func):
 
 
 @cache_lyrics
-def load_lyrics(song: Song, sync=False):
+def load_lyrics(song: Song, **kwargs):
+    sync = kwargs.get("sync", False)
     global CURRENT_SERVICE
 
     if CURRENT_SERVICE == len(SERVICES_LIST2) - 1: CURRENT_SERVICE = -1
@@ -141,12 +149,12 @@ def get_lyrics(song: Song, sync=False):
     global CURRENT_SERVICE
     CURRENT_SERVICE = -1
 
-    return load_lyrics(song, sync)
+    return load_lyrics(song, sync=sync)
 
 
 def next_lyrics(song: Song):
     global CURRENT_SERVICE
-    return load_lyrics(song)
+    return load_lyrics(song, ignore_cache=True)
 
 
 def load_chords(song: Song):
