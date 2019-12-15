@@ -226,15 +226,11 @@ def _ultimateguitar(song):
     if page.status_code == 200:
         soup = BeautifulSoup(page.content, 'html.parser')
 
-        for script in soup.find_all("script"):
-            json_info_script = script.getText()
-            if "window.UGAPP.store.page" in json_info_script:
-                json_string = json_info_script \
-                    .replace("window.UGAPP.store.page = ", "") \
-                    .replace(";\n    window.UGAPP.store.i18n = {};\n", "")
-                break
+        search_results_element = soup.find_all('div', {'class': 'js-store'})[0]
+        search_results_data = json.loads(search_results_element["data-content"])
+
         urls = []
-        data = json.loads(json_string)["data"]
+        data = search_results_data["store"]["page"]["data"]
         if "results" in data.keys():
             for result in data["results"]:
                 urls.append(result["tab_url"])
