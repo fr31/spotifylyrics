@@ -1,0 +1,3 @@
+[submodule "spotify_lyric"]
+	path = spotify_lyric
+	url = https://github.com/antoncoding/spotify_lyric

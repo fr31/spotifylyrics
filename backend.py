@@ -66,7 +66,7 @@ class Song:
 
 
 # With Sync.
-SERVICES_LIST1 = [s._local, s._minilyrics]
+SERVICES_LIST1 = [s._local, s._minilyrics, s._taihe]
 
 # Without Sync.
 SERVICES_LIST2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]

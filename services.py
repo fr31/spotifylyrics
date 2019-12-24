@@ -11,6 +11,11 @@ from bs4 import BeautifulSoup
 
 import lyrics as minilyrics
 
+try:
+    import spotify_lyric.QQParser as qqparser
+except ModuleNotFoundError:
+    pass
+
 ERROR = "Error: Could not find lyrics."
 PROXY = request.getproxies()
 
@@ -68,6 +73,21 @@ def _minilyrics(song):
         timed = False
 
     return lyrics, url, service_name, timed
+
+
+def _taihe(song):
+    service_name = "Taihe"
+    url = ""
+    try:
+        sid = qqparser.getSongId(song.artist, song.name)
+    except (AttributeError, NameError):
+        return ERROR, url, service_name, False
+    url = qqparser.getLyticURI(sid)
+
+    lrc_string = ''.join(
+        map(lambda line: qqparser.slice_lrc_line(line), requests.get(url, proxies=PROXY).text.splitlines()))
+
+    return lrc_string, url, service_name, True
 
 
 def _wikia(song):
