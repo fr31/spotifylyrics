@@ -2,7 +2,7 @@ import codecs
 import json
 import os
 import re
-from urllib import request
+from urllib import request, parse
 
 import pathvalidate
 import requests
@@ -70,6 +70,34 @@ def _minilyrics(song):
     if url == "":
         lyrics = ERROR
     if song.artist.lower().replace(" ", "") not in lyrics.lower().replace(" ", ""):
+        lyrics = ERROR
+        timed = False
+
+    return lyrics, url, service_name, timed
+
+
+def _rentanadviser(song):
+    service_name = "RentAnAdviser"
+    url = ""
+
+    possible_url = "https://www.rentanadviser.com/en/subtitles/getsubtitle.aspx?%s" % parse.urlencode({
+        "artist": song.artist,
+        "song": song.name,
+        "type": "lrc",
+    })
+    possible_text = requests.get(possible_url, proxies=PROXY)
+    soup = BeautifulSoup(possible_text.text, 'html.parser')
+    text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
+
+    if text_container:
+        url = possible_url
+        text_container.h3.decompose()
+        for br in text_container.find_all("br"):
+            br.replace_with("\n")
+
+        lyrics = text_container.get_text()
+        timed = True
+    else:
         lyrics = ERROR
         timed = False
 
