@@ -12,7 +12,8 @@ from bs4 import BeautifulSoup
 import lyrics as minilyrics
 
 try:
-    import spotify_lyric.QQParser as qqparser
+    import spotify_lyric.crawlers.QQCrawler as QQCrawler
+    import spotify_lyric.model_traditional_conversion.langconv as langconv
 except ModuleNotFoundError:
     pass
 
@@ -75,19 +76,21 @@ def _minilyrics(song):
     return lyrics, url, service_name, timed
 
 
-def _taihe(song):
-    service_name = "Taihe"
+def _qq(song):
     url = ""
     try:
-        sid = qqparser.getSongId(song.artist, song.name)
-    except (AttributeError, NameError):
-        return ERROR, url, service_name, False
-    url = qqparser.getLyticURI(sid)
+        qq = QQCrawler.QQCrawler()
+        sid = qq.getSongId(artist=song.artist, song=song.name)
+        url = qq.getLyticURI(sid)
+    except (AttributeError, NameError) as e:
+        return ERROR, url, "QQ", False
 
-    lrc_string = ''.join(
-        map(lambda line: qqparser.slice_lrc_line(line), requests.get(url, proxies=PROXY).text.splitlines()))
+    lrc_string = ""
+    for line in requests.get(url, proxies=PROXY).text.splitlines():
+        line_text = line.split(']')
+        lrc_string += "]".join(line_text[:-1]) + langconv.Converter('zh-hant').convert(line_text)
 
-    return lrc_string, url, service_name, True
+    return lrc_string, url, qq.name, True
 
 
 def _wikia(song):
