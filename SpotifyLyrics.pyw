@@ -495,7 +495,7 @@ class UiForm:
                     self.lyrics = lyrics_metadata.lyrics
                     self.timed = lyrics_metadata.timed
                     if self.info:
-                        backend.load_info(self.song)
+                        backend.load_info(self, self.song)
                     if lyrics_metadata.url == "":
                         header = song_name
                     else:

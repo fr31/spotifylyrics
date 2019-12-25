@@ -140,9 +140,13 @@ def load_lyrics(song: Song, **kwargs):
     return LyricsMetadata(lyrics, url, service_name, timed)
 
 
-def load_info(song: Song):
-    threading.Thread(target=s._tanzmusikonline, args=(song,)).start()
-    threading.Thread(target=s._welchertanz, args=(song,)).start()
+def load_info(window, song: Song):
+    def complete(function):
+        function(song)
+        window.refresh_info()
+
+    threading.Thread(target=complete, args=(s._tanzmusikonline,)).start()
+    threading.Thread(target=complete, args=(s._welchertanz,)).start()
 
 
 def get_lyrics(song: Song, sync=False):
