@@ -45,11 +45,12 @@ class Song:
 
     @classmethod
     def get_from_string(cls, songstring: str):
-        artist, name = "", ""
-        if songstring.count(" - ") == 1:
-            artist, name = songstring.rsplit(" - ", 1)
-        if songstring.count(" - ") == 2:
-            artist, name, garbage = songstring.rsplit(" - ", 2)
+        song_name_parts = songstring.split(" - ")
+        artist = song_name_parts[0]
+        if len(song_name_parts) > 2:
+            name = " - ".join(song_name_parts[1:-1])
+        else:
+            name = song_name_parts[1]
         if " / " in name:
             name, garbage = name.rsplit(" / ", 1)
         name = re.sub(r' \(.*?\)', '', name, flags=re.DOTALL)

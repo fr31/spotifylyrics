@@ -580,6 +580,10 @@ class UiForm:
 
     def refresh_info(self):
         self.info_table.clearContents()
+
+        if not self.song:
+            return
+
         self.info_table.setRowCount(8)
         index = 0
 
@@ -694,8 +698,6 @@ class UiForm:
     @staticmethod
     def spotify():
         backend.open_spotify()
-
-
 
 
 class FormWidget(QtWidgets.QWidget):
