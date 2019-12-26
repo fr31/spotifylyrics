@@ -80,28 +80,33 @@ def _rentanadviser(song):
     service_name = "RentAnAdviser"
     url = ""
 
-    possible_url = "https://www.rentanadviser.com/en/subtitles/getsubtitle.aspx?%s" % parse.urlencode({
-        "artist": song.artist,
-        "song": song.name,
-        "type": "lrc",
+    search_url = "https://www.rentanadviser.com/en/subtitles/subtitles4songs.aspx?%s" % parse.urlencode({
+        "src": song.artist + " " + song.name
     })
-    possible_text = requests.get(possible_url, proxies=PROXY)
+    search_results = requests.get(search_url, proxies=PROXY)
+    soup = BeautifulSoup(search_results.text, 'html.parser')
+    result_links = soup.find(id="tablecontainer").find_all("a")
+
+    for result_link in result_links:
+        if result_link["href"] != "subtitles4songs.aspx":
+            lower_title = result_link.get_text().lower()
+            if song.artist.lower() in lower_title and song.name.lower() in lower_title:
+                url = result_link["href"]
+                break
+
+    if not url:
+        return ERROR, url, service_name, False
+
+    url = "https://www.rentanadviser.com/en/subtitles/%s&type=lrc" % url
+    possible_text = requests.get(url, proxies=PROXY)
     soup = BeautifulSoup(possible_text.text, 'html.parser')
     text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
 
-    if text_container:
-        url = possible_url
-        text_container.h3.decompose()
-        for br in text_container.find_all("br"):
-            br.replace_with("\n")
+    text_container.h3.decompose()
+    for br in text_container.find_all("br"):
+        br.replace_with("\n")
 
-        lyrics = text_container.get_text()
-        timed = True
-    else:
-        lyrics = ERROR
-        timed = False
-
-    return lyrics, url, service_name, timed
+    return text_container.get_text(), url, service_name, True
 
 
 def _qq(song):
