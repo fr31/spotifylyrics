@@ -83,16 +83,19 @@ def _rentanadviser(song):
     search_url = "https://www.rentanadviser.com/en/subtitles/subtitles4songs.aspx?%s" % parse.urlencode({
         "src": song.artist + " " + song.name
     })
-    search_results = requests.get(search_url, proxies=PROXY)
-    soup = BeautifulSoup(search_results.text, 'html.parser')
-    result_links = soup.find(id="tablecontainer").find_all("a")
+    try:
+        search_results = requests.get(search_url, proxies=PROXY)
+        soup = BeautifulSoup(search_results.text, 'html.parser')
+        result_links = soup.find(id="tablecontainer").find_all("a")
 
-    for result_link in result_links:
-        if result_link["href"] != "subtitles4songs.aspx":
-            lower_title = result_link.get_text().lower()
-            if song.artist.lower() in lower_title and song.name.lower() in lower_title:
-                url = result_link["href"]
-                break
+        for result_link in result_links:
+            if result_link["href"] != "subtitles4songs.aspx":
+                lower_title = result_link.get_text().lower()
+                if song.artist.lower() in lower_title and song.name.lower() in lower_title:
+                    url = result_link["href"]
+                    break
+    except requests.exceptions.ConnectionError as e:
+        pass
 
     if not url:
         return ERROR, url, service_name, False
@@ -129,9 +132,9 @@ def _qq(song):
 def _wikia(song):
     service_name = "Wikia"
     url = ""
+    timed = False
     try:
-        lyrics = minilyrics.LyricWikia(song.artist, song.name)
-        url = "http://lyrics.wikia.com/%s:%s" % (song.artist.replace(' ', '_'), song.name.replace(' ', '_'))
+        lyrics, url, timed = minilyrics.LyricWikia(song.artist, song.name)
     except Exception:
         lyrics = ERROR
     if "TrebleClef.png" in lyrics:
@@ -140,7 +143,7 @@ def _wikia(song):
         lyrics = "(Instrumental)"
     if lyrics == "error":
         lyrics = ERROR
-    return lyrics, url, service_name
+    return lyrics, url, service_name, timed
 
 
 def _musixmatch(song):

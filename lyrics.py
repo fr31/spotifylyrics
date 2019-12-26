@@ -205,8 +205,14 @@ def LyricWikia(artist, title):
     returned = returned.replace("song = ", "")
     returned = json.loads(returned)
     if returned["lyrics"] != "Not found":
-        # set the url to the url we just recieved, and retrieving it
-        r = requests.get(returned["url"], timeout=15, proxies=proxy)
+        # set the url to the url we just received, and retrieving it
+        timed = True
+        url = returned["url"] + "/lrc"
+        r = requests.get(url, timeout=15, proxies=proxy)
+        if r.status_code == 404:
+            timed = False
+            url = returned["url"]
+            r = requests.get(url, timeout=15, proxies=proxy)
         soup = BeautifulSoup(r.text, 'html.parser')
         soup = soup.find("div", {"class": "lyricbox"})
         [elem.extract() for elem in soup.findAll('div')]
@@ -219,6 +225,6 @@ def LyricWikia(artist, title):
             pass
         soup = BeautifulSoup(re.sub(r'(<!--[.\s\S]*-->)', '', str(soup)), 'html.parser')
         [elem.extract() for elem in soup.findAll('script')]
-        return soup.getText()
+        return soup.getText(), url, timed
     else:
-        return "error"
+        return "error", "", False

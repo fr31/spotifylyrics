@@ -66,10 +66,10 @@ class Song:
 
 
 # With Sync.
-SERVICES_LIST1 = [s._local, s._minilyrics, s._qq, s._rentanadviser]
+SERVICES_LIST1 = [s._local, s._minilyrics, s._qq, s._rentanadviser, s._wikia]
 
 # Without Sync.
-SERVICES_LIST2 = [s._wikia, s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
+SERVICES_LIST2 = [s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
 
 # Accords
 SERVICES_LIST3 = [s._ultimateguitar, s._cifraclub, s._songsterr]
