@@ -379,16 +379,17 @@ def _tanzmusikonline(song):
 
 def _welchertanz(song):
     try:
-        interpreter_request = requests.get("https://www.welcher-tanz.de/interpreten/", proxies=PROXY)
+        interpreter_request = requests.get("https://neu.tanzschule-woelbing.de/charts/interpreten/", proxies=PROXY)
         interpreter_soup = BeautifulSoup(interpreter_request.content, 'html.parser')
         interpreter_links = []
-        for interpreter in interpreter_soup.find_all(class_="chip"):
-            if song.artist.lower() in interpreter.getText().split("(", 1)[0].strip().lower():
+        for interpreter in interpreter_soup.find_all("a", class_="btn-dfeault"):
+            if "/charts/interpreten/?artist-hash=" in interpreter.get("href") \
+                    and song.artist.lower() in interpreter.getText().lower():
                 interpreter_links.append(interpreter.get("href"))
         for interpreter_link in interpreter_links:
-            interpreter_songs = requests.get("https://www.welcher-tanz.de" + interpreter_link, proxies=PROXY)
+            interpreter_songs = requests.get("https://neu.tanzschule-woelbing.de" + interpreter_link, proxies=PROXY)
             interpreter_songs_soup = BeautifulSoup(interpreter_songs.content, 'html.parser')
-            for interpreter_song in interpreter_songs_soup.find(class_="card-content").find_all("tr"):
+            for interpreter_song in interpreter_songs_soup.find("table", class_="table").find_all("tr"):
                 infos = interpreter_song.find_all("td")
                 if infos and song.name.lower() in infos[1].getText().strip().lower():
                     dances = infos[2].find_all("a")
