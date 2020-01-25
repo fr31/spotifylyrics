@@ -210,15 +210,17 @@ def _songlyrics(song):
     try:
         artistm = song.artist.replace(" ", "-")
         songm = song.name.replace(" ", "-")
-        url = "http://www.songlyrics.com/%s/%s-lyrics" % (artistm, songm)
+        url = "https://www.songlyrics.com/%s/%s-lyrics" % (artistm, songm)
         lyrics_page = requests.get(url, proxies=PROXY)
         soup = BeautifulSoup(lyrics_page.text, 'html.parser')
         lyrics = soup.find(id="songLyricsDiv").get_text()
+        if "Sorry, we have no" in lyrics or "We do not have" in lyrics:
+            lyrics = ERROR
+        else:
+            for info in soup.find("div", class_="pagetitle").find_all("p"):
+                if "Album:" in info.get_text():
+                    song.album = info.find("a").get_text()
     except Exception:
-        lyrics = ERROR
-    if "Sorry, we have no" in lyrics:
-        lyrics = ERROR
-    if "We do not have" in lyrics:
         lyrics = ERROR
     return lyrics, url, service_name
 
