@@ -376,7 +376,7 @@ def _tanzmusikonline(song):
                             song.cycles_per_minute = int(text)
                         elif "fa-tachometer" in classes:
                             song.beats_per_minute = int(text)
-    except requests.exceptions.ConnectionError as e:
+    except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as e:
         print(e)
 
 
