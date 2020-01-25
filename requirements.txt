@@ -1,11 +1,12 @@
 beautifulsoup4
-pywin32; sys.platform == 'win32'
-dbus-python; sys.platform == 'linux'
+pywin32; sys_platform == 'win32'
+dbus-python; sys_platform == 'linux'
 sip
+PyQt5-stubs
 PyQt5
 requests>=2.20.0
 xmltodict
-psutil; sys.platform == 'win32'
+psutil; sys_platform == 'win32'
 unidecode
 pylrc
 pathvalidate
