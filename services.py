@@ -317,7 +317,7 @@ def _songsterr(song):
 
 def _tanzmusikonline(song):
     try:
-        token_request = requests.get('https://www.tanzmusik-online.de/search')
+        token_request = requests.get('https://www.tanzmusik-online.de/search', timeout=30)
         search = BeautifulSoup(token_request.content, 'html.parser').find(id="page-wrapper")
         if search:
             token = ""
@@ -333,7 +333,8 @@ def _tanzmusikonline(song):
                 search_results = requests.post(base_result_url + "?page=" + str(page), proxies=PROXY,
                                                cookies=token_request.cookies,
                                                data={"artist": song.artist, "song": song.name, "_token": token,
-                                                     "searchMode": "extended", "genre": 0, "submit": "Suchen"})
+                                                     "searchMode": "extended", "genre": 0, "submit": "Suchen"},
+                                               timeout=30)
                 search_soup = BeautifulSoup(search_results.content, 'html.parser')
                 for song_result in search_soup.find_all(class_="song"):
                     song_urls.append(song_result.find(class_="songTitle").a.get("href"))
@@ -346,9 +347,9 @@ def _tanzmusikonline(song):
                                 highest_page = int(page_number) + 1
                 page += 1
 
-            language = requests.get("https://www.tanzmusik-online.de/locale/en", proxies=PROXY)
+            language = requests.get("https://www.tanzmusik-online.de/locale/en", proxies=PROXY, timeout=30)
             for song_url in song_urls:
-                page = requests.get(song_url, proxies=PROXY, cookies=language.cookies)
+                page = requests.get(song_url, proxies=PROXY, cookies=language.cookies, timeout=30)
 
                 soup = BeautifulSoup(page.content, 'html.parser')
 
