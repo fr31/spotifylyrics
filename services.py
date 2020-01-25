@@ -118,7 +118,7 @@ def _qq(song):
         qq = QQCrawler.QQCrawler()
         sid = qq.getSongId(artist=song.artist, song=song.name)
         url = qq.getLyticURI(sid)
-    except (AttributeError, NameError) as e:
+    except (AttributeError, NameError, requests.exceptions.ConnectionError) as e:
         return ERROR, url, "QQ", False
 
     lrc_string = ""
