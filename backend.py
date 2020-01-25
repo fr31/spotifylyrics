@@ -251,7 +251,7 @@ def check_version() -> bool:
 
 
 def get_version() -> str:
-    version = "1.30"
+    version = "1.40"
     return version
 
 

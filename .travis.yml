@@ -34,7 +34,7 @@ matrix:
     #    - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;."
 
 before_script:
-  - export PYTHONPATH=$PYTHONPATH:$PWD
+  - export PYTHONPATH=$PYTHONPATH:$PWD:$PWD/spotify_lyric
 
 script:
   #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then xvfb-run ./SpotifyLyrics.pyw; fi
