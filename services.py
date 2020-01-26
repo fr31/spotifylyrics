@@ -94,22 +94,22 @@ def _rentanadviser(song):
                 if song.artist.lower() in lower_title and song.name.lower() in lower_title:
                     url = result_link["href"]
                     break
+
+        url = "https://www.rentanadviser.com/en/subtitles/%s&type=lrc" % url
+        possible_text = requests.get(url, proxies=PROXY)
+        soup = BeautifulSoup(possible_text.text, 'html.parser')
+        text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
+
+        if text_container:
+            text_container.h3.decompose()
+            for br in text_container.find_all("br"):
+                br.replace_with("\n")
+
+            return text_container.get_text(), url, service_name, True
+
     except requests.exceptions.ConnectionError as e:
         pass
-
-    if not url:
-        return ERROR, url, service_name, False
-
-    url = "https://www.rentanadviser.com/en/subtitles/%s&type=lrc" % url
-    possible_text = requests.get(url, proxies=PROXY)
-    soup = BeautifulSoup(possible_text.text, 'html.parser')
-    text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
-
-    text_container.h3.decompose()
-    for br in text_container.find_all("br"):
-        br.replace_with("\n")
-
-    return text_container.get_text(), url, service_name, True
+    return ERROR, url, service_name, False
 
 
 def _qq(song):
