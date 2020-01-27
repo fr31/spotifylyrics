@@ -92,15 +92,14 @@ def _rentanadviser(song):
             if result_link["href"] != "subtitles4songs.aspx":
                 lower_title = result_link.get_text().lower()
                 if song.artist.lower() in lower_title and song.name.lower() in lower_title:
-                    url = result_link["href"]
+                    url = "https://www.rentanadviser.com/en/subtitles/%s&type=lrc" % result_link["href"]
                     break
 
-        url = "https://www.rentanadviser.com/en/subtitles/%s&type=lrc" % url
-        possible_text = requests.get(url, proxies=PROXY)
-        soup = BeautifulSoup(possible_text.text, 'html.parser')
-        text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
+        if url:
+            possible_text = requests.get(url, proxies=PROXY)
+            soup = BeautifulSoup(possible_text.text, 'html.parser')
+            text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
 
-        if text_container:
             text_container.h3.decompose()
             for br in text_container.find_all("br"):
                 br.replace_with("\n")
@@ -144,6 +143,37 @@ def _wikia(song):
     if lyrics == "error":
         lyrics = ERROR
     return lyrics, url, service_name, timed
+
+
+def _syair(song):
+    service_name = "Syair"
+    url = ""
+
+    search_url = "https://syair.info/search?%s" % parse.urlencode({
+        "q": song.artist + " " + song.name
+    })
+    try:
+        search_results = requests.get(search_url, proxies=PROXY)
+        soup = BeautifulSoup(search_results.text, 'html.parser')
+        result_list = soup.find("article", class_="sub").find("div", class_="ul")
+
+        if result_list:
+            for result_link in result_list.find_all("a"):
+                name = result_link.get_text().lower()
+                if song.artist.lower() in name and song.name.lower() in name:
+                    url = "https://syair.info%s" % result_link["href"]
+                    break
+
+            if url:
+                lyrics_page = requests.get(url, proxies=PROXY)
+                soup = BeautifulSoup(lyrics_page.text, 'html.parser')
+                lrc = requests.get("https://syair.info%s" % soup.find(class_="_download")["href"], proxies=PROXY,
+                                   cookies=lyrics_page.cookies).text
+
+                return lrc, url, service_name, True
+    except requests.exceptions.ConnectionError as e:
+        pass
+    return ERROR, url, service_name, False
 
 
 def _musixmatch(song):
