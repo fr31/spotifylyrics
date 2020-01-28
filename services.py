@@ -167,10 +167,16 @@ def _syair(song):
             if url:
                 lyrics_page = requests.get(url, proxies=PROXY)
                 soup = BeautifulSoup(lyrics_page.text, 'html.parser')
-                lrc = requests.get("https://syair.info%s" % soup.find(class_="_download")["href"], proxies=PROXY,
-                                   cookies=lyrics_page.cookies).text
+                lrc_link = ""
+                for download_link in soup.find_all("a"):
+                    if "download.php" in download_link["href"]:
+                        lrc_link = download_link["href"]
+                        break
+                if lrc_link:
+                    lrc = requests.get("https://syair.info%s" % lrc_link, proxies=PROXY,
+                                       cookies=lyrics_page.cookies).text
 
-                return lrc, url, service_name, True
+                    return lrc, url, service_name, True
     except requests.exceptions.ConnectionError as e:
         pass
     return ERROR, url, service_name, False
