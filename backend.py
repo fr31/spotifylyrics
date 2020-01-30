@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import os
 import re
 import subprocess
@@ -8,6 +7,7 @@ import threading
 import time
 import webbrowser  # to open link on browser
 from collections import namedtuple
+from typing import Tuple
 from urllib import request
 
 import requests
@@ -64,6 +64,55 @@ class Song:
                    self.artist, self.name, self.year, self.genre, self.album,
                    self.cycles_per_minute, self.beats_per_minute, self.dances,
                )
+
+
+class StreamingService:
+    def get_windows_executable_name(self) -> str:
+        raise NotImplementedError
+
+    def get_apple_script_name(self) -> str:
+        raise NotImplementedError
+
+    def get_linux_session_object_name(self) -> str:
+        raise NotImplementedError
+
+    def get_windows_exe_path(self) -> str:
+        raise NotImplementedError
+
+    def get_linux_open_command(self) -> str:
+        raise NotImplementedError
+
+    def get_apple_open_command(self) -> str:
+        raise NotImplementedError
+
+    def get_not_playing_windows_title(self) -> Tuple:
+        raise NotImplementedError
+
+
+class SpotifyStreamingService(StreamingService):
+    def get_windows_executable_name(self) -> str:
+        return 'Spotify.exe'
+
+    def get_apple_script_name(self) -> str:
+        return "getCurrentSongSpotify.AppleScript"
+
+    def get_linux_session_object_name(self) -> str:
+        return "org.mpris.MediaPlayer2.spotify"
+
+    def get_windows_exe_path(self) -> str:
+        return os.getenv("APPDATA") + '\\Spotify\\Spotify.exe'
+
+    def get_linux_open_command(self) -> str:
+        return "spotify"
+
+    def get_apple_open_command(self) -> str:
+        return "Spotify"
+
+    def get_not_playing_windows_title(self) -> Tuple:
+        return 'Spotify', 'Spotify Premium', ''
+
+    def __str__(self):
+        return "Spotify"
 
 
 # With Sync.
@@ -158,7 +207,6 @@ def get_lyrics(song: Song, sync=False):
 
 
 def next_lyrics(song: Song):
-    global CURRENT_SERVICE
     return load_lyrics(song, ignore_cache=True)
 
 
@@ -169,13 +217,13 @@ def load_chords(song: Song):
             webbrowser.open(url)
 
 
-def get_window_title() -> str:
+def get_window_title(service: StreamingService) -> str:
     if sys.platform == "win32":
         spotify_pids = []
         for proc in psutil.process_iter():
             if proc:
                 try:
-                    if proc.name() == 'Spotify.exe':
+                    if proc.name() == service.get_windows_executable_name():
                         spotify_pids.append(proc.pid)
                 except psutil.NoSuchProcess:
                     print("Process does not exist anymore")
@@ -201,7 +249,7 @@ def get_window_title() -> str:
     elif sys.platform == "darwin":
         window_name = ''
         try:
-            command = "osascript getCurrentSong.AppleScript"
+            command = "osascript " + service.get_apple_script_name()
             window_name = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
         except Exception:
             pass
@@ -209,7 +257,7 @@ def get_window_title() -> str:
         window_name = ''
         try:
             session = dbus.SessionBus()
-            spotify_dbus = session.get_object("org.mpris.MediaPlayer2.spotify", "/org/mpris/MediaPlayer2")
+            spotify_dbus = session.get_object(service.get_linux_session_object_name(), "/org/mpris/MediaPlayer2")
             spotify_interface = dbus.Interface(spotify_dbus, "org.freedesktop.DBus.Properties")
             metadata = spotify_interface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
         except Exception:
@@ -219,57 +267,55 @@ def get_window_title() -> str:
             windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
             spotify = ''
             for line in windows.splitlines():
-                if '("spotify" "Spotify")' in line:
+                if '("' + service.get_linux_open_command() + '" "' + service.get_linux_open_command().capitalize() + '")' in line:
                     if " - " in line:
                         spotify = line
                         break
                 spotify = 'Spotify Lyrics'
             if spotify == '':
-                window_name = 'Spotify'
+                window_name = service.get_linux_open_command().capitalize()
         except Exception:
             pass
-        if window_name not in ('Spotify', 'Spotify Lyrics'):
+        if window_name and window_name not in (service.get_linux_open_command().capitalize(), 'Spotify Lyrics'):
             try:
                 window_name = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
             except Exception:
                 pass
     if "—" in window_name:
         window_name = window_name.replace("—", "-")
-    if "Spotify - " in window_name:
-        window_name = window_name.strip("Spotify - ")
+    if service.get_linux_open_command().capitalize() + " - " in window_name:
+        window_name = window_name.strip(service.get_linux_open_command().capitalize() + " - ")
     return window_name
 
 
 def check_version() -> bool:
     proxy = request.getproxies()
     try:
-        return float(get_version()) >= float(
-            json.loads(requests.get("https://api.github.com/repos/SimonIT/spotifylyrics/tags",
-                                    timeout=5, proxies=proxy).text)[0]["name"])
+        return get_version() >= \
+               float(requests.get("https://api.github.com/repos/SimonIT/spotifylyrics/tags", timeout=5, proxies=proxy)
+                     .json()[0]["name"])
     except Exception:
         return True
 
 
-def get_version() -> str:
-    version = "1.40"
-    return version
+def get_version() -> float:
+    return 1.4
 
 
-def open_spotify():
+def open_spotify(service: StreamingService):
     if sys.platform == "win32":
-        if get_window_title() == "":
-            path = os.getenv("APPDATA") + '\\Spotify\\Spotify.exe'
-            subprocess.Popen(path)
+        if get_window_title(service) == "":
+            subprocess.Popen(service.get_windows_exe_path())
         else:
             pass
     elif sys.platform == "linux":
-        if get_window_title() == "":
-            subprocess.Popen("spotify")
+        if get_window_title(service) == "":
+            subprocess.Popen(service.get_linux_open_command())
         else:
             pass
     elif sys.platform == "darwin":
-        if get_window_title() == "":
-            subprocess.call(["open", "-a", "Spotify"])
+        if get_window_title(service) == "":
+            subprocess.call(["open", "-a", service.get_apple_open_command()])
         else:
             pass
     else:
@@ -288,10 +334,11 @@ def main():
 
     clear()
     old_song_name = ""
+    service = SpotifyStreamingService()
     while True:
-        song_name = get_window_title()
+        song_name = get_window_title(service)
         if old_song_name != song_name:
-            if song_name != "Spotify":
+            if song_name not in service.get_not_playing_windows_title():
                 old_song_name = song_name
                 clear()
         time.sleep(1)

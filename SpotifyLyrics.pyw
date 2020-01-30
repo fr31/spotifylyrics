@@ -61,6 +61,8 @@ class UiForm:
 
     tray_icon = None
 
+    streaming_services = [backend.SpotifyStreamingService()]
+
     def __init__(self):
         super().__init__()
 
@@ -84,6 +86,13 @@ class UiForm:
         self.horizontal_layout_2.addWidget(self.label_song_name, 0, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         spacer_item = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontal_layout_2.addItem(spacer_item)
+
+        self.streaming_services_box = QtWidgets.QComboBox(FORM)
+        self.streaming_services_box.setGeometry(QtCore.QRect(160, 120, 69, 22))
+        self.streaming_services_box.addItems(str(n) for n in self.streaming_services)
+        self.streaming_services_box.setCurrentIndex(0)
+        self.horizontal_layout_2.addWidget(self.streaming_services_box, 0,
+                                           QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.change_lyrics_button = QtWidgets.QPushButton(FORM)
         self.change_lyrics_button.setObjectName("pushButton")
@@ -381,6 +390,7 @@ class UiForm:
                         if "fontboxbackgroundcolor" in lcsetting:
                             style = self.font_size_box.styleSheet()
                             style = style + "background-color: %s;" % align
+                            self.streaming_services_box.setStyleSheet(style)
                             self.options_combobox.setStyleSheet(style)
                             self.font_size_box.setStyleSheet(style)
                             self.change_lyrics_button.setStyleSheet(style)
@@ -389,6 +399,7 @@ class UiForm:
                         if "fontboxtextcolor" in lcsetting:
                             style = self.font_size_box.styleSheet()
                             style = style + "color: %s;" % align
+                            self.streaming_services_box.setStyleSheet(style)
                             self.options_combobox.setStyleSheet(style)
                             self.font_size_box.setStyleSheet(style)
                             self.change_lyrics_button.setStyleSheet(style)
@@ -414,6 +425,7 @@ class UiForm:
         self.label_song_name.setStyleSheet("color: #9c9c9c; text-decoration: underline;")
         text = re.sub("color:.*?;", "color: #9c9c9c;", self.label_song_name.text())
         self.label_song_name.setText(text)
+        self.streaming_services_box.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.options_combobox.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.font_size_box.setStyleSheet("background-color: #181818; color: #9c9c9c;")
         self.change_lyrics_button.setStyleSheet("background-color: #181818; color: #9c9c9c;")
@@ -483,10 +495,11 @@ class UiForm:
     def lyrics_thread(self, comm):
         old_song_name = ""
         while True:
-            song_name = backend.get_window_title()
+            current_service = self.streaming_services[self.streaming_services_box.currentIndex()]
+            song_name = backend.get_window_title(current_service)
             self.changed = False
             if old_song_name != song_name:
-                if song_name not in ('Spotify', 'Spotify Premium', ''):
+                if song_name not in current_service.get_not_playing_windows_title():
                     old_song_name = song_name
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
@@ -536,7 +549,7 @@ class UiForm:
                                     color = style
                                 header = '''<style type="text/css">a {text-decoration: none; %s}</style><a
                                 href="%s">%s</a>''' % (color, lyrics_metadata.url, song_name)
-                                window_title = backend.get_window_title()
+                                window_title = backend.get_window_title(current_service)
                                 if line.time - (lrc.offset / 1000) <= time.time() - start \
                                         and window_title != "Spotify" and window_title != "Spotify Premium":
                                     if self.changed or not self.sync:
@@ -548,7 +561,7 @@ class UiForm:
                                                                                      lyrics_metadata.service_name))
                                     time.sleep(0.5)
                                     break
-                                elif window_title in ('Spotify', 'Spotify Premium'):
+                                elif window_title in current_service.get_not_playing_windows_title():
                                     time.sleep(0.2)
                                     start = start + 0.2
                                 else:
@@ -556,8 +569,9 @@ class UiForm:
                                         break
                                     else:
                                         time.sleep(0.2)
-                            window_title = backend.get_window_title()
-                            if window_title not in (song_name, 'Spotify', 'Spotify Premium'):
+                            window_title = backend.get_window_title(current_service)
+                            if window_title not in current_service.get_not_playing_windows_title() \
+                                    and window_title != song_name:
                                 break
                     else:
                         comm.signal.emit(
@@ -572,7 +586,7 @@ class UiForm:
 
     def refresh_lyrics(self, song_name, lyrics):
         _translate = QtCore.QCoreApplication.translate
-        if backend.get_window_title() != "":
+        if backend.get_window_title(self.streaming_services[self.streaming_services_box.currentIndex()]) != "":
             self.label_song_name.setText(_translate("Form", song_name))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.text_browser.scrollToAnchor("#scrollHere")
@@ -644,7 +658,7 @@ class UiForm:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics_thread(self):
-        song_name = backend.get_window_title()
+        song_name = backend.get_window_title(self.streaming_services[self.streaming_services_box.currentIndex()])
         self.comm.signal.emit(song_name, "Loading...")
         style = self.label_song_name.styleSheet()
 
@@ -695,9 +709,8 @@ class UiForm:
         with open(file, "w", encoding="utf-8") as lyrics_file:
             lyrics_file.write(text)
 
-    @staticmethod
-    def spotify():
-        backend.open_spotify()
+    def spotify(self):
+        backend.open_spotify(self.streaming_services[self.streaming_services_box.currentIndex()])
 
 
 class FormWidget(QtWidgets.QWidget):
