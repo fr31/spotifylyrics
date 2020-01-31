@@ -115,6 +115,32 @@ class SpotifyStreamingService(StreamingService):
         return "Spotify"
 
 
+class VlcMediaPlayer(StreamingService):
+    def get_windows_executable_name(self) -> str:
+        return 'vlc.exe'
+
+    def get_apple_script_name(self) -> str:
+        return "getCurrentSongVlc.AppleScript"
+
+    def get_linux_session_object_name(self) -> str:
+        return ""  # TODO
+
+    def get_windows_exe_path(self) -> str:
+        return "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"
+
+    def get_linux_open_command(self) -> str:
+        return "vlc"
+
+    def get_apple_open_command(self) -> str:
+        return "VLC"  # TODO
+
+    def get_not_playing_windows_title(self) -> Tuple:
+        return 'VLC media player', ''
+
+    def __str__(self):
+        return "VLC"
+
+
 # With Sync.
 SERVICES_LIST1 = [s._local, s._minilyrics, s._qq, s._rentanadviser, s._wikia, s._syair]
 
@@ -249,7 +275,7 @@ def get_window_title(service: StreamingService) -> str:
     elif sys.platform == "darwin":
         window_name = ''
         try:
-            command = "osascript " + service.get_apple_script_name()
+            command = "osascript apple_scripts/" + service.get_apple_script_name()
             window_name = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
         except Exception:
             pass

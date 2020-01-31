@@ -61,7 +61,7 @@ class UiForm:
 
     tray_icon = None
 
-    streaming_services = [backend.SpotifyStreamingService()]
+    streaming_services = [backend.SpotifyStreamingService(), backend.VlcMediaPlayer()]
 
     def __init__(self):
         super().__init__()
@@ -542,6 +542,7 @@ class UiForm:
                                 lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
                             bold_lyrics = '<br>'.join(e.text for e in lrc)
                             while True:
+                                current_service = self.streaming_services[self.streaming_services_box.currentIndex()]
                                 style = self.label_song_name.styleSheet()
                                 if style == "":
                                     color = "color: black"
