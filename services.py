@@ -98,13 +98,15 @@ def _rentanadviser(song):
         if url:
             possible_text = requests.get(url, proxies=PROXY)
             soup = BeautifulSoup(possible_text.text, 'html.parser')
-            text_container = soup.find(id="ctl00_ContentPlaceHolder1_lbllyrics")
 
-            text_container.h3.decompose()
-            for br in text_container.find_all("br"):
-                br.replace_with("\n")
+            event_validation = soup.find(id="__EVENTVALIDATION")["value"]
+            view_state = soup.find(id="__VIEWSTATE")["value"]
 
-            return text_container.get_text(), url, service_name, True
+            lrc = requests.post(url, {"__EVENTTARGET": "ctl00$ContentPlaceHolder1$btnlyrics",
+                                      "__EVENTVALIDATION": event_validation,
+                                      "__VIEWSTATE": view_state}, proxies=PROXY).text
+
+            return lrc, url, service_name, True
 
     except requests.exceptions.ConnectionError as e:
         pass
