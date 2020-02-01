@@ -65,7 +65,7 @@ def _minilyrics(song):
                 break
         lyrics = requests.get(url, proxies=PROXY).text
         timed = True
-    except Exception:
+    except Exception as e:
         lyrics = ERROR
     if url == "":
         lyrics = ERROR

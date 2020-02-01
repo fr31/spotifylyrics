@@ -115,6 +115,32 @@ class SpotifyStreamingService(StreamingService):
         return "Spotify"
 
 
+class TidalStreamingService(StreamingService):
+    def get_windows_executable_name(self) -> str:
+        return 'TIDAL.exe'
+
+    def get_apple_script_name(self) -> str:
+        return ""  # TODO
+
+    def get_linux_session_object_name(self) -> str:
+        return ""  # Not supported on linux
+
+    def get_windows_exe_path(self) -> str:
+        return os.getenv("LOCALAPPDATA") + '\\TIDAL\\TIDAL.exe'
+
+    def get_linux_open_command(self) -> str:
+        return ""  # Not supported on linux
+
+    def get_apple_open_command(self) -> str:
+        return "Tidal"  # TODO
+
+    def get_not_playing_windows_title(self) -> Tuple:
+        return 'TIDAL', ''
+
+    def __str__(self):
+        return "Tidal"
+
+
 class VlcMediaPlayer(StreamingService):
     def get_windows_executable_name(self) -> str:
         return 'vlc.exe'
@@ -126,7 +152,7 @@ class VlcMediaPlayer(StreamingService):
         return ""  # TODO
 
     def get_windows_exe_path(self) -> str:
-        return "C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"
+        return os.getenv("PROGRAMFILES") + "\\VideoLAN\\VLC\\vlc.exe"
 
     def get_linux_open_command(self) -> str:
         return "vlc"

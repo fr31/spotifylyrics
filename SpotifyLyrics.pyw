@@ -61,7 +61,7 @@ class UiForm:
 
     tray_icon = None
 
-    streaming_services = [backend.SpotifyStreamingService(), backend.VlcMediaPlayer()]
+    streaming_services = [backend.SpotifyStreamingService(), backend.VlcMediaPlayer(), backend.TidalStreamingService()]
 
     def __init__(self):
         super().__init__()
