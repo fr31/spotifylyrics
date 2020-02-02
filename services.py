@@ -113,6 +113,39 @@ def _rentanadviser(song):
     return ERROR, url, service_name, False
 
 
+def _megalobiz(song):
+    service_name = "Megalobiz"
+    url = ""
+
+    search_url = "https://www.megalobiz.com/search/all?%s" % parse.urlencode({
+        "qry": song.artist + " " + song.name
+    })
+    try:
+        search_results = requests.get(search_url, proxies=PROXY)
+        soup = BeautifulSoup(search_results.text, 'html.parser')
+        result_links = soup.find(id="list_entity_container").find_all("a", class_="entity_name")
+
+        for result_link in result_links:
+            lower_title = result_link.get_text().lower()
+            if song.artist.lower() in lower_title and song.name.lower() in lower_title:
+                url = "https://www.megalobiz.com%s" % result_link["href"]
+                break
+
+        if url:
+            try:
+                possible_text = requests.get(url, proxies=PROXY)
+                soup = BeautifulSoup(possible_text.text, 'html.parser')
+
+                lrc = soup.find("div", class_="lyrics_details").span.get_text()
+
+                return lrc, url, service_name, True
+            except requests.exceptions.TooManyRedirects:
+                pass
+    except requests.exceptions.ConnectionError as e:
+        pass
+    return ERROR, url, service_name, False
+
+
 def _qq(song):
     url = ""
     try:
