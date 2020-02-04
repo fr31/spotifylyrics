@@ -193,7 +193,7 @@ class UiForm:
             self.sync_adjustment_slider.setVisible(False)
 
     def changed_slider(self, value):
-        self.sync_adjustment_slider.setToolTip(str(value))
+        self.sync_adjustment_slider.setToolTip("%d seconds" % value)
 
     def load_save_settings(self, save=False):
         settings_file = SETTINGS_DIR + "settings.ini"
@@ -519,6 +519,7 @@ class UiForm:
             if old_song_name != song_name:
                 if song_name not in current_service.get_not_playing_windows_title():
                     old_song_name = song_name
+                    self.sync_adjustment_slider.setValue(0)
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
                     self.song = backend.Song.get_from_string(song_name)
@@ -556,9 +557,10 @@ class UiForm:
                                 time.sleep(0.2)
                                 start += 0.2 + time_title_end - time_title_start
                             elif song_name != window_title or not count + 1 < len(lrc):
+                                self.sync_adjustment_slider.setValue(0)
                                 break
                             else:
-                                if lrc[count + 1].time - (lrc.offset / 1000) + self.sync_adjustment_slider.value() \
+                                if lrc[count + 1].time - (lrc.offset / 1000) - self.sync_adjustment_slider.value() \
                                         <= time.time() - start:
                                     count += 1
                                     line_changed = True
