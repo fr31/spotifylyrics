@@ -1,5 +1,5 @@
 # No Longer Updated
-This project is no longer updated. See [SimonIT/spotitylyrics](https://github.com/SimonIT/spotifylyrics) for an updated fork.
+This project is no longer updated. See [SimonIT/spotifylyrics](https://github.com/SimonIT/spotifylyrics) for an updated fork.
 
 # Spotify Lyrics
 Fetches and displays lyrics to currently playing song in the Spotify desktop client.
