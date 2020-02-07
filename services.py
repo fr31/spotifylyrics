@@ -118,7 +118,8 @@ def _megalobiz(song):
     url = ""
 
     search_url = "https://www.megalobiz.com/search/all?%s" % parse.urlencode({
-        "qry": song.artist + " " + song.name
+        "qry": song.artist + " " + song.name,
+        "display": "more"
     })
     try:
         search_results = requests.get(search_url, proxies=PROXY)

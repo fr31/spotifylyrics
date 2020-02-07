@@ -168,6 +168,7 @@ class UiForm:
         self.info_table = QtWidgets.QTableWidget(FORM)
         self.info_table.setStyleSheet("font-size: %spt;" % self.font_size_box.value() * 2)
         self.info_table.setColumnCount(2)
+        self.info_table.setMaximumWidth(300)
         self.info_table.verticalHeader().setVisible(False)
         self.info_table.horizontalHeader().setVisible(False)
         self.info_table.horizontalHeader().setStretchLastSection(True)
