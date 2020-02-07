@@ -133,7 +133,6 @@ class UiForm:
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
-        self.options_combobox.addItem("")
 
         self.tray_icon = QSystemTrayIcon(FORM)
         self.tray_icon.setIcon(QtGui.QIcon(self.get_resource_path('icon.png')))
@@ -258,7 +257,7 @@ class UiForm:
                 self.options_combobox.setItemText(5, "Info (on)")
                 self.info_table.setVisible(True)
             if self.minimize_to_tray:
-                self.options_combobox.setItemText(8, "Minimize to Tray (on)")
+                self.options_combobox.setItemText(7, "Minimize to Tray (on)")
         else:
             with open(settings_file, 'w+') as settings:
                 settings.write("[settings]\n")
@@ -347,20 +346,19 @@ class UiForm:
                 self.options_combobox.setItemText(5, "Info (on)")
                 self.info_table.setVisible(True)
         elif current_index == 6:
-            self.load_save_settings(save=True)
-        elif current_index == 7:
             if os.name == "nt":
                 subprocess.Popen(r'explorer "' + LYRICS_DIR + '"')
-        elif current_index == 8:
+        elif current_index == 7:
             if self.minimize_to_tray:
                 self.minimize_to_tray = False
-                self.options_combobox.setItemText(8, "Minimize to System Tray")
+                self.options_combobox.setItemText(7, "Minimize to System Tray")
             else:
                 self.minimize_to_tray = True
-                self.options_combobox.setItemText(8, "Minimize to System Tray (on)")
+                self.options_combobox.setItemText(7, "Minimize to System Tray (on)")
         else:
             pass
         self.options_combobox.setCurrentIndex(0)
+        self.load_save_settings(save=True)
 
     def set_style(self):
         self.lyrics_text_align = QtCore.Qt.AlignLeft
@@ -413,7 +411,7 @@ class UiForm:
                             self.options_combobox.setStyleSheet(style)
                             self.font_size_box.setStyleSheet(style)
                             self.change_lyrics_button.setStyleSheet(style)
-                            self.save_button.setStyle(style)
+                            self.save_button.setStyleSheet(style)
                             self.chords_button.setStyleSheet(style)
                         if "fontboxtextcolor" in lcsetting:
                             style = self.font_size_box.styleSheet()
@@ -503,10 +501,9 @@ class UiForm:
         self.options_combobox.setItemText(3, _translate("Form", "Always on Top"))
         self.options_combobox.setItemText(4, _translate("Form", "Open Spotify"))
         self.options_combobox.setItemText(5, _translate("Form", "Info"))
-        self.options_combobox.setItemText(6, _translate("Form", "Save Settings"))
-        self.options_combobox.setItemText(8, _translate("Form", "Minimize to Tray"))
         if os.name == "nt":
-            self.options_combobox.setItemText(7, _translate("Form", "Open Lyrics Directory"))
+            self.options_combobox.setItemText(6, _translate("Form", "Open Lyrics Directory"))
+        self.options_combobox.setItemText(7, _translate("Form", "Minimize to Tray"))
 
     def add_service_name_to_lyrics(self, lyrics, service_name):
         return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % (
