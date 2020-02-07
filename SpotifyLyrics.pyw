@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import configparser
 import os
 import re
 import subprocess
@@ -197,52 +197,25 @@ class UiForm:
 
     def load_save_settings(self, save=False):
         settings_file = SETTINGS_DIR + "settings.ini"
-        if save is False:
-            if os.path.exists(settings_file):
-                with open(settings_file, 'r') as settings:
-                    for line in settings.readlines():
-                        lcline = line.lower()
-                        if "syncedlyrics" in lcline:
-                            if "true" in lcline:
-                                self.sync = True
-                            else:
-                                self.sync = False
-                        if "alwaysontop" in lcline:
-                            if "true" in lcline:
-                                self.ontop = True
-                            else:
-                                self.ontop = False
-                        if "fontsize" in lcline:
-                            size = line.split("=", 1)[1].strip()
-                            try:
-                                self.font_size_box.setValue(int(size))
-                            except ValueError:
-                                pass
-                        if "openspotify" in lcline:
-                            if "true" in lcline:
-                                self.open_spotify = True
-                            else:
-                                self.open_spotify = False
-                        if "darktheme" in lcline:
-                            if "true" in lcline:
-                                self.dark_theme = True
-                            else:
-                                self.dark_theme = False
-                        if "info" in lcline:
-                            self.info = "true" in lcline
-                        if "minimizetotray" in lcline:
-                            if "true" in lcline:
-                                self.minimize_to_tray = True
-                            else:
-                                self.minimize_to_tray = False
-            else:
-                directory = os.path.dirname(settings_file)
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                with open(settings_file, 'w+') as settings:
-                    settings.write(
-                        "[settings]\nSyncedLyrics=False\nAlwaysOnTop=False\nFontSize=10\nOpenSpotify=False\nDarkTheme"
-                        "=False\nInfo=False\nMinimizeToTray=False\n")
+        section = "settings"
+
+        if not os.path.exists(settings_file):
+            directory = os.path.dirname(settings_file)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+
+        if not save:
+            config = configparser.ConfigParser()
+            config.read(settings_file)
+
+            self.sync = config.getboolean(section, "syncedlyrics", fallback=False)
+            self.ontop = config.getboolean(section, "alwaysontop", fallback=False)
+            self.font_size_box.setValue(config.getint(section, "fontsize", fallback=10))
+            self.open_spotify = config.getboolean(section, "openspotify", fallback=False)
+            self.dark_theme = config.getboolean(section, "darktheme", fallback=False)
+            self.info = config.getboolean(section, "info", fallback=False)
+            self.minimize_to_tray = config.getboolean(section, "minimizetotray", fallback=False)
+
             if self.dark_theme:
                 self.set_dark_theme()
             if self.sync:
@@ -259,34 +232,19 @@ class UiForm:
             if self.minimize_to_tray:
                 self.options_combobox.setItemText(7, "Minimize to Tray (on)")
         else:
-            with open(settings_file, 'w+') as settings:
-                settings.write("[settings]\n")
-                if self.sync:
-                    settings.write("SyncedLyrics=True\n")
-                else:
-                    settings.write("SyncedLyrics=False\n")
-                if self.ontop:
-                    settings.write("AlwaysOnTop=True\n")
-                else:
-                    settings.write("AlwaysOnTop=False\n")
-                if self.open_spotify:
-                    settings.write("OpenSpotify=True\n")
-                else:
-                    settings.write("OpenSpotify=False\n")
-                if self.dark_theme:
-                    settings.write("DarkTheme=True\n")
-                else:
-                    settings.write("DarkTheme=False\n")
-                if self.info:
-                    settings.write("Info=True\n")
-                else:
-                    settings.write("Info=False\n")
-                if self.minimize_to_tray:
-                    settings.write("MinimizeToTray=True\n")
-                else:
-                    settings.write("MinimizeToTray=False\n")
+            config = configparser.ConfigParser()
 
-                settings.write("FontSize=%s" % str(self.font_size_box.value()))
+            config.add_section(section)
+            config[section]["SyncedLyrics"] = str(self.sync)
+            config[section]["AlwaysOnTop"] = str(self.ontop)
+            config[section]["OpenSpotify"] = str(self.open_spotify)
+            config[section]["DarkTheme"] = str(self.dark_theme)
+            config[section]["Info"] = str(self.info)
+            config[section]["MinimizeToTray"] = str(self.minimize_to_tray)
+            config[section]["FontSize"] = str(self.font_size_box.value())
+
+            with open(settings_file, 'w+') as settings:
+                config.write(settings)
 
     def options_changed(self):
         current_index = self.options_combobox.currentIndex()
@@ -480,6 +438,7 @@ class UiForm:
         self.text_browser.setStyleSheet(style + "p font-size: %spt;" % self.font_size_box.value() * 2)
         lyrics = self.text_browser.toPlainText()
         self.set_lyrics_with_alignment(lyrics)
+        self.load_save_settings(save=True)
 
     def retranslate_ui(self, form):
         _translate = QtCore.QCoreApplication.translate
