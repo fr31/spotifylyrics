@@ -195,6 +195,9 @@ class UiForm:
     def changed_slider(self, value):
         self.sync_adjustment_slider.setToolTip("%d seconds" % value)
 
+    def get_current_streaming_service(self) -> backend.StreamingService:
+        return self.streaming_services[self.streaming_services_box.currentIndex()]
+
     def load_save_settings(self, save=False):
         settings_file = SETTINGS_DIR + "settings.ini"
         section = "settings"
@@ -472,10 +475,9 @@ class UiForm:
     def display_lyrics(self, comm):
         old_song_name = ""
         while True:
-            current_service = self.streaming_services[self.streaming_services_box.currentIndex()]
-            song_name = backend.get_window_title(current_service)
+            song_name = backend.get_window_title(self.get_current_streaming_service())
             if old_song_name != song_name:
-                if song_name not in current_service.get_not_playing_windows_title():
+                if song_name not in self.get_current_streaming_service().get_not_playing_windows_title():
                     old_song_name = song_name
                     self.changed = False
                     self.sync_adjustment_slider.setValue(0)
@@ -509,10 +511,9 @@ class UiForm:
                         line_changed = True
                         while self.sync and not self.changed:
                             time_title_start = time.time()
-                            current_service = self.streaming_services[self.streaming_services_box.currentIndex()]
-                            window_title = backend.get_window_title(current_service)
+                            window_title = backend.get_window_title(self.get_current_streaming_service())
                             time_title_end = time.time()
-                            if window_title in current_service.get_not_playing_windows_title():
+                            if window_title in self.get_current_streaming_service().get_not_playing_windows_title():
                                 time.sleep(0.2)
                                 start += 0.2 + time_title_end - time_title_start
                             elif song_name != window_title or not count + 1 < len(lrc):
@@ -608,14 +609,14 @@ class UiForm:
 
     def get_chords(self):
         _translate = QtCore.QCoreApplication.translate
-        if self.label_song_name.text() not in ("", "Spotify", "Spotify Lyrics"):
+        if self.label_song_name.text() not in self.get_current_streaming_service().get_not_playing_windows_title():
             backend.load_chords(self.song)
         else:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics(self):
         _translate = QtCore.QCoreApplication.translate
-        if self.label_song_name.text() not in ("", "Spotify", "Spotify Lyrics"):
+        if self.label_song_name.text() not in self.get_current_streaming_service().get_not_playing_windows_title():
             self.changed = True
             change_lyrics_thread = threading.Thread(target=self.change_lyrics_thread)
             change_lyrics_thread.start()
@@ -623,7 +624,7 @@ class UiForm:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics_thread(self):
-        song_name = backend.get_window_title(self.streaming_services[self.streaming_services_box.currentIndex()])
+        song_name = backend.get_window_title(self.get_current_streaming_service())
         self.comm.signal.emit(song_name, "Loading...")
         style = self.label_song_name.styleSheet()
 
@@ -675,7 +676,7 @@ class UiForm:
             lyrics_file.write(text)
 
     def spotify(self):
-        backend.open_spotify(self.streaming_services[self.streaming_services_box.currentIndex()])
+        backend.open_spotify(self.get_current_streaming_service())
 
 
 class FormWidget(QtWidgets.QWidget):
