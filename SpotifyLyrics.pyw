@@ -324,75 +324,76 @@ class UiForm:
             theme_file = SETTINGS_DIR + "theme.ini"
         else:
             theme_file = "theme.ini"
-        if os.path.exists(theme_file):
-            with open(theme_file, 'r') as theme:
-                try:
-                    for setting in theme.readlines():
-                        lcsetting = setting.lower()
-                        try:
-                            align = setting.split("=", 1)[1].strip()
-                        except IndexError:
-                            align = ""
-                        if "lyricstextalign" in lcsetting:
-                            if align == "center":
-                                self.lyrics_text_align = QtCore.Qt.AlignCenter
-                            elif align == "right":
-                                self.lyrics_text_align = QtCore.Qt.AlignRight
-                            else:
-                                pass
-                        if "windowopacity" in lcsetting:
-                            window_opacity = float(align)
-                        if lcsetting.startswith("backgroundcolor"):
-                            background_color = align
-                        if "lyricsbackgroundcolor" in lcsetting:
-                            style = self.text_browser.styleSheet()
-                            style = style + "background-color: %s;" % align
-                            self.text_browser.setStyleSheet(style)
-                        if "lyricstextcolor" in lcsetting:
-                            style = self.text_browser.styleSheet()
-                            style = style + "color: %s;" % align
-                            self.text_browser.setStyleSheet(style)
-                        if "lyricsfont" in lcsetting:
-                            style = self.text_browser.styleSheet()
-                            style = style + "font-family: %s;" % align
-                            self.text_browser.setStyleSheet(style)
-                        if "songnamecolor" in lcsetting:
-                            style = self.label_song_name.styleSheet()
-                            style = style + "color: %s;" % align
-                            self.label_song_name.setStyleSheet(style)
-                            text = re.sub("color:.*?;", "color: %s;" % align, self.label_song_name.text())
-                            self.label_song_name.setText(text)
-                        if "fontboxbackgroundcolor" in lcsetting:
-                            style = self.font_size_box.styleSheet()
-                            style = style + "background-color: %s;" % align
-                            self.streaming_services_box.setStyleSheet(style)
-                            self.options_combobox.setStyleSheet(style)
-                            self.font_size_box.setStyleSheet(style)
-                            self.change_lyrics_button.setStyleSheet(style)
-                            self.save_button.setStyleSheet(style)
-                            self.chords_button.setStyleSheet(style)
-                        if "fontboxtextcolor" in lcsetting:
-                            style = self.font_size_box.styleSheet()
-                            style = style + "color: %s;" % align
-                            self.streaming_services_box.setStyleSheet(style)
-                            self.options_combobox.setStyleSheet(style)
-                            self.font_size_box.setStyleSheet(style)
-                            self.change_lyrics_button.setStyleSheet(style)
-                            self.save_button.setStyleSheet(style)
-                            self.chords_button.setStyleSheet(style)
-                        if "songnameunderline" in lcsetting:
-                            if "true" in align.lower():
-                                style = self.label_song_name.styleSheet()
-                                style = style + "text-decoration: underline;"
-                                self.label_song_name.setStyleSheet(style)
 
-                    FORM.setWindowOpacity(window_opacity)
-                    FORM.setStyleSheet("background-color: %s;" % background_color)
-
-                except Exception:
-                    pass
-        else:
+        if not os.path.exists(theme_file):
             self.label_song_name.setStyleSheet("color: black; text-decoration: underline;")
+            return
+
+        section = "theme"
+        config = configparser.ConfigParser()
+
+        with open(theme_file, 'r') as theme:
+            config.read_string("[%s]\n%s" % (section, theme.read()))
+
+        align = config.get(section, "lyricstextalign", fallback="")
+        if align:
+            if align == "center":
+                self.lyrics_text_align = QtCore.Qt.AlignCenter
+            elif align == "right":
+                self.lyrics_text_align = QtCore.Qt.AlignRight
+
+        FORM.setWindowOpacity(config.getfloat(section, "windowopacity", fallback=1))
+
+        background = config.get(section, "backgroundcolor", fallback="")
+        if background:
+            FORM.setStyleSheet("background-color: %s;" % background)
+
+        style = self.text_browser.styleSheet()
+
+        text_background = config.get(section, "lyricsbackgroundcolor", fallback="")
+        if text_background:
+            style = style + "background-color: %s;" % text_background
+
+        text_color = config.get(section, "lyricstextcolor", fallback="")
+        if text_color:
+            style = style + "color: %s;" % text_color
+
+        text_font = config.get(section, "lyricsfont", fallback="")
+        if text_font:
+            style = style + "font-family: %s;" % text_font
+
+        self.text_browser.setStyleSheet(style)
+
+        style = self.label_song_name.styleSheet()
+
+        label_color = config.get(section, "songnamecolor", fallback="")
+        if label_color:
+            style = style + "color: %s;" % label_color
+            text = re.sub("color:.*?;", "color: %s;" % label_color, self.label_song_name.text())
+            self.label_song_name.setText(text)
+
+        label_underline = config.getboolean(section, "songnameunderline", fallback=False)
+        if label_underline:
+            style = style + "text-decoration: underline;"
+
+        self.label_song_name.setStyleSheet(style)
+
+        style = self.font_size_box.styleSheet()
+
+        font_size_background = config.get(section, "fontboxbackgroundcolor", fallback="")
+        if font_size_background:
+            style = style + "background-color: %s;" % font_size_background
+
+        font_size_color = config.get(section, "fontboxtextcolor", fallback="")
+        if font_size_color:
+            style = style + "color: %s;" % font_size_color
+
+        self.streaming_services_box.setStyleSheet(style)
+        self.options_combobox.setStyleSheet(style)
+        self.font_size_box.setStyleSheet(style)
+        self.change_lyrics_button.setStyleSheet(style)
+        self.save_button.setStyleSheet(style)
+        self.chords_button.setStyleSheet(style)
 
     def set_dark_theme(self):
         self.dark_theme = True
