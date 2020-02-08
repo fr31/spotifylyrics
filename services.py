@@ -381,7 +381,12 @@ def _cifraclub(song):
     title = unidecode.unidecode(song.name)
     url = 'https://www.cifraclub.com.br/{}/{}'.format(artist.replace(" ", "-").lower(), title.replace(" ", "-").lower())
 
-    return [url]
+    result = requests.get(url, proxies=PROXY)
+
+    if result.status_code == 200:
+        return [result.url]
+    else:
+        return []
 
 
 # don't even get to this point, but it's an option for source
