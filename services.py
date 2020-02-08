@@ -191,28 +191,32 @@ def _syair(song):
     try:
         search_results = requests.get(search_url, proxies=PROXY)
         soup = BeautifulSoup(search_results.text, 'html.parser')
-        result_list = soup.find("article", class_="sub").find("div", class_="ul")
 
-        if result_list:
-            for result_link in result_list.find_all("a"):
-                name = result_link.get_text().lower()
-                if song.artist.lower() in name and song.name.lower() in name:
-                    url = "https://syair.info%s" % result_link["href"]
-                    break
+        result_container = soup.find("article", class_="sub")
 
-            if url:
-                lyrics_page = requests.get(url, proxies=PROXY)
-                soup = BeautifulSoup(lyrics_page.text, 'html.parser')
-                lrc_link = ""
-                for download_link in soup.find_all("a"):
-                    if "download.php" in download_link["href"]:
-                        lrc_link = download_link["href"]
+        if result_container:
+            result_list = result_container.find("div", class_="ul")
+
+            if result_list:
+                for result_link in result_list.find_all("a"):
+                    name = result_link.get_text().lower()
+                    if song.artist.lower() in name and song.name.lower() in name:
+                        url = "https://syair.info%s" % result_link["href"]
                         break
-                if lrc_link:
-                    lrc = requests.get("https://syair.info%s" % lrc_link, proxies=PROXY,
-                                       cookies=lyrics_page.cookies).text
 
-                    return lrc, url, service_name, True
+                if url:
+                    lyrics_page = requests.get(url, proxies=PROXY)
+                    soup = BeautifulSoup(lyrics_page.text, 'html.parser')
+                    lrc_link = ""
+                    for download_link in soup.find_all("a"):
+                        if "download.php" in download_link["href"]:
+                            lrc_link = download_link["href"]
+                            break
+                    if lrc_link:
+                        lrc = requests.get("https://syair.info%s" % lrc_link, proxies=PROXY,
+                                           cookies=lyrics_page.cookies).text
+
+                        return lrc, url, service_name, True
     except requests.exceptions.ConnectionError as e:
         pass
     return ERROR, url, service_name, False

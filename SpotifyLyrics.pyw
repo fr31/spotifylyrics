@@ -89,8 +89,8 @@ class UiForm:
 
         self.sync_adjustment_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, parent=FORM)
         self.sync_adjustment_slider.setGeometry(QtCore.QRect(160, 120, 69, 22))
-        self.sync_adjustment_slider.setMinimum(-10)
-        self.sync_adjustment_slider.setMaximum(10)
+        self.sync_adjustment_slider.setMinimum(-30)
+        self.sync_adjustment_slider.setMaximum(30)
         self.sync_adjustment_slider.setSingleStep(1)
         self.sync_adjustment_slider.setToolTipDuration(5000)
         self.sync_adjustment_slider.valueChanged.connect(self.changed_slider)
