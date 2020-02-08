@@ -210,11 +210,11 @@ class UiForm:
 
             self.sync = config.getboolean(section, "syncedlyrics", fallback=False)
             self.ontop = config.getboolean(section, "alwaysontop", fallback=False)
-            self.font_size_box.setValue(config.getint(section, "fontsize", fallback=10))
             self.open_spotify = config.getboolean(section, "openspotify", fallback=False)
             self.dark_theme = config.getboolean(section, "darktheme", fallback=False)
             self.info = config.getboolean(section, "info", fallback=False)
             self.minimize_to_tray = config.getboolean(section, "minimizetotray", fallback=False)
+            self.font_size_box.setValue(config.getint(section, "fontsize", fallback=10))
 
             if self.dark_theme:
                 self.set_dark_theme()
@@ -469,7 +469,7 @@ class UiForm:
         return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % (
             (self.font_size_box.value() - 2) * 2, service_name, lyrics)
 
-    def lyrics_thread(self, comm):
+    def display_lyrics(self, comm):
         old_song_name = ""
         while True:
             current_service = self.streaming_services[self.streaming_services_box.currentIndex()]
@@ -477,6 +477,7 @@ class UiForm:
             if old_song_name != song_name:
                 if song_name not in current_service.get_not_playing_windows_title():
                     old_song_name = song_name
+                    self.changed = False
                     self.sync_adjustment_slider.setValue(0)
                     comm.signal.emit(song_name, "Loading...")
                     start = time.time()
@@ -506,7 +507,7 @@ class UiForm:
                                          self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
                         count = 0
                         line_changed = True
-                        while self.sync:
+                        while self.sync and not self.changed:
                             time_title_start = time.time()
                             current_service = self.streaming_services[self.streaming_services_box.currentIndex()]
                             window_title = backend.get_window_title(current_service)
@@ -544,7 +545,7 @@ class UiForm:
             time.sleep(1)
 
     def start_thread(self):
-        lyrics_thread = threading.Thread(target=self.lyrics_thread, args=(self.comm,))
+        lyrics_thread = threading.Thread(target=self.display_lyrics, args=(self.comm,))
         lyrics_thread.daemon = True
         lyrics_thread.start()
 
@@ -615,6 +616,7 @@ class UiForm:
     def change_lyrics(self):
         _translate = QtCore.QCoreApplication.translate
         if self.label_song_name.text() not in ("", "Spotify", "Spotify Lyrics"):
+            self.changed = True
             change_lyrics_thread = threading.Thread(target=self.change_lyrics_thread)
             change_lyrics_thread.start()
         else:
