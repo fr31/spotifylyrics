@@ -65,7 +65,8 @@ def _minilyrics(song):
                 break
         lyrics = requests.get(url, proxies=PROXY).text
         timed = True
-    except Exception as e:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     if url == "":
         lyrics = ERROR
@@ -108,8 +109,8 @@ def _rentanadviser(song):
 
             return lrc, url, service_name, True
 
-    except requests.exceptions.ConnectionError as e:
-        pass
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
     return ERROR, url, service_name, False
 
 
@@ -133,17 +134,14 @@ def _megalobiz(song):
                 break
 
         if url:
-            try:
-                possible_text = requests.get(url, proxies=PROXY)
-                soup = BeautifulSoup(possible_text.text, 'html.parser')
+            possible_text = requests.get(url, proxies=PROXY)
+            soup = BeautifulSoup(possible_text.text, 'html.parser')
 
-                lrc = soup.find("div", class_="lyrics_details").span.get_text()
+            lrc = soup.find("div", class_="lyrics_details").span.get_text()
 
-                return lrc, url, service_name, True
-            except requests.exceptions.TooManyRedirects:
-                pass
-    except requests.exceptions.ConnectionError as e:
-        pass
+            return lrc, url, service_name, True
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
     return ERROR, url, service_name, False
 
 
@@ -153,7 +151,8 @@ def _qq(song):
         qq = QQCrawler.QQCrawler()
         sid = qq.getSongId(artist=song.artist, song=song.name)
         url = qq.getLyticURI(sid)
-    except (AttributeError, NameError, requests.exceptions.ConnectionError) as e:
+    except Exception as error:
+        print("%s: %s" % ("QQ", error))
         return ERROR, url, "QQ", False
 
     lrc_string = ""
@@ -170,7 +169,8 @@ def _wikia(song):
     timed = False
     try:
         lyrics, url, timed = minilyrics.LyricWikia(song.artist, song.name)
-    except Exception:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     if "TrebleClef.png" in lyrics:
         lyrics = "(Instrumental)"
@@ -217,8 +217,8 @@ def _syair(song):
                                            cookies=lyrics_page.cookies).text
 
                         return lrc, url, service_name, True
-    except requests.exceptions.ConnectionError as e:
-        pass
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
     return ERROR, url, service_name, False
 
 
@@ -243,7 +243,8 @@ def _musixmatch(song):
         album = soup.find(class_="mxm-track-footer__album")
         if album:
             song.album = album.find(class_="mui-cell__title").getText()
-    except Exception:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     return lyrics, url, service_name
 
@@ -271,7 +272,8 @@ def _songmeanings(song):
         temp_lyrics = soup.find_all("li")[4]
         lyrics = temp_lyrics.getText()
         lyrics = lyrics.split("(r,s)};})();")[1]
-    except Exception:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     if lyrics == "We are currently missing these lyrics.":
         lyrics = ERROR
@@ -296,7 +298,8 @@ def _songlyrics(song):
             for info in soup.find("div", class_="pagetitle").find_all("p"):
                 if "Album:" in info.get_text():
                     song.album = info.find("a").get_text()
-    except Exception:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     return lyrics, url, service_name
 
@@ -311,7 +314,8 @@ def _genius(song):
         lyrics = soup.find("div", {"class": "lyrics"}).get_text()
         if song.artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
             lyrics = ERROR
-    except Exception:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     return lyrics, url, service_name
 
@@ -332,7 +336,7 @@ def _versuri(song):
                     break
             else:
                 pass
-        if url == "":
+        if not url:
             lyrics = ERROR
         else:
             lyrics_page = requests.get(url, proxies=PROXY)
@@ -342,7 +346,8 @@ def _versuri(song):
             lyrics = lyrics.replace("<br/>", "")
         if "nu există" in lyrics:
             lyrics = ERROR
-    except Exception:
+    except Exception as error:
+        print("%s: %s" % (service_name, error))
         lyrics = ERROR
     return lyrics, url, service_name
 
@@ -457,8 +462,8 @@ def _tanzmusikonline(song):
                             song.cycles_per_minute = int(text)
                         elif "fa-tachometer" in classes:
                             song.beats_per_minute = int(text)
-    except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout) as e:
-        print(e)
+    except Exception as error:
+        print("%s: %s" % ("Tanzmusik Online", error))
 
 
 def _welchertanz(song):
@@ -485,5 +490,5 @@ def _welchertanz(song):
                             .replace("Foxtrott", "Foxtrot")
                         if dance_name != "---" and dance_name not in song.dances:
                             song.dances.append(dance_name)
-    except requests.exceptions.ConnectionError as e:
-        print(e)
+    except Exception as error:
+        print("%s: %s" % ("Tanzschule Woelbing", error))
