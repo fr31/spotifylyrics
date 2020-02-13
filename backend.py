@@ -97,7 +97,7 @@ class SpotifyStreamingService(StreamingService):
         return "getCurrentSongSpotify.AppleScript"
 
     def get_linux_session_object_name(self) -> str:
-        return "org.mpris.MediaPlayer2.spotify"
+        return "spotify"
 
     def get_windows_exe_path(self) -> str:
         return os.getenv("APPDATA") + '\\Spotify\\Spotify.exe'
@@ -149,7 +149,7 @@ class VlcMediaPlayer(StreamingService):
         return "getCurrentSongVlc.AppleScript"
 
     def get_linux_session_object_name(self) -> str:
-        return ""  # TODO
+        return "vlc"
 
     def get_windows_exe_path(self) -> str:
         return os.getenv("PROGRAMFILES") + "\\VideoLAN\\VLC\\vlc.exe"
@@ -270,6 +270,7 @@ def load_chords(song: Song):
 
 
 def get_window_title(service: StreamingService) -> str:
+    window_name = ''
     if sys.platform == "win32":
         spotify_pids = []
         for proc in psutil.process_iter():
@@ -286,8 +287,6 @@ def get_window_title(service: StreamingService) -> str:
                 windows.append(hwnd)
 
         windows = []
-        window_name = ''
-
         try:
             for pid in spotify_pids:
                 win32gui.EnumWindows(enum_window_callback, pid)
@@ -299,44 +298,34 @@ def get_window_title(service: StreamingService) -> str:
             pass
 
     elif sys.platform == "darwin":
-        window_name = ''
         try:
             command = "osascript apple_scripts/" + service.get_apple_script_name()
             window_name = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
         except Exception:
             pass
     else:
-        window_name = ''
         try:
             session = dbus.SessionBus()
-            spotify_dbus = session.get_object(service.get_linux_session_object_name(), "/org/mpris/MediaPlayer2")
+            spotify_dbus = session.get_object("org.mpris.MediaPlayer2.%s" % service.get_linux_session_object_name(),
+                                              "/org/mpris/MediaPlayer2")
             spotify_interface = dbus.Interface(spotify_dbus, "org.freedesktop.DBus.Properties")
             metadata = spotify_interface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
+            window_name = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
         except Exception:
             pass
-        try:
-            command = "xwininfo -tree -root"
-            windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
-            spotify = ''
-            for line in windows.splitlines():
-                if '("' + service.get_linux_open_command() + '" "' + service.get_linux_open_command().capitalize() + '")' in line:
-                    if " - " in line:
-                        spotify = line
-                        break
-                spotify = 'Spotify Lyrics'
-            if spotify == '':
-                window_name = service.get_linux_open_command().capitalize()
-        except Exception:
-            pass
-        if window_name and window_name not in (service.get_linux_open_command().capitalize(), 'Spotify Lyrics'):
+        if not window_name:
             try:
-                window_name = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
+                command = "xwininfo -tree -root"
+                windows = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
+                for line in windows.splitlines():
+                    if '("' + service.get_linux_open_command() + '" "' + service.get_linux_open_command() + '")' in line.lower():
+                        if " - " in line:
+                            window_name = line.split('"')[1]
+                            break
             except Exception:
                 pass
     if "—" in window_name:
         window_name = window_name.replace("—", "-")
-    if service.get_linux_open_command().capitalize() + " - " in window_name:
-        window_name = window_name.strip(service.get_linux_open_command().capitalize() + " - ")
     return window_name
 
 
