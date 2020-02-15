@@ -21,7 +21,7 @@ jobs:
       deploy:
         provider: releases
         prerelease: true
-        cleanup: true
+        skip_cleanup: true
         token: ${GH_TOKEN}
         file:
           - dist/SpotifyLyrics
@@ -57,7 +57,7 @@ jobs:
       deploy:
         provider: releases
         prerelease: true
-        cleanup: true
+        skip_cleanup: true
         token: ${GH_TOKEN}
         file:
           - dist/SpotifyLyrics.app.zip
@@ -65,11 +65,30 @@ jobs:
           repo: SimonIT/spotifylyrics
           tags: true
           all_branches: true
-    #- os: windows
-    #  language: cpp
-    #  before_install:
-    #    - choco upgrade chocolatey -y -v -d
-    #    - choco install python -v -d
-    #  before_deploy:
-    #    - pip install pyinstaller
-    #    - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;."
+    - os: windows
+      language: cpp
+      before_install:
+        - choco install python --version=3.7.6.20200110
+        - export PATH="/C/Python37:/C/Python37/Scripts:$PATH"
+      install:
+        - python -m pip install -r requirements.txt
+      before_script:
+        - export PYTHONPATH="$PYTHONPATH;C:\Users\travis\build\SimonIT\spotifylyrics;C:\Users\travis\build\SimonIT\spotifylyrics\spotify_lyric"
+      script:
+        - cd tests/
+        - python -m unittest discover . "*_test.py"
+        - cd ..
+      before_deploy:
+        - python -m pip install pyinstaller
+        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;."
+      deploy:
+        provider: releases
+        prerelease: true
+        skip_cleanup: true
+        token: ${GH_TOKEN}
+        file:
+          - dist/SpotifyLyrics.exe
+        on:
+          repo: SimonIT/spotifylyrics
+          tags: true
+          all_branches: true
