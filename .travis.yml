@@ -1,24 +1,28 @@
-matrix:
+jobs:
   include:
     - os: linux
       dist: xenial
-      sudo: required
+      language: python
+      python: 3.7
+      cache: pip
       before_install:
         - sudo apt-get install libdbus-1-dev libdbus-glib-1-dev --yes
         - chmod +x SpotifyLyrics.pyw
         - pip install --upgrade pip
-      language: python
-      cache: pip
-      python:
-        - 3.7
+      before_script:
+        - export PYTHONPATH=$PYTHONPATH:$PWD:$PWD/spotify_lyric
+      script:
+        - cd tests/
+        - python -m unittest discover . "*_test.py"
+        - cd ..
       before_deploy:
         - pip install pyinstaller
         - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
       deploy:
         provider: releases
-        pre-release: true
-        skip_cleanup: true
-        api_key: ${GH_TOKEN}
+        prerelease: true
+        cleanup: true
+        token: ${GH_TOKEN}
         file:
           - dist/SpotifyLyrics
         on:
@@ -27,11 +31,23 @@ matrix:
           all_branches: true
     - os: osx
       language: generic
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
+          - $HOME/.cache/pip
       before_install:
         - brew update
         - pip3 install --upgrade pip
       install:
         - pip3 install -r requirements.txt
+      before_script:
+        - export PYTHONPATH=$PYTHONPATH:$PWD:$PWD/spotify_lyric
+      script:
+        - cd tests/
+        - python3 -m unittest discover . "*_test.py"
+        - cd ..
+      before_cache:
+        - brew cleanup
       before_deploy:
         - pip3 install pyinstaller
         - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
@@ -40,21 +56,15 @@ matrix:
         - cd ..
       deploy:
         provider: releases
-        pre-release: true
-        skip_cleanup: true
-        api_key: ${GH_TOKEN}
+        prerelease: true
+        cleanup: true
+        token: ${GH_TOKEN}
         file:
           - dist/SpotifyLyrics.app.zip
         on:
           repo: SimonIT/spotifylyrics
           tags: true
           all_branches: true
-      before_cache:
-        - brew cleanup
-      cache:
-        directories:
-          - $HOME/Library/Caches/Homebrew
-          - $HOME/.cache/pip
     #- os: windows
     #  language: cpp
     #  before_install:
@@ -63,11 +73,3 @@ matrix:
     #  before_deploy:
     #    - pip install pyinstaller
     #    - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;."
-
-before_script:
-  - export PYTHONPATH=$PYTHONPATH:$PWD:$PWD/spotify_lyric
-
-script:
-  - cd tests/
-  - python3 -m unittest discover . "*_test.py"
-  - cd ..
