@@ -23,8 +23,8 @@ if sys.platform == "win32":
     import win32gui
 elif sys.platform == "linux":
     import dbus
-else:
-    pass
+elif sys.platform == "darwin":
+    import applescript
 
 
 class Song:
@@ -70,7 +70,7 @@ class StreamingService:
     def get_windows_executable_name(self) -> str:
         raise NotImplementedError
 
-    def get_apple_script_name(self) -> str:
+    def get_apple_script(self) -> str:
         raise NotImplementedError
 
     def get_linux_session_object_name(self) -> str:
@@ -93,8 +93,10 @@ class SpotifyStreamingService(StreamingService):
     def get_windows_executable_name(self) -> str:
         return 'Spotify.exe'
 
-    def get_apple_script_name(self) -> str:
-        return "getCurrentSongSpotify.AppleScript"
+    def get_apple_script(self) -> str:
+        return """set currentArtist to artist of current track as string
+    set currentTrack to name of current track as string
+    return currentArtist & " - " & currentTrack"""
 
     def get_linux_session_object_name(self) -> str:
         return "spotify"
@@ -119,7 +121,7 @@ class TidalStreamingService(StreamingService):
     def get_windows_executable_name(self) -> str:
         return 'TIDAL.exe'
 
-    def get_apple_script_name(self) -> str:
+    def get_apple_script(self) -> str:
         return ""  # TODO
 
     def get_linux_session_object_name(self) -> str:
@@ -145,8 +147,8 @@ class VlcMediaPlayer(StreamingService):
     def get_windows_executable_name(self) -> str:
         return 'vlc.exe'
 
-    def get_apple_script_name(self) -> str:
-        return "getCurrentSongVlc.AppleScript"
+    def get_apple_script(self) -> str:
+        return "return get name of current item"
 
     def get_linux_session_object_name(self) -> str:
         return "vlc"
@@ -299,8 +301,8 @@ def get_window_title(service: StreamingService) -> str:
 
     elif sys.platform == "darwin":
         try:
-            command = "osascript apple_scripts/" + service.get_apple_script_name()
-            window_name = subprocess.check_output(["/bin/bash", "-c", command]).decode("utf-8")
+            r = applescript.tell.app(service.get_apple_open_command(), service.get_apple_script())
+            window_name = r.out
         except Exception:
             pass
     else:
