@@ -64,8 +64,7 @@ class UiForm:
     streaming_services = [backend.SpotifyStreamingService(), backend.VlcMediaPlayer(), backend.TidalStreamingService()]
 
     def __init__(self):
-        super().__init__()
-
+        self.is_loading_settings = False
         self.comm = Communicate()
         self.comm.signal.connect(self.refresh_lyrics)
 
@@ -101,6 +100,7 @@ class UiForm:
         self.streaming_services_box.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.streaming_services_box.addItems(str(n) for n in self.streaming_services)
         self.streaming_services_box.setCurrentIndex(0)
+        self.streaming_services_box.currentIndexChanged.connect(self.options_changed)
         self.horizontal_layout_2.addWidget(self.streaming_services_box, 0,
                                            QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
@@ -184,21 +184,27 @@ class UiForm:
 
         self.set_style()
         self.load_save_settings()
-        if self.open_spotify:
-            self.spotify()
+        self.spotify()
         self.start_thread()
         self.song = None
 
         if not self.sync:
             self.sync_adjustment_slider.setVisible(False)
 
-    def changed_slider(self, value):
+    def changed_slider(self, value) -> None:
         self.sync_adjustment_slider.setToolTip("%d seconds" % value)
+
+    def streaming_service_changed(self) -> None:
+        self.spotify()
+        self.load_save_settings(save=True)
 
     def get_current_streaming_service(self) -> backend.StreamingService:
         return self.streaming_services[self.streaming_services_box.currentIndex()]
 
-    def load_save_settings(self, save=False):
+    def load_save_settings(self, save=False) -> None:
+        if self.is_loading_settings:
+            return
+
         settings_file = SETTINGS_DIR + "settings.ini"
         section = "settings"
 
@@ -208,6 +214,7 @@ class UiForm:
                 os.makedirs(directory)
 
         if not save:
+            self.is_loading_settings = True
             config = configparser.ConfigParser()
             config.read(settings_file)
 
@@ -218,6 +225,23 @@ class UiForm:
             self.info = config.getboolean(section, "info", fallback=False)
             self.minimize_to_tray = config.getboolean(section, "minimizetotray", fallback=False)
             self.font_size_box.setValue(config.getint(section, "fontsize", fallback=10))
+
+            streaming_service_name = config.get(section, "StreamingService", fallback=None)
+            if streaming_service_name:
+                for i in range(len(self.streaming_services)):
+                    if str(self.streaming_services[i]) == streaming_service_name:
+                        self.streaming_services_box.setCurrentIndex(i)
+                        break
+
+            FORM.move(config.getint(section, "X", fallback=FORM.pos().x()),
+                      config.getint(section, "Y", fallback=FORM.pos().y()))
+            if config.getboolean(section, "FullScreen", fallback=False):
+                FORM.showFullScreen()
+            elif config.getboolean(section, "Maximized", fallback=False):
+                FORM.showMaximized()
+            else:
+                FORM.resize(config.getint(section, "Width", fallback=FORM.width().real),
+                            config.getint(section, "Height", fallback=FORM.height().real))
 
             if self.dark_theme:
                 self.set_dark_theme()
@@ -245,11 +269,19 @@ class UiForm:
             config[section]["Info"] = str(self.info)
             config[section]["MinimizeToTray"] = str(self.minimize_to_tray)
             config[section]["FontSize"] = str(self.font_size_box.value())
+            config[section]["StreamingService"] = str(self.get_current_streaming_service())
+            config[section]["FullScreen"] = str(FORM.isFullScreen())
+            config[section]["Maximized"] = str(FORM.isMaximized())
+            config[section]["X"] = str(FORM.pos().x())
+            config[section]["Y"] = str(FORM.pos().y())
+            config[section]["Width"] = str(FORM.width().real)
+            config[section]["Height"] = str(FORM.height().real)
 
             with open(settings_file, 'w+') as settings:
                 config.write(settings)
+        self.is_loading_settings = False
 
-    def options_changed(self):
+    def options_changed(self) -> None:
         current_index = self.options_combobox.currentIndex()
         if current_index == 1:
             if self.dark_theme is False:
@@ -296,6 +328,7 @@ class UiForm:
                 self.options_combobox.setItemText(4, "Open Spotify")
             else:
                 self.open_spotify = True
+                self.spotify()
                 self.options_combobox.setItemText(4, "Open Spotify (on)")
         elif current_index == 5:
             if self.info:
@@ -432,7 +465,6 @@ class UiForm:
 
     def change_fontsize(self, offset):
         self.font_size_box.setValue(self.font_size_box.value() + offset)
-        self.update_fontsize()
 
     def update_fontsize(self):
         self.text_browser.setFontPointSize(self.font_size_box.value())
@@ -675,7 +707,9 @@ class UiForm:
         with open(file, "w", encoding="utf-8") as lyrics_file:
             lyrics_file.write(text)
 
-    def spotify(self):
+    def spotify(self) -> None:
+        if not self.open_spotify:
+            return
         backend.open_spotify(self.get_current_streaming_service())
 
 
@@ -684,6 +718,7 @@ class FormWidget(QtWidgets.QWidget):
         super().__init__()
 
     def closeEvent(self, event):
+        UI.load_save_settings(save=True)
         if UI.minimize_to_tray:
             event.ignore()
             self.hide()
@@ -691,6 +726,18 @@ class FormWidget(QtWidgets.QWidget):
     def icon_activated(self, reason):
         if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
             self.show()
+
+    def moveEvent(self, a0: QtGui.QMoveEvent) -> None:
+        try:
+            UI.load_save_settings(save=True)
+        except:
+            pass
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        try:
+            UI.load_save_settings(save=True)
+        except:
+            pass
 
 
 if __name__ == "__main__":
