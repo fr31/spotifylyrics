@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.com/SimonIT/spotifylyrics.svg?branch=master)](https://travis-ci.com/SimonIT/spotifylyrics)
 [![Current Release](https://img.shields.io/github/release/SimonIT/spotifylyrics.svg)](https://github.com/SimonIT/spotifylyrics/releases)
 [![License](https://img.shields.io/github/license/SimonIT/spotifylyrics.svg)](https://github.com/SimonIT/spotifylyrics/blob/master/LICENSE)
+[![GitHub All Releases](https://img.shields.io/github/downloads/SimonIT/spotifylyrics/total)](https://github.com/SimonIT/spotifylyrics/releases)
 
 Fetches and displays lyrics to currently playing song in the Spotify desktop client.
 
