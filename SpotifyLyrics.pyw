@@ -558,15 +558,15 @@ class UiForm:
                                     line_changed = True
                                 if line_changed:
                                     lrc[count - 1].text = HTML_TAGS.sub("", lrc[count - 1].text)
-                                    lrc[count].text = "<b>%s</b>" % lrc[count].text
+                                    lrc[count].text = """<b style="font-size: %spt">%s</b>""" % \
+                                                      (self.font_size_box.value() * 1.25, lrc[count].text)
                                     if count - 2 > 0:
                                         lrc[count - 3].text = HTML_TAGS.sub("", lrc[count - 3].text)
                                         lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
-                                    bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>%s%s' % \
+                                    bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>%s</p>' % \
                                                   (
-                                                      self.font_size_box.value() * 2,
-                                                      '<br>'.join(e.text for e in lrc),
-                                                      '</p>'
+                                                      self.font_size_box.value(),
+                                                      '<br>'.join(e.text for e in lrc)
                                                   )
                                     comm.signal.emit(
                                         header,
