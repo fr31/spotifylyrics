@@ -9,7 +9,7 @@ import time
 import pathvalidate
 import pylrc
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu, qApp
+from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu, qApp, QMessageBox
 
 import backend
 from services import SETTINGS_DIR, LYRICS_DIR
@@ -562,12 +562,16 @@ class UiForm:
                                     if count - 2 > 0:
                                         lrc[count - 3].text = HTML_TAGS.sub("", lrc[count - 3].text)
                                         lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
-                                    bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>' % \
-                                                  self.font_size_box.value() * 2 + '<br>'.join(
-                                        e.text for e in lrc) + '</p>'
-                                    comm.signal.emit(header,
-                                                     self.add_service_name_to_lyrics(bold_lyrics,
-                                                                                     lyrics_metadata.service_name))
+                                    bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>%s%s' % \
+                                                  (
+                                                      self.font_size_box.value() * 2,
+                                                      '<br>'.join(e.text for e in lrc),
+                                                      '</p>'
+                                                  )
+                                    comm.signal.emit(
+                                        header,
+                                        self.add_service_name_to_lyrics(bold_lyrics, lyrics_metadata.service_name)
+                                    )
                                     line_changed = False
                                     time.sleep(0.5)
                                 else:
@@ -681,30 +685,50 @@ class UiForm:
         if not os.path.exists(LYRICS_DIR):
             os.makedirs(LYRICS_DIR)
 
-        for file in os.listdir(LYRICS_DIR):
-            file = os.path.join(LYRICS_DIR, file)
-            if os.path.isfile(file):
-                file_parts = os.path.splitext(file)
+        artist = pathvalidate.sanitize_filename(self.song.artist)
+        name = pathvalidate.sanitize_filename(self.song.name)
+
+        new_lyrics_file = None
+
+        for lyrics_file in os.listdir(LYRICS_DIR):
+            lyrics_file = os.path.join(LYRICS_DIR, lyrics_file)
+            if os.path.isfile(lyrics_file):
+                file_parts = os.path.splitext(lyrics_file)
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
-                    if self.song.name.lower() in file_name and self.song.artist.lower() in file_name:
-                        return
+                    if name.lower() in file_name and artist.lower() in file_name:
+                        msg = QMessageBox()
+                        msg.setWindowIcon(FORM.windowIcon())
+                        msg.setIcon(QMessageBox.Information)
 
-        file = os.path.join(LYRICS_DIR, "%s - %s" % (
-            pathvalidate.sanitize_filename(self.song.artist), pathvalidate.sanitize_filename(self.song.name)))
+                        msg.setText("You got already saved lyrics for the song %s by %s!" %
+                                    (self.song.name, self.song.artist))
+                        msg.setInformativeText("Do you want overwrite them?")
+                        msg.setWindowTitle("Lyrics already saved")
+                        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
+                        retval = msg.exec_()
+                        if retval == QMessageBox.Yes:
+                            new_lyrics_file = file_name
+                            break
+                        else:
+                            return
+
+        if not new_lyrics_file:
+            new_lyrics_file = os.path.join(LYRICS_DIR, "%s - %s" % (artist, name))
 
         if self.lyrics:
             if self.timed:
-                file = file + ".lrc"
+                lyrics_file = new_lyrics_file + ".lrc"
             else:
-                file = file + ".txt"
+                lyrics_file = new_lyrics_file + ".txt"
             text = self.lyrics
         else:
-            file = file + ".txt"
+            lyrics_file = new_lyrics_file + ".txt"
             text = self.text_browser.toPlainText()
 
-        with open(file, "w", encoding="utf-8") as lyrics_file:
+        with open(lyrics_file, "w", encoding="utf-8") as lyrics_file:
             lyrics_file.write(text)
 
     def spotify(self) -> None:
