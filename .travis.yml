@@ -50,7 +50,7 @@ jobs:
         - brew cleanup
       before_deploy:
         - pip3 install pyinstaller
-        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
+        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.icns --add-data "icon.png:."
         - cd dist/
         - zip -r SpotifyLyrics.app.zip SpotifyLyrics.app
         - cd ..
