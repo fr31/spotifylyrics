@@ -71,9 +71,7 @@ def MiniLyrics(artist, title):
             i += 1
         magic_key = chr(int(round(float(j) / float(data_len))))
         encd_data = list(range(len(data)))
-        if isinstance(magic_key, int):
-            pass
-        else:
+        if not isinstance(magic_key, int):
             magic_key = ord(magic_key)
         for i in range(data_len):
             # Python doesn't do bitwise operations with characters, so we need to convert them to integers first. It
@@ -128,9 +126,7 @@ def MiniLyrics(artist, title):
         result = ""
         i = 22
         data_len = len(data)
-        if isinstance(magic_key, int):
-            pass
-        else:
+        if not isinstance(magic_key, int):
             magic_key = ord(magic_key)
         for i in range(22, data_len):
             # python doesn't do bitwise operations with characters, so we need to convert them to integers first.

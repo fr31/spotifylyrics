@@ -297,7 +297,7 @@ def get_window_title(service: StreamingService) -> str:
             for pid in spotify_pids:
                 win32gui.EnumWindows(enum_window_callback, pid)
                 for item in windows:
-                    if win32gui.GetWindowText(item) != '':
+                    if win32gui.GetWindowText(item):
                         window_name = win32gui.GetWindowText(item)
                         raise StopIteration
         except StopIteration:
@@ -307,8 +307,8 @@ def get_window_title(service: StreamingService) -> str:
         try:
             r = applescript.tell.app(service.get_apple_open_command(), service.get_apple_script())
             window_name = r.out
-        except Exception:
-            pass
+        except Exception as error:
+            print(error)
     else:
         try:
             session = dbus.SessionBus()
@@ -317,8 +317,8 @@ def get_window_title(service: StreamingService) -> str:
             spotify_interface = dbus.Interface(spotify_dbus, "org.freedesktop.DBus.Properties")
             metadata = spotify_interface.Get("org.mpris.MediaPlayer2.Player", "Metadata")
             window_name = "%s - %s" % (metadata['xesam:artist'][0], metadata['xesam:title'])
-        except Exception:
-            pass
+        except Exception as error:
+            print(error)
         if not window_name:
             try:
                 command = "xwininfo -tree -root"
@@ -328,8 +328,8 @@ def get_window_title(service: StreamingService) -> str:
                         if " - " in line:
                             window_name = line.split('"')[1]
                             break
-            except Exception:
-                pass
+            except Exception as error:
+                print(error)
     if "—" in window_name:
         window_name = window_name.replace("—", "-")
     return window_name
@@ -351,22 +351,14 @@ def get_version() -> float:
 
 def open_spotify(service: StreamingService):
     if sys.platform == "win32":
-        if get_window_title(service) == "":
+        if not get_window_title(service):
             subprocess.Popen(service.get_windows_exe_path())
-        else:
-            pass
     elif sys.platform == "linux":
-        if get_window_title(service) == "":
+        if not get_window_title(service):
             subprocess.Popen(service.get_linux_open_command())
-        else:
-            pass
     elif sys.platform == "darwin":
-        if get_window_title(service) == "":
+        if not get_window_title(service):
             subprocess.call(["open", "-a", service.get_apple_open_command()])
-        else:
-            pass
-    else:
-        pass
 
 
 def main():

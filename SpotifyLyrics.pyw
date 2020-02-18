@@ -349,8 +349,6 @@ class UiForm:
             else:
                 self.minimize_to_tray = True
                 self.options_combobox.setItemText(7, "Minimize to System Tray (on)")
-        else:
-            pass
         self.options_combobox.setCurrentIndex(0)
         self.load_save_settings(save=True)
 

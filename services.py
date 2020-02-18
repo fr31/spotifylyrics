@@ -267,8 +267,6 @@ def _songmeanings(song):
                 soup = BeautifulSoup(lyrics_page.text, 'html.parser')
                 url = "http://songmeanings.com" + link['href'][2:]
                 break
-            else:
-                pass
         temp_lyrics = soup.find_all("li")[4]
         lyrics = temp_lyrics.getText()
         lyrics = lyrics.split("(r,s)};})();")[1]
@@ -334,8 +332,6 @@ def _versuri(song):
                 if song.artist.lower() in link_text and song.name.lower() in link_text:
                     url = "https://www.versuri.ro" + search_results['href']
                     break
-            else:
-                pass
         if not url:
             lyrics = ERROR
         else:
