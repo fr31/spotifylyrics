@@ -34,6 +34,8 @@ def _local(song):
     lyrics = ERROR
 
     if os.path.isdir(LYRICS_DIR):
+        path_song_name = pathvalidate.sanitize_filename(song.name.lower())
+        path_artist_name = pathvalidate.sanitize_filename(song.artist.lower())
         for file in os.listdir(LYRICS_DIR):
             file = os.path.join(LYRICS_DIR, file)
             if os.path.isfile(file):
@@ -41,8 +43,6 @@ def _local(song):
                 file_extension = file_parts[1].lower()
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
-                    path_song_name = pathvalidate.sanitize_filename(song.name.lower())
-                    path_artist_name = pathvalidate.sanitize_filename(song.artist.lower())
                     if path_song_name in file_name and path_artist_name in file_name:
                         with open(file, "r", encoding="UTF-8") as lyrics_file:
                             lyrics = lyrics_file.read()

@@ -508,77 +508,80 @@ class UiForm:
         old_song_name = ""
         while True:
             song_name = backend.get_window_title(self.get_current_streaming_service())
-            if old_song_name != song_name:
-                if song_name not in self.get_current_streaming_service().get_not_playing_windows_title():
+            if old_song_name != song_name \
+                    and song_name not in self.get_current_streaming_service().get_not_playing_windows_title() or self.changed:
+                self.sync_adjustment_slider.setValue(0)
+                comm.signal.emit(song_name, "Loading...")
+                if not self.changed:
                     old_song_name = song_name
-                    self.changed = False
-                    self.sync_adjustment_slider.setValue(0)
-                    comm.signal.emit(song_name, "Loading...")
                     start = time.time()
                     self.song = backend.Song.get_from_string(song_name)
-                    lyrics_metadata = backend.get_lyrics(song=self.song, sync=self.sync)
-                    self.lyrics = lyrics_metadata.lyrics
-                    self.timed = lyrics_metadata.timed
                     if self.info:
                         backend.load_info(self, self.song)
-                    if lyrics_metadata.url == "":
-                        header = song_name
+                    lyrics_metadata = backend.get_lyrics(song=self.song, sync=self.sync)
+                else:
+                    lyrics_metadata = backend.next_lyrics(song=self.song, sync=self.sync)
+                    self.changed = False
+                self.lyrics = lyrics_metadata.lyrics
+                self.timed = lyrics_metadata.timed
+                if lyrics_metadata.url == "":
+                    header = song_name
+                else:
+                    style = self.label_song_name.styleSheet()
+                    if style == "":
+                        color = "color: black"
                     else:
-                        style = self.label_song_name.styleSheet()
-                        if style == "":
-                            color = "color: black"
+                        color = style
+                    header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' \
+                             % (color, lyrics_metadata.url, song_name)
+                lyrics_clean = lyrics_metadata.lyrics
+                if lyrics_metadata.timed:
+                    lrc = pylrc.parse(lyrics_metadata.lyrics)
+                    if lrc.album:
+                        self.song.album = lrc.album
+                    lyrics_clean = '\n'.join(e.text for e in lrc)
+                    comm.signal.emit(header,
+                                     self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
+                    count = 0
+                    line_changed = True
+                    while self.sync and not self.changed:
+                        time_title_start = time.time()
+                        window_title = backend.get_window_title(self.get_current_streaming_service())
+                        time_title_end = time.time()
+                        if window_title in self.get_current_streaming_service().get_not_playing_windows_title():
+                            time.sleep(0.2)
+                            start += 0.2 + time_title_end - time_title_start
+                        elif song_name != window_title or not count + 1 < len(lrc):
+                            self.sync_adjustment_slider.setValue(0)
+                            break
                         else:
-                            color = style
-                        header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' \
-                                 % (color, lyrics_metadata.url, song_name)
-                    lyrics_clean = lyrics_metadata.lyrics
-                    if lyrics_metadata.timed:
-                        lrc = pylrc.parse(lyrics_metadata.lyrics)
-                        if lrc.album:
-                            self.song.album = lrc.album
-                        lyrics_clean = '\n'.join(e.text for e in lrc)
-                        comm.signal.emit(header,
-                                         self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
-                        count = 0
-                        line_changed = True
-                        while self.sync and not self.changed:
-                            time_title_start = time.time()
-                            window_title = backend.get_window_title(self.get_current_streaming_service())
-                            time_title_end = time.time()
-                            if window_title in self.get_current_streaming_service().get_not_playing_windows_title():
-                                time.sleep(0.2)
-                                start += 0.2 + time_title_end - time_title_start
-                            elif song_name != window_title or not count + 1 < len(lrc):
-                                self.sync_adjustment_slider.setValue(0)
-                                break
+                            if lrc[count + 1].time - (lrc.offset / 1000) - self.sync_adjustment_slider.value() \
+                                    <= time.time() - start:
+                                count += 1
+                                line_changed = True
+                            if line_changed:
+                                lrc[count - 1].text = HTML_TAGS.sub("", lrc[count - 1].text)
+                                lrc[count].text = """<b style="font-size: %spt">%s</b>""" % \
+                                                  (self.font_size_box.value() * 1.25, lrc[count].text)
+                                if count - 2 > 0:
+                                    lrc[count - 3].text = HTML_TAGS.sub("", lrc[count - 3].text)
+                                    lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
+                                bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>%s</p>' % \
+                                              (
+                                                  self.font_size_box.value(),
+                                                  '<br>'.join(e.text for e in lrc)
+                                              )
+                                comm.signal.emit(
+                                    header,
+                                    self.add_service_name_to_lyrics(bold_lyrics, lyrics_metadata.service_name)
+                                )
+                                line_changed = False
+                                time.sleep(0.5)
                             else:
-                                if lrc[count + 1].time - (lrc.offset / 1000) - self.sync_adjustment_slider.value() \
-                                        <= time.time() - start:
-                                    count += 1
-                                    line_changed = True
-                                if line_changed:
-                                    lrc[count - 1].text = HTML_TAGS.sub("", lrc[count - 1].text)
-                                    lrc[count].text = """<b style="font-size: %spt">%s</b>""" % \
-                                                      (self.font_size_box.value() * 1.25, lrc[count].text)
-                                    if count - 2 > 0:
-                                        lrc[count - 3].text = HTML_TAGS.sub("", lrc[count - 3].text)
-                                        lrc[count - 2].text = "<a name=\"#scrollHere\">%s</a>" % lrc[count - 2].text
-                                    bold_lyrics = '<style type="text/css">p {font-size: %spt}</style><p>%s</p>' % \
-                                                  (
-                                                      self.font_size_box.value(),
-                                                      '<br>'.join(e.text for e in lrc)
-                                                  )
-                                    comm.signal.emit(
-                                        header,
-                                        self.add_service_name_to_lyrics(bold_lyrics, lyrics_metadata.service_name)
-                                    )
-                                    line_changed = False
-                                    time.sleep(0.5)
-                                else:
-                                    time.sleep(0.2)
-                    comm.signal.emit(
-                        header,
-                        self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
+                                time.sleep(0.2)
+                comm.signal.emit(
+                    header,
+                    self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
             time.sleep(1)
 
     def start_thread(self):
@@ -588,7 +591,7 @@ class UiForm:
 
     def refresh_lyrics(self, song_name, lyrics):
         _translate = QtCore.QCoreApplication.translate
-        if backend.get_window_title(self.streaming_services[self.streaming_services_box.currentIndex()]):
+        if backend.get_window_title(self.get_current_streaming_service()):
             self.label_song_name.setText(_translate("Form", song_name))
         self.set_lyrics_with_alignment(_translate("Form", lyrics))
         self.text_browser.scrollToAnchor("#scrollHere")
@@ -654,29 +657,8 @@ class UiForm:
         _translate = QtCore.QCoreApplication.translate
         if self.label_song_name.text() not in self.get_current_streaming_service().get_not_playing_windows_title():
             self.changed = True
-            change_lyrics_thread = threading.Thread(target=self.change_lyrics_thread)
-            change_lyrics_thread.start()
         else:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
-
-    def change_lyrics_thread(self):
-        song_name = backend.get_window_title(self.get_current_streaming_service())
-        self.comm.signal.emit(song_name, "Loading...")
-        style = self.label_song_name.styleSheet()
-
-        if style == "":
-            color = "color: black"
-        else:
-            color = style
-
-        lyrics, url, service_name, timed = backend.next_lyrics(self.song)
-        if url == "":
-            header = song_name
-        else:
-            header = '''<style type="text/css">a {text-decoration: none; %s}</style><a href="%s">%s</a>''' % (
-                color, url, song_name)
-
-        self.comm.signal.emit(header, self.add_service_name_to_lyrics(lyrics, service_name))
 
     def save_lyrics(self):
         if not self.song:

@@ -214,28 +214,32 @@ def load_lyrics(song: Song, **kwargs):
     sync = kwargs.get("sync", False)
     global CURRENT_SERVICE
 
-    if CURRENT_SERVICE == len(SERVICES_LIST2) - 1: CURRENT_SERVICE = -1
+    timed = False
+    lyrics = s.ERROR
+    if not CURRENT_SERVICE < (len(SERVICES_LIST1) + len(SERVICES_LIST2) - 1):
+        CURRENT_SERVICE = -1
 
-    if sync:
+    if sync and CURRENT_SERVICE + 1 < len(SERVICES_LIST1):
         temp_lyrics = []
-        for service_synced in SERVICES_LIST1:
-            lyrics, url, service_name, timed = service_synced(song)
+        for i in range(CURRENT_SERVICE + 1, len(SERVICES_LIST1)):
+            lyrics, url, service_name, timed = SERVICES_LIST1[i](song)
             if lyrics != s.ERROR:
+                CURRENT_SERVICE = i
                 if timed:
                     break
                 else:
                     temp_lyrics = lyrics, url, service_name, timed
         if not timed and temp_lyrics and temp_lyrics[0] != s.ERROR:
             lyrics, url, service_name, timed = temp_lyrics
-        CURRENT_SERVICE = -1
 
-    if sync and lyrics == s.ERROR or sync is False:
-        timed = False
-        for i in range(CURRENT_SERVICE + 1, len(SERVICES_LIST2)):
+    current_not_synced_service = CURRENT_SERVICE - len(SERVICES_LIST1)
+    current_not_synced_service = -1 if current_not_synced_service < -1 else current_not_synced_service
+    if sync and lyrics == s.ERROR or not sync or CURRENT_SERVICE > (len(SERVICES_LIST1) - 1):
+        for i in range(current_not_synced_service + 1, len(SERVICES_LIST2)):
             lyrics, url, service_name = SERVICES_LIST2[i](song)
-            CURRENT_SERVICE = i
             if lyrics != s.ERROR:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
+                CURRENT_SERVICE = i + len(SERVICES_LIST1)
                 break
     if lyrics == s.ERROR:
         service_name = "---"
@@ -260,8 +264,8 @@ def get_lyrics(song: Song, sync=False):
     return load_lyrics(song, sync=sync)
 
 
-def next_lyrics(song: Song):
-    return load_lyrics(song, ignore_cache=True)
+def next_lyrics(song: Song, sync=False):
+    return load_lyrics(song, sync=sync, ignore_cache=True)
 
 
 def load_chords(song: Song):
