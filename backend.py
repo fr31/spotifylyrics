@@ -314,7 +314,7 @@ def get_window_title(service: StreamingService) -> str:
                 for pid in spids:
                     win32gui.EnumWindows(enum_window_callback, pid)
                     for item in windows:
-                        if win32gui.GetWindowText(item) != '':
+                        if win32gui.GetWindowText(item):
                             window_name = win32gui.GetWindowText(item)
                             raise StopIteration
             except StopIteration:
@@ -369,7 +369,7 @@ def check_version() -> bool:
 
 
 def get_version() -> float:
-    return 1.4
+    return 1.5
 
 
 def open_spotify(service: StreamingService):

@@ -86,16 +86,6 @@ class UiForm:
         spacer_item = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontal_layout_2.addItem(spacer_item)
 
-        self.sync_adjustment_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, parent=FORM)
-        self.sync_adjustment_slider.setGeometry(QtCore.QRect(160, 120, 69, 22))
-        self.sync_adjustment_slider.setMinimum(-30)
-        self.sync_adjustment_slider.setMaximum(30)
-        self.sync_adjustment_slider.setSingleStep(1)
-        self.sync_adjustment_slider.setToolTipDuration(5000)
-        self.sync_adjustment_slider.valueChanged.connect(self.changed_slider)
-        self.horizontal_layout_2.addWidget(self.sync_adjustment_slider, 0,
-                                           QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-
         self.streaming_services_box = QtWidgets.QComboBox(FORM)
         self.streaming_services_box.setGeometry(QtCore.QRect(160, 120, 69, 22))
         self.streaming_services_box.addItems(str(n) for n in self.streaming_services)
@@ -158,6 +148,16 @@ class UiForm:
         self.font_size_box.setObjectName("fontBox")
         self.horizontal_layout_2.addWidget(self.font_size_box, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.vertical_layout_2.addLayout(self.horizontal_layout_2)
+        self.sync_adjustment_slider = QtWidgets.QSlider(FORM)
+        self.sync_adjustment_slider.setInvertedAppearance(True)
+        self.sync_adjustment_slider.setMinimum(-60)
+        self.sync_adjustment_slider.setMaximum(60)
+        self.sync_adjustment_slider.setSingleStep(1)
+        self.sync_adjustment_slider.setToolTipDuration(5000)
+        self.sync_adjustment_slider.setFixedWidth(25)
+        self.sync_adjustment_slider.valueChanged.connect(self.changed_slider)
+        self.sync_adjustment_slider.setValue(0)
+        self.horizontal_layout_1.addWidget(self.sync_adjustment_slider)
         self.text_browser = LyricsTextBrowserWidget(FORM)
         self.text_browser.setObjectName("textBrowser")
         self.text_browser.setAcceptRichText(True)
@@ -188,11 +188,8 @@ class UiForm:
         self.start_thread()
         self.song = None
 
-        if not self.sync:
-            self.sync_adjustment_slider.setVisible(False)
-
     def changed_slider(self, value) -> None:
-        self.sync_adjustment_slider.setToolTip("%d seconds" % value)
+        self.sync_adjustment_slider.setToolTip("%d seconds shifted" % value)
 
     def streaming_service_changed(self) -> None:
         self.spotify()
@@ -522,7 +519,7 @@ class UiForm:
                     self.changed = False
                 self.lyrics = lyrics_metadata.lyrics
                 self.timed = lyrics_metadata.timed
-                if lyrics_metadata.url == "":
+                if not lyrics_metadata.url:
                     header = song_name
                 else:
                     style = self.label_song_name.styleSheet()
@@ -534,6 +531,7 @@ class UiForm:
                              % (color, lyrics_metadata.url, song_name)
                 lyrics_clean = lyrics_metadata.lyrics
                 if lyrics_metadata.timed:
+                    self.sync_adjustment_slider.setVisible(self.sync)
                     lrc = pylrc.parse(lyrics_metadata.lyrics)
                     if lrc.album:
                         self.song.album = lrc.album
@@ -577,6 +575,8 @@ class UiForm:
                                 time.sleep(0.5)
                             else:
                                 time.sleep(0.2)
+                else:
+                    self.sync_adjustment_slider.setVisible(False)
                 comm.signal.emit(
                     header,
                     self.add_service_name_to_lyrics(lyrics_clean, lyrics_metadata.service_name))
