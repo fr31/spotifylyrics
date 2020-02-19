@@ -275,33 +275,55 @@ def load_chords(song: Song):
             webbrowser.open(url)
 
 
-def get_window_title(service: StreamingService) -> str:
-    window_name = ''
-    if sys.platform == "win32":
-        spotify_pids = []
-        for proc in psutil.process_iter():
-            if proc:
-                try:
-                    if proc.name() == service.get_windows_executable_name():
-                        spotify_pids.append(proc.pid)
-                except psutil.NoSuchProcess:
-                    print("Process does not exist anymore")
+spids = []
 
+
+# windows only
+def update_spids(windows_executable: str):
+    global spids
+    for proc in psutil.process_iter():
+        try:
+            if proc.name() == windows_executable:
+                spids.append(proc.pid)
+        except psutil.NoSuchProcess:
+            print("Process does not exist anymore")
+
+
+def get_window_title(service: StreamingService) -> str:
+    windowname = ''
+    if sys.platform == "win32":
+        global spids
+        if len(spids) == 0:
+            update_spids(service.get_windows_executable_name())
+
+        windows = []
         def enum_window_callback(hwnd, pid):
+            nonlocal windows
             tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
             if pid == current_pid and win32gui.IsWindowVisible(hwnd):
                 windows.append(hwnd)
 
-        windows = []
-        try:
-            for pid in spotify_pids:
-                win32gui.EnumWindows(enum_window_callback, pid)
-                for item in windows:
-                    if win32gui.GetWindowText(item):
-                        window_name = win32gui.GetWindowText(item)
-                        raise StopIteration
-        except StopIteration:
-            pass
+        def get_title():
+            global spids
+            nonlocal windows
+            nonlocal windowname
+            windows = []
+
+            try:
+                for pid in spids:
+                    win32gui.EnumWindows(enum_window_callback, pid)
+                    for item in windows:
+                        if win32gui.GetWindowText(item) != '':
+                            windowname = win32gui.GetWindowText(item)
+                            raise StopIteration
+            except StopIteration:
+                pass
+
+        get_title()
+
+        if not windowname:
+            update_spids(service.get_windows_executable_name())
+            get_title()
 
     elif sys.platform == "darwin":
         try:
