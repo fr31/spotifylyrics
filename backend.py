@@ -290,13 +290,14 @@ def update_spids(windows_executable: str):
 
 
 def get_window_title(service: StreamingService) -> str:
-    windowname = ''
+    window_name = ''
     if sys.platform == "win32":
         global spids
         if len(spids) == 0:
             update_spids(service.get_windows_executable_name())
 
         windows = []
+
         def enum_window_callback(hwnd, pid):
             nonlocal windows
             tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
@@ -306,7 +307,7 @@ def get_window_title(service: StreamingService) -> str:
         def get_title():
             global spids
             nonlocal windows
-            nonlocal windowname
+            nonlocal window_name
             windows = []
 
             try:
@@ -314,14 +315,14 @@ def get_window_title(service: StreamingService) -> str:
                     win32gui.EnumWindows(enum_window_callback, pid)
                     for item in windows:
                         if win32gui.GetWindowText(item) != '':
-                            windowname = win32gui.GetWindowText(item)
+                            window_name = win32gui.GetWindowText(item)
                             raise StopIteration
             except StopIteration:
                 pass
 
         get_title()
 
-        if not windowname:
+        if not window_name:
             update_spids(service.get_windows_executable_name())
             get_title()
 
