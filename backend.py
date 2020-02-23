@@ -170,7 +170,7 @@ class VlcMediaPlayer(StreamingService):
 
 
 # With Sync.
-SERVICES_LIST1 = [s._local, s._minilyrics, s._qq, s._rentanadviser, s._syair, s._megalobiz, s._wikia]
+SERVICES_LIST1 = [s._minilyrics, s._qq, s._rentanadviser, s._syair, s._megalobiz, s._wikia]
 
 # Without Sync.
 SERVICES_LIST2 = [s._musixmatch, s._songmeanings, s._songlyrics, s._genius, s._versuri]
@@ -197,7 +197,7 @@ def cache_lyrics(func):
         clean_song_name = '{}-{}'.format(song.artist, song.name)
         if not ignore_cache:
             lyrics_metadata = cache.get(clean_song_name)
-            if lyrics_metadata is None:
+            if not lyrics_metadata:
                 lyrics_metadata = func(*args, **kwargs)
                 cache.set(clean_song_name, lyrics_metadata, expire=SECONDS_IN_WEEK)
             return lyrics_metadata
@@ -213,6 +213,11 @@ def cache_lyrics(func):
 def load_lyrics(song: Song, **kwargs):
     sync = kwargs.get("sync", False)
     global CURRENT_SERVICE
+
+    if sync:
+        SERVICES_LIST1.insert(0, s._local)
+    else:
+        SERVICES_LIST2.insert(0, s._local)
 
     timed = False
     lyrics = s.ERROR
