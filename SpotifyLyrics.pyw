@@ -646,14 +646,14 @@ class UiForm:
 
     def get_chords(self):
         _translate = QtCore.QCoreApplication.translate
-        if self.label_song_name.text() not in self.get_current_streaming_service().get_not_playing_windows_title():
+        if self.song:
             backend.load_chords(self.song)
         else:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def change_lyrics(self):
         _translate = QtCore.QCoreApplication.translate
-        if self.label_song_name.text() not in self.get_current_streaming_service().get_not_playing_windows_title():
+        if self.song:
             self.changed = True
         else:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
