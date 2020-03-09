@@ -51,8 +51,6 @@ class Song:
             name = " - ".join(song_name_parts[1:-1])
         else:
             name = song_name_parts[1]
-        if " / " in name:
-            name, garbage = name.rsplit(" / ", 1)
         name = re.sub(r' \(.*?\)', '', name, flags=re.DOTALL)
         name = re.sub(r' \[.*?\]', '', name, flags=re.DOTALL)
         return cls(artist, name)
