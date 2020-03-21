@@ -225,6 +225,7 @@ def _syair(song):
 def _musixmatch(song):
     service_name = "Musixmatch"
     url = ""
+    lyrics = ERROR
     try:
         search_url = "https://www.musixmatch.com/search/%s-%s/tracks" % (
             song.artist.replace(' ', '-'), song.name.replace(' ', '-'))
@@ -235,23 +236,24 @@ def _musixmatch(song):
         url = codecs.decode(page[0], 'unicode-escape')
         lyrics_page = requests.get(url, headers=header, proxies=PROXY)
         soup = BeautifulSoup(lyrics_page.text, 'html.parser')
-        lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
-        lyrics = lyrics.replace("\\n", "\n")
-        lyrics = lyrics.replace("\\", "")
-        if lyrics.strip() == "":
-            lyrics = ERROR
-        album = soup.find(class_="mxm-track-footer__album")
-        if album:
-            song.album = album.find(class_="mui-cell__title").getText()
+        if '"body":"' in soup.text:
+            lyrics = soup.text.split('"body":"')[1].split('","language"')[0]
+            lyrics = lyrics.replace("\\n", "\n")
+            lyrics = lyrics.replace("\\", "")
+            if lyrics.strip() == "":
+                lyrics = ERROR
+            album = soup.find(class_="mxm-track-footer__album")
+            if album:
+                song.album = album.find(class_="mui-cell__title").getText()
     except Exception as error:
         print("%s: %s" % (service_name, error))
-        lyrics = ERROR
     return lyrics, url, service_name
 
 
 def _songmeanings(song):
     service_name = "Songmeanings"
     url = ""
+    lyrics = ERROR
     try:
         search_url = "http://songmeanings.com/m/query/?q=%s %s" % (song.artist, song.name)
         search_results = requests.get(search_url, proxies=PROXY)
@@ -267,12 +269,13 @@ def _songmeanings(song):
                 soup = BeautifulSoup(lyrics_page.text, 'html.parser')
                 url = "http://songmeanings.com" + link['href'][2:]
                 break
-        temp_lyrics = soup.find_all("li")[4]
-        lyrics = temp_lyrics.getText()
-        lyrics = lyrics.split("(r,s)};})();")[1]
+        lis = soup.find_all("li")
+        if len(lis) > 4:
+            temp_lyrics = lis[4]
+            lyrics = temp_lyrics.getText()
+            lyrics = lyrics.split("(r,s)};})();")[1]
     except Exception as error:
         print("%s: %s" % (service_name, error))
-        lyrics = ERROR
     if lyrics == "We are currently missing these lyrics.":
         lyrics = ERROR
 
@@ -305,16 +308,18 @@ def _songlyrics(song):
 def _genius(song):
     service_name = "Genius"
     url = ""
+    lyrics = ERROR
     try:
         url = "http://genius.com/%s-%s-lyrics" % (song.artist.replace(' ', '-'), song.name.replace(' ', '-'))
         lyrics_page = requests.get(url, proxies=PROXY)
         soup = BeautifulSoup(lyrics_page.text, 'html.parser')
-        lyrics = soup.find("div", {"class": "lyrics"}).get_text()
-        if song.artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
-            lyrics = ERROR
+        lyrics_container = soup.find("div", {"class": "lyrics"})
+        if lyrics_container:
+            lyrics = lyrics_container.get_text()
+            if song.artist.lower().replace(" ", "") not in soup.text.lower().replace(" ", ""):
+                lyrics = ERROR
     except Exception as error:
         print("%s: %s" % (service_name, error))
-        lyrics = ERROR
     return lyrics, url, service_name
 
 
