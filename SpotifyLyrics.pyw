@@ -699,11 +699,15 @@ class UiForm:
             new_lyrics_file = os.path.join(LYRICS_DIR, "%s - %s" % (artist, name))
 
         if self.lyrics:
+            text = self.lyrics
             if self.timed:
                 lyrics_file = new_lyrics_file + ".lrc"
+                if self.sync_adjustment_slider.value() != 0:
+                    lrc = pylrc.parse(text)
+                    lrc.offset += self.sync_adjustment_slider.value() * 1000
+                    text = lrc.toLRC()
             else:
                 lyrics_file = new_lyrics_file + ".txt"
-            text = self.lyrics
         else:
             lyrics_file = new_lyrics_file + ".txt"
             text = self.text_browser.toPlainText()
