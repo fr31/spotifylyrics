@@ -38,7 +38,7 @@ Extract the zip so you got a SpotifyLyrics.app directory.
 
 Double clicking the SpotifyLyrics.app should open it an you can play your songs in spotify.
 
-If you the window opens and closes immidiatly see [#17](https://github.com/SimonIT/spotifylyrics/issues/17).
+If the window opens and closes immediately see [#17](https://github.com/SimonIT/spotifylyrics/issues/17).
 
 # Running from source
 If you want to run from source you need:
