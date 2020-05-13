@@ -6,24 +6,49 @@
 
 Fetches and displays lyrics to currently playing song in the Spotify desktop client.
 
-# how to
-You can grab the latest release exe in the [release section](https://github.com/SimonIT/spotifylyrics/releases).
+# How to
 
-Just double click and start playing songs in spotify. 
+You can grab the latest release in the [release section](https://github.com/SimonIT/spotifylyrics/releases).
+
+## Windows
+
+Download the .exe file.
+
+Just double click and start playing songs in spotify.
+
+It is possible that a warning of windows smartscreen appears. It's because the exe is unsigned (see [#22](https://github.com/SimonIT/spotifylyrics/issues/22)). You can allow the program to open by clicking on "More info" and "Run anyway".
 
 If you get an error about api-ms-win-crt-runtime-l1-1-0.dll missing, you need this:
 
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-# running from source
+## Linux
+
+Download the file without any file ending.
+
+Make it executable via terminal with `chmod +x SpotifyLyrics` or via you file manager.
+
+Now you can double click the executable and start playing songs in spotify.
+
+## MacOS
+
+Download the .app.zip file.
+
+Extract the zip so you got a SpotifyLyrics.app directory.
+
+Double clicking the SpotifyLyrics.app should open it an you can play your songs in spotify.
+
+If you the window opens and closes immidiatly see [#17](https://github.com/SimonIT/spotifylyrics/issues/17).
+
+# Running from source
 If you want to run from source you need:
 
 * Python 3.6 (probably any version greater than Python 3.6)
 * pip install -r requirements.txt
 
-Ubuntu/Debian Example:
+## Ubuntu/Debian example:
 ```
-sudo apt-get install python3-pip
+sudo apt install python3-pip
 git clone https://github.com/SimonIT/spotifylyrics.git
 cd spotifylyrics/
 sudo pip3 install -r requirements.txt
@@ -36,9 +61,9 @@ You can store lyrics on you hard drive which can automatically loaded.
 
 You have to put them on windows in `C:\Users\<User>\AppData\Roaming\SpotifyLyrics\lyrics` and on the other OS's in `/home/<User>/.SpotifyLyrics/lyrics`. Replace `<User>` with your username.
   
-There you can put `.lrc` files with synced text (You can make them on [lrcgenerator.com](https://lrcgenerator.com/)) or simple `.txt` files with non-synced text.
+There you can put `.lrc` files with synced text (You can make them for example on [lrcgenerator.com](https://lrcgenerator.com/) or [www.megalobiz.com](https://www.megalobiz.com/lrc/maker)) or simple `.txt` files with non-synced text.
  
 **Important: The file names must include the artist and the name of the song**
 
-# screenshot
+# Screenshot
 ![example-img](https://i.imgur.com/2dUN17q.png)
