@@ -754,7 +754,7 @@ if __name__ == "__main__":
     sentry_sdk.init("https://71bf000cb7c5448c8c08660b29a12c09@o407859.ingest.sentry.io/5277612",
                     release="spotifylyrics@" + str(backend.get_version()))
     with sentry_sdk.configure_scope() as scope:
-        if getattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
             running = "pyinstaller"
         else:
             running = "source"
