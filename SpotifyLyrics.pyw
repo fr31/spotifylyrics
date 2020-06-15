@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+import sentry_sdk
 import configparser
 import os
 import re
@@ -749,8 +751,14 @@ class FormWidget(QtWidgets.QWidget):
 
 
 if __name__ == "__main__":
-    import sys
-
+    sentry_sdk.init("https://71bf000cb7c5448c8c08660b29a12c09@o407859.ingest.sentry.io/5277612",
+                    release="spotifylyrics@" + str(backend.get_version()))
+    with sentry_sdk.configure_scope() as scope:
+        if getattr(sys, 'frozen') and hasattr(sys, '_MEIPASS'):
+            running = "pyinstaller"
+        else:
+            running = "source"
+        scope.set_tag("running_from", running)
     APP = QtWidgets.QApplication(sys.argv)
     APP.setStyle("fusion")
     FORM = FormWidget()

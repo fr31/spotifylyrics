@@ -12,3 +12,4 @@ unidecode
 pylrc
 pathvalidate
 diskcache
+sentry-sdk
