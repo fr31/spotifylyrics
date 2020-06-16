@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import sys
+import webbrowser
+
 import sentry_sdk
 import configparser
 import os
@@ -485,6 +487,18 @@ class UiForm:
                                                     "none}</style><a "
                                                     "href=\"https://github.com/SimonIT/spotifylyrics/releases\"><sup>("
                                                     "update)</sup></a>"))
+            update_dialog = QMessageBox()
+            update_dialog.setWindowIcon(FORM.windowIcon())
+            update_dialog.setIcon(QMessageBox.Information)
+
+            update_dialog.setText("A newer version of SpotifyLyrics is available!")
+            update_dialog.setInformativeText("Do you want to download the newer version?")
+            update_dialog.setWindowTitle("Update available")
+            update_dialog.setStandardButtons(QMessageBox.Open | QMessageBox.Close)
+
+            update_result = update_dialog.exec()
+            if update_result == QMessageBox.Open:
+                webbrowser.open("https://github.com/SimonIT/spotifylyrics/releases")
         self.text_browser.setText(_translate("Form", "Play a song in Spotify to fetch lyrics."))
         self.font_size_box.setToolTip(_translate("Form", "Font Size"))
         self.options_combobox.setItemText(0, _translate("Form", "Options"))
@@ -680,18 +694,18 @@ class UiForm:
                 if file_extension in (".txt", ".lrc"):
                     file_name = file_parts[0].lower()
                     if name.lower() in file_name and artist.lower() in file_name:
-                        msg = QMessageBox()
-                        msg.setWindowIcon(FORM.windowIcon())
-                        msg.setIcon(QMessageBox.Information)
+                        save_dialog = QMessageBox()
+                        save_dialog.setWindowIcon(FORM.windowIcon())
+                        save_dialog.setIcon(QMessageBox.Information)
 
-                        msg.setText("You got already saved lyrics for the song %s by %s!" %
+                        save_dialog.setText("You got already saved lyrics for the song %s by %s!" %
                                     (self.song.name, self.song.artist))
-                        msg.setInformativeText("Do you want overwrite them?")
-                        msg.setWindowTitle("Lyrics already saved")
-                        msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                        save_dialog.setInformativeText("Do you want overwrite them?")
+                        save_dialog.setWindowTitle("Lyrics already saved")
+                        save_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
-                        retval = msg.exec_()
-                        if retval == QMessageBox.Yes:
+                        save_anyway = save_dialog.exec()
+                        if save_anyway == QMessageBox.Yes:
                             new_lyrics_file = file_name
                             break
                         else:
@@ -764,4 +778,4 @@ if __name__ == "__main__":
     FORM = FormWidget()
     UI = UiForm()
     FORM.show()
-    sys.exit(APP.exec_())
+    sys.exit(APP.exec())
