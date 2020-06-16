@@ -127,6 +127,7 @@ class UiForm:
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
         self.options_combobox.addItem("")
+        self.options_combobox.addItem("")
 
         self.tray_icon = QSystemTrayIcon(FORM)
         self.tray_icon.setIcon(QtGui.QIcon(self.get_resource_path('icon.png')))
@@ -244,6 +245,13 @@ class UiForm:
                 FORM.resize(config.getint(section, "Width", fallback=FORM.width().real),
                             config.getint(section, "Height", fallback=FORM.height().real))
 
+            if config.getboolean(section, "disableErrorReporting", fallback=False):
+                self.disableErrorReporting = True
+                sentry_sdk.init()
+                self.options_combobox.setItemText(8, "Error reporting disabled")
+            else:
+                self.disableErrorReporting = False
+
             if self.dark_theme:
                 self.set_dark_theme()
             if self.sync:
@@ -277,6 +285,7 @@ class UiForm:
             config[section]["Y"] = str(FORM.pos().y())
             config[section]["Width"] = str(FORM.width().real)
             config[section]["Height"] = str(FORM.height().real)
+            config[section]["disableErrorReporting"] = str(self.disableErrorReporting)
 
             with open(settings_file, 'w+') as settings:
                 config.write(settings)
@@ -307,49 +316,51 @@ class UiForm:
                 self.set_style()
         elif current_index == 2:
             if self.sync:
-                self.sync = False
                 self.options_combobox.setItemText(2, "Synced Lyrics")
             else:
-                self.sync = True
                 self.options_combobox.setItemText(2, "Synced Lyrics (on)")
+            self.sync = not self.sync
         elif current_index == 3:
             if self.ontop is False:
-                self.ontop = True
                 FORM.setWindowFlags(FORM.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
                 self.options_combobox.setItemText(3, "Always on Top (on)")
                 FORM.show()
             else:
-                self.ontop = False
                 FORM.setWindowFlags(FORM.windowFlags() & ~QtCore.Qt.WindowStaysOnTopHint)
                 self.options_combobox.setItemText(3, "Always on Top")
                 FORM.show()
+            self.ontop = not self.ontop
         elif current_index == 4:
             if self.open_spotify:
-                self.open_spotify = False
                 self.options_combobox.setItemText(4, "Open Spotify")
             else:
-                self.open_spotify = True
                 self.spotify()
                 self.options_combobox.setItemText(4, "Open Spotify (on)")
+            self.open_spotify = not self.open_spotify
         elif current_index == 5:
             if self.info:
-                self.info = False
                 self.options_combobox.setItemText(5, "Info")
                 self.info_table.setVisible(False)
             else:
-                self.info = True
                 self.options_combobox.setItemText(5, "Info (on)")
                 self.info_table.setVisible(True)
+            self.info = not self.info
         elif current_index == 6:
             if os.name == "nt":
                 subprocess.Popen(r'explorer "' + LYRICS_DIR + '"')
         elif current_index == 7:
             if self.minimize_to_tray:
-                self.minimize_to_tray = False
                 self.options_combobox.setItemText(7, "Minimize to System Tray")
             else:
-                self.minimize_to_tray = True
                 self.options_combobox.setItemText(7, "Minimize to System Tray (on)")
+            self.minimize_to_tray = not self.minimize_to_tray
+        elif current_index == 8:
+            if self.disableErrorReporting:
+                self.options_combobox.setItemText(8, "Disable Error reporting")
+            else:
+                self.options_combobox.setItemText(8, "Error Reporting disabled")
+            self.disableErrorReporting = not self.disableErrorReporting
+
         self.options_combobox.setCurrentIndex(0)
         self.load_save_settings(save=True)
 
@@ -510,6 +521,7 @@ class UiForm:
         if os.name == "nt":
             self.options_combobox.setItemText(6, _translate("Form", "Open Lyrics Directory"))
         self.options_combobox.setItemText(7, _translate("Form", "Minimize to Tray"))
+        self.options_combobox.setItemText(8, _translate("Form", "Disable error reporting"))
 
     def add_service_name_to_lyrics(self, lyrics, service_name):
         return '''<span style="font-size:%spx; font-style:italic;">Lyrics loaded from: %s</span>\n\n%s''' % (
