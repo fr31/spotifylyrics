@@ -213,9 +213,11 @@ def load_lyrics(song: Song, **kwargs):
     global CURRENT_SERVICE
 
     if sync:
-        SERVICES_LIST1.insert(0, s._local)
+        if s._local not in SERVICES_LIST1:
+            SERVICES_LIST1.insert(0, s._local)
     else:
-        SERVICES_LIST2.insert(0, s._local)
+        if s._local not in SERVICES_LIST2:
+            SERVICES_LIST2.insert(0, s._local)
 
     timed = False
     lyrics = s.ERROR
@@ -239,7 +241,8 @@ def load_lyrics(song: Song, **kwargs):
     current_not_synced_service = -1 if current_not_synced_service < -1 else current_not_synced_service
     if sync and lyrics == s.ERROR or not sync or CURRENT_SERVICE > (len(SERVICES_LIST1) - 1):
         for i in range(current_not_synced_service + 1, len(SERVICES_LIST2)):
-            lyrics, url, service_name = SERVICES_LIST2[i](song)
+            result = SERVICES_LIST2[i](song)  # Can return 4 values if _local was inserted
+            lyrics, url, service_name = result[0], result[1], result[2]
             if lyrics != s.ERROR:
                 lyrics = lyrics.replace("&amp;", "&").replace("`", "'").strip()
                 CURRENT_SERVICE = i + len(SERVICES_LIST1)
