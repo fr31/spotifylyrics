@@ -17,7 +17,7 @@ jobs:
         - cd ..
       before_deploy:
         - pip install pyinstaller
-        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:."
+        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png:." --additional-hooks-dir=pyinstaller_hooks
       deploy:
         provider: releases
         prerelease: true
@@ -50,7 +50,7 @@ jobs:
         - brew cleanup
       before_deploy:
         - pip3 install pyinstaller
-        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.icns --add-data "icon.png:."
+        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.icns --add-data "icon.png:." --additional-hooks-dir=pyinstaller_hooks
         - cd dist/
         - zip -r SpotifyLyrics.app.zip SpotifyLyrics.app
         - cd ..
@@ -80,7 +80,7 @@ jobs:
         - cd ..
       before_deploy:
         - python -m pip install pyinstaller
-        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;."
+        - pyinstaller SpotifyLyrics.pyw -F -w -i icon.ico --add-data "icon.png;." --additional-hooks-dir=pyinstaller_hooks
       deploy:
         provider: releases
         prerelease: true
