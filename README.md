@@ -22,6 +22,8 @@ If you get an error about api-ms-win-crt-runtime-l1-1-0.dll missing, you need th
 
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
+If the window opens and closes immidiatly, feel free to help fxing the problem in [#21](https://github.com/SimonIT/spotifylyrics/issues/21).
+
 ## Linux
 
 Download the file without any file ending.
@@ -36,9 +38,7 @@ Download the .app.zip file.
 
 Extract the zip so you got a SpotifyLyrics.app directory.
 
-Double clicking the SpotifyLyrics.app should open it an you can play your songs in spotify.
-
-If the window opens and closes immediately see [#17](https://github.com/SimonIT/spotifylyrics/issues/17).
+Make a right click on the SpotifyLyrics.app. Click on open and and you can bypass the warning. The program should open and you can play your songs in spotify.
 
 # Running from source
 If you want to run from source you need:
