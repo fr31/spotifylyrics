@@ -68,6 +68,8 @@ class UiForm:
     streaming_services = [backend.SpotifyStreamingService(), backend.VlcMediaPlayer(), backend.TidalStreamingService()]
 
     def __init__(self):
+        self.lyrics = ""
+        self.timed = False
         self.is_loading_settings = False
         self.comm = Communicate()
         self.comm.signal.connect(self.refresh_lyrics)
@@ -539,6 +541,7 @@ class UiForm:
                     old_song_name = song_name
                     start = time.time()
                     self.song = backend.Song.get_from_string(song_name)
+                    self.lyrics = ""
                     if self.info:
                         backend.load_info(self, self.song)
                     lyrics_metadata = backend.get_lyrics(song=self.song, sync=self.sync)
@@ -687,7 +690,7 @@ class UiForm:
             self.text_browser.append(_translate("Form", "I'm sorry, Dave. I'm afraid I can't do that."))
 
     def save_lyrics(self):
-        if not self.song:
+        if not self.song or not self.lyrics:
             return
 
         if not os.path.exists(LYRICS_DIR):
@@ -711,7 +714,7 @@ class UiForm:
                         save_dialog.setIcon(QMessageBox.Information)
 
                         save_dialog.setText("You got already saved lyrics for the song %s by %s!" %
-                                    (self.song.name, self.song.artist))
+                                            (self.song.name, self.song.artist))
                         save_dialog.setInformativeText("Do you want overwrite them?")
                         save_dialog.setWindowTitle("Lyrics already saved")
                         save_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
@@ -726,19 +729,15 @@ class UiForm:
         if not new_lyrics_file:
             new_lyrics_file = os.path.join(LYRICS_DIR, "%s - %s" % (artist, name))
 
-        if self.lyrics:
-            text = self.lyrics
-            if self.timed:
-                lyrics_file = new_lyrics_file + ".lrc"
-                if self.sync_adjustment_slider.value() != 0:
-                    lrc = pylrc.parse(text)
-                    lrc.offset += self.sync_adjustment_slider.value() * 1000
-                    text = lrc.toLRC()
-            else:
-                lyrics_file = new_lyrics_file + ".txt"
+        text = self.lyrics
+        if self.timed:
+            lyrics_file = new_lyrics_file + ".lrc"
+            if self.sync_adjustment_slider.value() != 0:
+                lrc = pylrc.parse(text)
+                lrc.offset += self.sync_adjustment_slider.value() * 1000
+                text = lrc.toLRC()
         else:
             lyrics_file = new_lyrics_file + ".txt"
-            text = self.text_browser.toPlainText()
 
         with open(lyrics_file, "w", encoding="utf-8") as lyrics_file:
             lyrics_file.write(text)
