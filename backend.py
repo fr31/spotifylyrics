@@ -378,16 +378,20 @@ def get_version() -> float:
     return 1.52
 
 
-def open_spotify(service: StreamingService):
+def open_spotify(service: StreamingService) -> bool:
     if sys.platform == "win32":
         if not get_window_title(service):
-            subprocess.Popen(service.get_windows_exe_path())
+            try:
+                subprocess.Popen(service.get_windows_exe_path())
+            except FileNotFoundError:
+                return False
     elif sys.platform == "linux":
         if not get_window_title(service):
             subprocess.Popen(service.get_linux_open_command())
     elif sys.platform == "darwin":
         if not get_window_title(service):
             subprocess.call(["open", "-a", service.get_apple_open_command()])
+    return True
 
 
 def main():

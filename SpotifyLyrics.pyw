@@ -745,7 +745,14 @@ class UiForm:
     def spotify(self) -> None:
         if not self.open_spotify:
             return
-        backend.open_spotify(self.get_current_streaming_service())
+        if not backend.open_spotify(self.get_current_streaming_service()):
+            save_dialog = QMessageBox()
+            save_dialog.setWindowIcon(FORM.windowIcon())
+            save_dialog.setIcon(QMessageBox.Warning)
+
+            save_dialog.setText("Couldn't open %s!" % str(self.get_current_streaming_service()))
+            save_dialog.setStandardButtons(QMessageBox.Ok)
+            save_dialog.exec()
 
 
 class FormWidget(QtWidgets.QWidget):
