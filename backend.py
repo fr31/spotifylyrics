@@ -109,7 +109,7 @@ class SpotifyStreamingService(StreamingService):
         return "Spotify"
 
     def get_not_playing_windows_title(self) -> Tuple:
-        return 'Spotify', 'Spotify Free', 'Spotify Premium', 'Drag', ''
+        return 'Spotify', 'Spotify Free', 'Spotify Premium', 'Drag', 'Advertisement', ''
 
     def __str__(self):
         return "Spotify"
