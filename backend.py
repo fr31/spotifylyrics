@@ -46,11 +46,14 @@ class Song:
     @classmethod
     def get_from_string(cls, songstring: str):
         song_name_parts = songstring.split(" - ")
-        artist = song_name_parts[0]
+        artist = ""
         if len(song_name_parts) > 2:
             name = " - ".join(song_name_parts[1:-1])
-        else:
+        elif len(song_name_parts) == 2:
+            artist = song_name_parts[0]
             name = song_name_parts[1]
+        else:
+            name = song_name_parts[0]
         name = re.sub(r' \(.*?\)', '', name, flags=re.DOTALL)
         name = re.sub(r' \[.*?\]', '', name, flags=re.DOTALL)
         return cls(artist, name)
@@ -375,7 +378,7 @@ def check_version() -> bool:
 
 
 def get_version() -> float:
-    return 1.53
+    return 1.54
 
 
 def open_spotify(service: StreamingService) -> bool:
