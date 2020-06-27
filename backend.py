@@ -375,7 +375,7 @@ def check_version() -> bool:
 
 
 def get_version() -> float:
-    return 1.52
+    return 1.53
 
 
 def open_spotify(service: StreamingService) -> bool:
