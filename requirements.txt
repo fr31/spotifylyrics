@@ -1,8 +1,15 @@
-beautifulsoup4==4.6.0
-pypiwin32==220; sys.platform == 'win32'
-PyQt5==5.9.2
-requests==2.18.4
-sip==4.19.8
-xmltodict==0.11.0
-psutil==5.4.3; sys.platform == 'win32'
-unidecode==1.0.22
+beautifulsoup4
+pywin32; sys_platform == 'win32'
+dbus-python; sys_platform == 'linux'
+applescript>=2020.6.12; sys_platform == 'darwin'
+sip
+PyQt5-stubs
+PyQt5
+requests>=2.20.0
+xmltodict
+psutil; sys_platform == 'win32'
+unidecode
+pylrc
+pathvalidate
+diskcache
+sentry-sdk
