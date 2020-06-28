@@ -533,8 +533,8 @@ class UiForm:
         old_song_name = ""
         while True:
             song_name = backend.get_window_title(self.get_current_streaming_service())
-            if old_song_name != song_name \
-                    and song_name not in self.get_current_streaming_service().get_not_playing_windows_title() or self.changed:
+            if (old_song_name != song_name or self.changed) \
+                    and song_name not in self.get_current_streaming_service().get_not_playing_windows_title():
                 self.sync_adjustment_slider.setValue(0)
                 comm.signal.emit(song_name, "Loading...")
                 if not self.changed:
