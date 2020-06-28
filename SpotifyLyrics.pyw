@@ -219,7 +219,7 @@ class UiForm:
 
         if not save:
             self.is_loading_settings = True
-            config = configparser.ConfigParser()
+            config = configparser.ConfigParser(strict=False)
             config.read(settings_file)
 
             self.sync = config.getboolean(section, "syncedlyrics", fallback=False)
