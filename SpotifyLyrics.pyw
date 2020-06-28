@@ -217,9 +217,9 @@ class UiForm:
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
+        config = configparser.ConfigParser(strict=False)
         if not save:
             self.is_loading_settings = True
-            config = configparser.ConfigParser(strict=False)
             config.read(settings_file)
 
             self.sync = config.getboolean(section, "syncedlyrics", fallback=False)
@@ -270,8 +270,6 @@ class UiForm:
             if self.minimize_to_tray:
                 self.options_combobox.setItemText(7, "Minimize to Tray (on)")
         else:
-            config = configparser.ConfigParser()
-
             config.add_section(section)
             config[section]["SyncedLyrics"] = str(self.sync)
             config[section]["AlwaysOnTop"] = str(self.ontop)
