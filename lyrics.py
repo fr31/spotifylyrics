@@ -99,7 +99,7 @@ def MiniLyrics(artist, title):
             r = requests.post(url, data=data, headers=headers, proxies=proxy)
             return (r.text)
         except Exception as exceptio:
-            print(exceoptio)
+            print(exceptio)
             pass
         # if the request was denied, or the connection was interrupted, retrying. (up to five times)
         fail_count = 0
